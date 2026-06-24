@@ -1,0 +1,90 @@
+import React from "react";
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
+
+import SplashScreen from "../screens/splash/SplashScreen";
+
+import { RootStackParamList } from "./types";
+import EmailLogin from "../screens/auth/EmailLogin";
+import EmailRegister from "../screens/auth/EmailRegister";
+import PhoneLogin from "../screens/auth/PhoneLogin";
+import PhoneRegister from "../screens/auth/PhoneRegister";
+import OtpScreen from "../screens/auth/OtpScreen";
+import TermsAndConditions from "../screens/TermsAndConditions";
+import PrivacyPolicy from "../screens/PrivacyPolicy";
+import ProfileCompleted from "../screens/auth/ProfileCompleted";
+import MultiStepForm from "../screens/userDetailsForm/UserDetailsForm";
+import TabNavigator from "./TabNavigator";
+import NotificationScreen from "../screens/notification/notification";
+import OnboardingScreen from "../screens/onboarding/OnboardingScreen";
+
+const Stack = createNativeStackNavigator<RootStackParamList>();
+
+export default function RootNavigator() {
+  return (
+    <Stack.Navigator
+      initialRouteName="Splash"
+      screenOptions={{
+        headerShown: false,
+        animation: "none",
+      }}
+    >
+      <Stack.Screen
+        name="Splash"
+        component={SplashScreen}
+      />
+      <Stack.Screen
+        name="TermsAndConditions"
+        component={TermsAndConditions}
+      />
+      <Stack.Screen
+        name="PrivacyPolicy"
+        component={PrivacyPolicy}
+      />
+
+      <Stack.Screen
+        name="Onboarding"
+        component={OnboardingScreen}
+      />
+
+      <Stack.Screen
+        name="LoginWithEmail"
+        component={EmailLogin}
+      />
+      <Stack.Screen
+        name="RegisterWithEmail"
+        component={EmailRegister}
+      />
+
+      <Stack.Screen
+        name="LoginWithPhone"
+        component={PhoneLogin}
+      />
+      <Stack.Screen
+        name="RegisterWithPhone"
+        component={PhoneRegister}
+      />
+
+      <Stack.Screen
+        name="OTPScreen"
+        component={OtpScreen}
+      />
+      <Stack.Screen
+        name="ProfileCompleted"
+        component={ProfileCompleted}
+      />
+      <Stack.Screen
+        name="MultiStepForm"
+        component={MultiStepForm}
+      />
+      <Stack.Screen
+        name="HomeTabs"
+        component={TabNavigator}
+      />
+      <Stack.Screen
+        name="NotificationScreen"
+        component={NotificationScreen}
+      />
+    </Stack.Navigator>
+  );
+}
+
