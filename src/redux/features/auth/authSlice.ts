@@ -27,6 +27,8 @@ const authSlice = createSlice({
     },
 
     clearAuth: state => {
+      console.log('🚨 CLEAR AUTH CALLED');
+
       state.token = null;
       state.user = null;
       state.loading = false;

@@ -4,12 +4,13 @@ module.exports = {
     [
       'module-resolver',
       {
-        root: ['./src'],
+        root: ['./'],
         alias: {
           '@': './src',
         },
       },
     ],
-    'react-native-reanimated/plugin',
+
+    'react-native-worklets/plugin',
   ],
 };

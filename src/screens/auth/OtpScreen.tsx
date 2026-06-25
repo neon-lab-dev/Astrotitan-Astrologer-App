@@ -9,7 +9,6 @@ import { setAuth } from "../../redux/features/auth/authSlice";
 import { Storage } from "../../services/storage/storage";
 import globalModalService from "../../redux/features/ui/GlobalModal/globalModalService";
 import VerifiedPopup from "../../components/reusable/Popups/VerifiedPopup";
-import AnimatedScreen from "../../components/layout/AnimatedScreen";
 import AppHeader from "../../components/reusable/AppHeader/AppHeader";
 import AuthTitle from "../../components/auth/AuthTitle";
 import { SansText } from "../../components/reusable/Text/SansText";
@@ -39,7 +38,7 @@ export default function OtpScreen() {
   const inputs = useRef<TextInput[]>([]);
   const [otpArray, setOtpArray] = useState(["", "", "", ""]);
   const route = useRoute<any>();
-    const params = route.params || {};
+  const params = route.params || {};
 
   const otp = watch("otp");
 
@@ -76,8 +75,11 @@ export default function OtpScreen() {
       const user = data?.user;
       console.log(accessToken)
       dispatch(setAuth({ token: accessToken, user: user }));
-      const isProfileCompleted = user?.isProfileCompleted;
-      await Storage.setAccessToken( accessToken);
+      const isProfileCompleted =
+        user?.profile?.isProfileCompleted ||
+        user?.isProfileComplete ||
+        false;
+      await Storage.setAccessToken(accessToken);
       await Storage.setRefreshToken(refreshToken);
       await Storage.setUser(user);
       await Storage.setProfileCompleted(isProfileCompleted);
@@ -92,8 +94,8 @@ export default function OtpScreen() {
         console.log("Using fallback user");
       }
       globalModalService.open(<VerifiedPopup
-         isProfileCompleted={isProfileCompleted}
-          />, {
+        isProfileCompleted={isProfileCompleted}
+      />, {
         dismissible: false,
       });
 
@@ -188,92 +190,91 @@ export default function OtpScreen() {
 
   return (
     <AuthLayout>
-  <AnimatedScreen>
-    <View style={styles.container}>
-      <View>
-        <AppHeader>
-          <AuthTitle title="OTP Verification">
-            <SansText>
-              Enter the 4-digit OTP sent to your{" "}
-              {params.source === "login"
-                ? "mobile number"
-                : "email"}{" "}
-              <SatoshiText style={styles.param}>
-                {params.phone || params.email}
-              </SatoshiText>
-            </SansText>
-          </AuthTitle>
-        </AppHeader>
+        <View style={styles.container}>
+          <View>
+            <AppHeader>
+              <AuthTitle title="OTP Verification">
+                <SansText>
+                  Enter the 4-digit OTP sent to your{" "}
+                  {params.source === "login"
+                    ? "mobile number"
+                    : "email"}{" "}
+                  <SatoshiText style={styles.param}>
+                    {params.phone || params.email}
+                  </SatoshiText>
+                </SansText>
+              </AuthTitle>
+            </AppHeader>
 
-        <View style={styles.content}>
-          <View style={styles.otpContainer}>
-            {[0, 1, 2, 3].map((_, index) => (
-              <TextInput
-                key={index}
-                value={otp[index] || ""}
-                onChangeText={(text) => handleChange(text, index)}
-                onKeyPress={({ nativeEvent }) =>
-                  handleBackspace(nativeEvent.key, index)
-                }
-                keyboardType="number-pad"
-                maxLength={1}
-                style={[
-                  styles.otpBox,
-                  status === "error" && styles.errorBorder,
-                  status === "success" && styles.successBorder,
-                ]}
-                ref={(ref) => {
-                  if (ref) inputs.current[index] = ref;
-                }}
-              />
-            ))}
+            <View style={styles.content}>
+              <View style={styles.otpContainer}>
+                {[0, 1, 2, 3].map((_, index) => (
+                  <TextInput
+                    key={index}
+                    value={otp[index] || ""}
+                    onChangeText={(text) => handleChange(text, index)}
+                    onKeyPress={({ nativeEvent }) =>
+                      handleBackspace(nativeEvent.key, index)
+                    }
+                    keyboardType="number-pad"
+                    maxLength={1}
+                    style={[
+                      styles.otpBox,
+                      status === "error" && styles.errorBorder,
+                      status === "success" && styles.successBorder,
+                    ]}
+                    ref={(ref) => {
+                      if (ref) inputs.current[index] = ref;
+                    }}
+                  />
+                ))}
+              </View>
+
+              {/* STATUS */}
+              {loading && <ActivityIndicator />}
+
+              {status === "success" && (
+                <SansText style={styles.successText}>
+                  OTP verified successfully
+                </SansText>
+              )}
+
+              {status === "error" && (
+                <SansText style={styles.errorText}>
+                  {errorMessage}
+                </SansText>
+              )}
+
+              {status === "expired" && (
+                <SansText style={styles.errorText}>
+                  {errorMessage}
+                </SansText>
+              )}
+
+              {status === "not_received" && (
+                <SansText>Didn’t receive the OTP? You can request a new one.</SansText>
+              )}
+
+              {!canResend &&
+                status === "default" && (
+                  <SansText>
+                    Resend OTP in {timer}s
+                  </SansText>
+                )}
+            </View>
           </View>
 
-          {/* STATUS */}
-          {loading && <ActivityIndicator />}
-
-          {status === "success" && (
-            <SansText style={styles.successText}>
-              OTP verified successfully
-            </SansText>
+          {canResend && (
+            <View style={styles.resendBox}>
+              <ReusableButton
+                title={loading ? "Please wait..." : "Resend OTP"}
+                variant="solid"
+                onPress={handleResend}
+              />
+            </View>
           )}
-
-          {status === "error" && (
-            <SansText style={styles.errorText}>
-              {errorMessage}
-            </SansText>
-          )}
-
-          {status === "expired" && (
-            <SansText style={styles.errorText}>
-              {errorMessage}
-            </SansText>
-          )}
-
-          {status === "not_received" && (
-            <SansText>Didn’t receive the OTP? You can request a new one.</SansText>
-          )}
-
-          {!canResend &&
-            status === "default" && (
-              <SansText>
-                Resend OTP in {timer}s
-              </SansText>
-            )}
         </View>
-      </View>
-
-      {canResend && (
-        <View style={styles.resendBox}>
-          <ReusableButton
-            title={loading ? "Please wait..." : "Resend OTP"}
-            variant="solid"
-            onPress={handleResend}
-          />
-        </View>
-      )}
-    </View>
-    </AnimatedScreen></AuthLayout>
+      </AuthLayout>
   );
 }
 

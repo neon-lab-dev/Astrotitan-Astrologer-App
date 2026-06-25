@@ -15,7 +15,6 @@ import { useGetAstrologersQuery } from "../../../redux/features/astrologer/astro
 import BottomSheetService from "../../../redux/features/ui/GlobalSheet/BottomSheetService";
 import SortBySection from "../../../components/reusable/BottomSheet/SortBy";
 import FilterSection from "../../../components/reusable/BottomSheet/FilterSection";
-import AnimatedScreen from "../../../components/layout/AnimatedScreen";
 import ScreenWrapper from "../../../components/layout/ScreenWrapper";
 import AppHeader from "../../../components/reusable/AppHeader/AppHeader";
 import AuthTitle from "../../../components/auth/AuthTitle";
@@ -206,7 +205,7 @@ const AstrologerScreen = () => {
   };
 
   return (
-    <AnimatedScreen>
+
       <ScreenWrapper>
         <AppHeader
           showBack={false}
@@ -369,7 +368,7 @@ const AstrologerScreen = () => {
           }
         />
       </ScreenWrapper>
-    </AnimatedScreen>
+
   );
 };
 

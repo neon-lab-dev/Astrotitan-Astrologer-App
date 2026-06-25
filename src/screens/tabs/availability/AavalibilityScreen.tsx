@@ -11,7 +11,6 @@ import {
   View,
 } from "react-native";
 import { useGetMeQuery } from "../../../redux/features/auth/authApi";
-import AnimatedScreen from "../../../components/layout/AnimatedScreen";
 import ScreenWrapper from "../../../components/layout/ScreenWrapper";
 import AppHeader from "../../../components/reusable/AppHeader/AppHeader";
 import { SansText } from "../../../components/reusable/Text/SansText";
@@ -19,6 +18,7 @@ import AuthTitle from "../../../components/auth/AuthTitle";
 import { SatoshiText } from "../../../components/reusable/Text/SatoshiText";
 import ReusableButton from "../../../components/reusable/ReusableButton/ReusableButton";
 import { useUpdateAvailabilityMutation } from "../../../redux/features/astrologer/astrologerApi";
+import AnimatedScreen from "../../../components/layout/AnimatedScreen";
 const DAYS = ["Mon", "Tue", "Wed", "Thur", "Fri", "Sat", "Sun"];
 
 const AvailabilityScreen = () => {
@@ -183,8 +183,6 @@ const AvailabilityScreen = () => {
 
       // Refetch user data to update profile
       refetch();
-
-      Alert.alert("Success", "Availability updated successfully");
     } catch (error: any) {
       Alert.alert(
         "Error",
@@ -347,7 +345,7 @@ const AvailabilityScreen = () => {
           )}
         </View>
       </ScreenWrapper>
-    </AnimatedScreen>
+   </AnimatedScreen>
   );
 };
 export default AvailabilityScreen;
@@ -400,7 +398,7 @@ const styles = StyleSheet.create({
 
   selectedDayText: {
     color: "#0D0D0D",
-    fontFamily: "SansMedium",
+    fontFamily: "GeneralSans-Medium",
   },
 
   timeContainer: {

@@ -24,8 +24,8 @@ const ProfileCompleted = () => {
             },
           },
         ]}
-      /></AnimatedScreen>
-
+      />
+    </AnimatedScreen>
   );
 };
 

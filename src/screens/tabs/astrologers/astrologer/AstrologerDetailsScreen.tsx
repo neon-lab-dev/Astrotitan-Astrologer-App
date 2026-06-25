@@ -288,7 +288,7 @@ const AstrologerDetailsScreen =
                     }
                   >
                     {astrologer?.experience ||
-                      "0 Years"}
+                      "0 "} Years
                   </SatoshiText>
 
                   <SansText

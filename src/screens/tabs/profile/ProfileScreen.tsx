@@ -5,7 +5,6 @@ import { useDispatch, useSelector } from "react-redux";
 import { IconName, ICONS } from '../../../assets/svg';
 import { SansText } from '../../../components/reusable/Text/SansText';
 import { useLazyGetMeQuery } from '../../../redux/features/auth/authApi';
-import { RootState } from '../../../redux/store';
 import { Storage } from '../../../services/storage/storage';
 import { clearAuth, selectUser, updateUser } from '../../../redux/features/auth/authSlice';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -94,7 +93,7 @@ const ProfileScreen = () => {
     }, []) // ← don't pass fetchLatestUser here
   );
   return (
-    <AnimatedScreen>
+    // <AnimatedScreen>
       <ScreenWrapper>
 
         <AppHeader showBack={false} >
@@ -142,7 +141,7 @@ const ProfileScreen = () => {
                     numberOfLines={1}
                   >
                     {user?.profile
-                      ?.fullName ||
+                      ?.displayName ||
                       "User"}
                   </SatoshiText>
 
@@ -198,7 +197,8 @@ const ProfileScreen = () => {
           {/* DELETE */}
 
         </ScrollView>
-      </ScreenWrapper></AnimatedScreen>
+      </ScreenWrapper>
+      // </AnimatedScreen>
   );
 };
 export default ProfileScreen;

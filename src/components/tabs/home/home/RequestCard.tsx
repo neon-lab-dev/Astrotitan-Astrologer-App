@@ -168,7 +168,7 @@ const styles =
       color: "#111",
 
       fontFamily:
-        "SansMedium",
+        "GeneralSans-Medium",
     },
 
     cancelButton: {

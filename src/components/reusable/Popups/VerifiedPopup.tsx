@@ -24,8 +24,12 @@ export default function VerifiedPopup({ isProfileCompleted }: Props) {
         routes: [{ name: "HomeTabs" }],
       });
     } else {
-      navigation.replace("MultiStepForm");
+      navigation.reset({
+        index: 0,
+        routes: [{ name: "MultiStepForm" }],
+      });
     }
+
   };
 
   return (

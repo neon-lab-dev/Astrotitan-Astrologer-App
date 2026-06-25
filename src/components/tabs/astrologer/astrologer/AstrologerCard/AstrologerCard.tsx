@@ -1,6 +1,5 @@
 import StarIcon from '@/assets/icons/visual/star.svg';
 import { Image, StyleSheet, TouchableOpacity, View } from 'react-native';
-import AnimatedScreen from '../../../../layout/AnimatedScreen';
 import { SatoshiText } from '../../../../reusable/Text/SatoshiText';
 import { SansText } from '../../../../reusable/Text/SansText';
 import ReusableButton from '../../../../reusable/ReusableButton/ReusableButton';
@@ -11,7 +10,7 @@ export const AstrologerCard = ({
 }: any) => {
     const navigation = useNavigation<any>();
     return (
-        <AnimatedScreen>
+       
             <TouchableOpacity onPress={()=>{ navigation.navigate("AstrologerDetailsScreen", { id: item._id, })}}  style={styles.card}>
                 <View style={styles.cardTop}
                 >
@@ -73,7 +72,7 @@ export const AstrologerCard = ({
                     iconPosition="left"
                 />
             </TouchableOpacity>
-        </AnimatedScreen>
+      
     );
 };
 const styles =

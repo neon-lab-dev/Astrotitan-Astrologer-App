@@ -1,8 +1,7 @@
 import React from "react";
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import SessionsScreen from "../screens/tabs/session/SessionScreen";
-import SessionHistoryDetailsScreen from "../screens/tabs/session/sessionHistoryDetails";
-
+import SessionHistoryDetailsScreen from "../screens/tabs/session/SessionHistoryDetailsScreen";
 const Stack = createNativeStackNavigator();
 
 export default function SessionNavigator() {

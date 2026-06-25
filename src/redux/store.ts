@@ -7,13 +7,13 @@ import checkoutReducer from "./features/checkout/checkoutSlice";
 import globalModalReducer from "./features/ui/GlobalModal/globalModalSlice";
 import globalSheetReducer from "./features/ui/GlobalSheet/globalSheetSlice";
 import useDetailsFormReducer from "./features/userDetailsForm/userDetailsDormSlice";
-import RequestDetailsFormReducer from "./features/RequestConsultationForm/RequestConsultationFormSlice";
+import UserVerificationFormReducer from "./features/UserVerificationForm/UserVerificationFormSlice"
 export const store = configureStore({
   reducer: {
     auth: authReducer,
     app: appReducer,
     userDetailForm: useDetailsFormReducer,
-    RequestDetailForm: RequestDetailsFormReducer,
+   UserVerificationForm: UserVerificationFormReducer,
     globalSheet: globalSheetReducer,
     cart: cartReducer,
     checkout: checkoutReducer,

@@ -1,3 +1,5 @@
+// src/components/layout/AnimatedScreen.tsx
+
 import { ReactNode, useEffect } from "react";
 import Animated, {
   Easing,
@@ -6,22 +8,21 @@ import Animated, {
   withTiming,
   withDelay,
 } from "react-native-reanimated";
-
+import { useRoute } from "@react-navigation/native";
 type Props = {
   children: ReactNode;
   delay?: number;
 };
 
-export default function AnimatedScreen({
-  children,
-  delay = 0,
-}: Props) {
+export default function AnimatedScreen({ children, delay = 0 }: Props) {
+    const route = useRoute();
+
   const translateY = useSharedValue(40);
-  const opacity = useSharedValue(0.9);
+  const opacity = useSharedValue(0);
 
   useEffect(() => {
-    translateY.value = 40;
-    opacity.value = 0.9;
+    translateY.value = 120;
+    opacity.value = 0;
 
     translateY.value = withDelay(
       delay,
@@ -37,7 +38,7 @@ export default function AnimatedScreen({
         duration: 600,
       })
     );
-  }, []); // ← IMPORTANT
+  }, [route.name, delay,opacity, translateY]);
 
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ translateY: translateY.value }],

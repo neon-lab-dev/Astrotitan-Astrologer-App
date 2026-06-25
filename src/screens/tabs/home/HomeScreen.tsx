@@ -1,9 +1,11 @@
+// eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2YTNjMWJiZDljMzczZmU5YzE5OTFhN2QiLCJlbWFpbCI6ImJhZHdhbmVwcmVybmFAZ21haWwuY29tIiwicm9sZSI6ImFzdHJvbG9nZXIiLCJpYXQiOjE3ODIzMjQxNzcsImV4cCI6MTc4MjkyODk3N30.ZsnYX4sepd24AfUVJ88Cw5GsJYvfj2ivBo0DXi5AHGM', 'loadAuth'
+// 06-25 00:04:56.792  6032  8070 I ReactNativeJS: 'Redux after initial load:', { token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2YTNjMWJiZDljMzczZmU5YzE5OTFhN2QiLCJlbWFpbCI6ImJhZHdhbmVwcmVybmFAZ21haWwuY29tIiwicm9sZSI6ImFzdHJvbG9nZXIiLCJpYXQiOjE3ODIzMjQxNzcsImV4cCI6MTc4MjkyODk3N30.ZsnYX4sepd24AfUVJ88Cw5GsJYvfj2ivBo0DXi5AHGM
+
 import NotificationIcon from "@/assets/icons/navigation/notifications.svg";
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { FlatList, RefreshControl, ScrollView, StyleSheet, View } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 import { useGetMeQuery, useLazyGetMeQuery } from "../../../redux/features/auth/authApi";
-import AnimatedScreen from "../../../components/layout/AnimatedScreen";
 import ScreenWrapper from "../../../components/layout/ScreenWrapper";
 import { SansText } from "../../../components/reusable/Text/SansText";
 import { getTimeBasedGreeting } from "../../../utils/greetings";
@@ -21,8 +23,12 @@ import EditIcon from '@/assets/icons/actions/edit.svg';
 import AstrologerCardSkeleton from "../../../components/tabs/astrologer/astrologer/AstrologerCard/AstrologerCardSkeleton";
 import { AstrologerCard } from "../../../components/tabs/astrologer/astrologer/AstrologerCard/AstrologerCard";
 import { useGetAstrologersQuery } from "../../../redux/features/astrologer/astrologerApi";
+import AnimatedScreen from "../../../components/layout/AnimatedScreen";
 const HomeScreen = () => {
   const user = useSelector(selectUser);
+  useEffect(() => {
+    console.log("AUTH CHANGED", user);
+  }, [user]);
   const [refreshing, setRefreshing] = useState(false);
   const { data: userData } = useGetMeQuery({});
   const profile = userData?.data?.profile;
@@ -56,6 +62,15 @@ const HomeScreen = () => {
       image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e",
     },
   ];
+  const DAYS = [
+    { short: "Mon", full: "Monday" },
+    { short: "Tue", full: "Tuesday" },
+    { short: "Wed", full: "Wednesday" },
+    { short: "Thu", full: "Thursday" },
+    { short: "Fri", full: "Friday" },
+    { short: "Sat", full: "Saturday" },
+    { short: "Sun", full: "Sunday" },
+  ];
   const { data, isLoading, isFetching, refetch } = useGetAstrologersQuery({
     isIdentityVerified: true,
   });
@@ -69,9 +84,9 @@ const HomeScreen = () => {
     } catch (error) {
       console.log("GET ME ERROR:", error);
     }
-  }, 
-  [getMe, dispatch]
-);
+  },
+    [getMe, dispatch]
+  );
   const onRefresh = useCallback(async () => {
     if (refreshing) return;
 
@@ -87,12 +102,14 @@ const HomeScreen = () => {
       setRefreshing(false);
     }
   }, []);
-console.log(user,"user")
+  console.log(user, "user")
   useFocusEffect(
     useCallback(() => {
       fetchLatestUser();
     }, [fetchLatestUser])
   );
+
+
   return (
     <AnimatedScreen>
       <ScreenWrapper>
@@ -122,7 +139,8 @@ console.log(user,"user")
               </SansText>
 
               <SatoshiText style={styles.userName}>
-                {profile?.profile?.firstName} {profile?.profile?.lastName}
+                {profile?.displayName ??
+                  `${profile?.firstName ?? ""} ${profile?.lastName ?? ""}`.trim()}
               </SatoshiText>
             </View>
 
@@ -233,51 +251,53 @@ console.log(user,"user")
                 {/* TIME */}
 
                 <View style={styles.timeRow}>
-                  <SatoshiText style={styles.timeText}>10.00 AM</SatoshiText>
+                  <SatoshiText style={styles.timeText}>
+                    {profile?.availability?.availableTime?.startTime}
+                  </SatoshiText>
 
                   <SansText style={styles.dash}>—</SansText>
 
-                  <SatoshiText style={styles.timeText}>05.00 PM</SatoshiText>
+                  <SatoshiText style={styles.timeText}>
+                    {profile?.availability?.availableTime?.endTime}
+                  </SatoshiText>
                 </View>
 
                 <SansText>Same applies to all selected days.</SansText>
                 {/* DAYS */}
 
-                <View style={styles.daysRow}>
-                  {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map(
-                    (day) => {
-                      // Check if this day exists in availableDays array
-                      const isAvailable =
-                        profile?.availability?.availableDays?.includes(day);
-                      return (
-                        <View
-                          key={day}
+                <View style={styles.daysContainer}>
+                  {DAYS.map((item) => {
+                    const selected =
+                      profile?.availability?.availableDays?.includes(item.full);
+
+                    return (
+                      <View
+                        key={item.short}
+                        style={[
+                          styles.dayButton,
+                          selected && styles.selectedDayButton,
+                        ]}
+                      >
+                        <SansText
                           style={[
-                            styles.dayPill,
-                            // isAvailable && styles.dayPillActive,
+                            styles.dayText,
+                            selected && styles.selectedDayText,
                           ]}
                         >
-                          <SansText
-                            style={[
-                              styles.dayText,
-                              // isAvailable && styles.dayTextActive,
-                            ]}
-                          >
-                            {day}
-                          </SansText>
-                        </View>
-                      );
-                    },
-                  )}
+                          {item.short}
+                        </SansText>
+                      </View>
+                    );
+                  })}
                 </View>
 
                 {/* BUTTON */}
                 <ReusableButton
                   title="Edit Availability"
-                  onPress={() => { }}
+                  onPress={() => { navigation.getParent()?.navigate("AvailabilityTab") }}
                   variant="outline"
                   iconPosition="left"
-                  disabled={!user?.profile?.isIdentityVerified}
+                  // disabled={!user?.profile?.isIdentityVerified}
                   icon={<EditIcon width={24} height={24} />}
                   iconSize={20}
                   style={{ borderRadius: 999 }}
@@ -462,20 +482,39 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
 
-  dayPill: {
-    height: 34,
+  daysContainer: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 10,
+    marginVertical: 12
+  },
+
+  dayButton: {
+    minWidth: 52,
+    height: 38,
     borderRadius: 999,
-    backgroundColor: "#D4AF37",
-    paddingHorizontal: 14,
+    borderWidth: 1.2,
+    borderColor: "#D4AF37",
+    backgroundColor: "#FBF7EB",
     justifyContent: "center",
     alignItems: "center",
+    paddingHorizontal: 14,
+  },
+
+  selectedDayButton: {
+    backgroundColor: "#D4AF37",
   },
 
   dayText: {
     fontSize: 14,
     color: "#0D0D0D",
-    fontFamily: "SansMedium",
   },
+
+  selectedDayText: {
+    color: "#0D0D0D",
+    fontFamily: "GeneralSans-Medium",
+  },
+
 
   editAvailabilityButton: {
     height: 48,
@@ -498,6 +537,6 @@ const styles = StyleSheet.create({
   editAvailabilityText: {
     fontSize: 15,
     color: "#111",
-    fontFamily: "SansMedium",
+    fontFamily: "GeneralSans-Medium",
   },
 });

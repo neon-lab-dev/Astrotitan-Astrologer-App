@@ -11,7 +11,6 @@ import {
   StyleSheet,
   View
 } from "react-native";
-import AnimatedScreen from "../../../components/layout/AnimatedScreen";
 import ScreenWrapper from "../../../components/layout/ScreenWrapper";
 import AppHeader from "../../../components/reusable/AppHeader/AppHeader";
 import { SatoshiText } from "../../../components/reusable/Text/SatoshiText";
@@ -124,7 +123,7 @@ const SessionHistoryDetailsScreen =
       ]);
 
     return (
-      <AnimatedScreen>
+  
         <ScreenWrapper>
           <View
             style={
@@ -430,7 +429,7 @@ const SessionHistoryDetailsScreen =
             </ScrollView>
           </View>
         </ScreenWrapper>
-      </AnimatedScreen>
+     
     );
   };
 

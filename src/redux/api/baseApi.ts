@@ -33,6 +33,7 @@ const baseQueryWithRefreshToken: BaseQueryFn<
   let result = await baseQuery(args, api, extraOptions);
 
   if (result.error?.status === 401) {
+      console.log("🚨 401 API:", args);
     try {
       const refreshResult = await fetch(`${API_URL}/auth/refresh-token`, {
         method: 'POST',
