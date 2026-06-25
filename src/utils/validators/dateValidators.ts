@@ -135,3 +135,45 @@ export const isValidFutureDate = (date: string) => {
 
   return true;
 };
+export const formatMessageDate = (dateString: string) => {
+  if (!dateString) return "";
+
+  const date = new Date(dateString);
+  const now = new Date();
+
+  const isToday =
+    date.getDate() === now.getDate() &&
+    date.getMonth() === now.getMonth() &&
+    date.getFullYear() === now.getFullYear();
+
+  const isSameYear =
+    date.getFullYear() === now.getFullYear();
+
+  const time = date.toLocaleTimeString([], {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true,
+  });
+
+  if (isToday) {
+    // Today -> 03:45 PM
+    return time;
+  }
+
+  const day = date.toLocaleDateString([], {
+    day: "2-digit",
+    month: "short",
+  });
+
+  if (isSameYear) {
+    // 24 Jun, 03:45 PM
+    return `${day}, ${time}`;
+  }
+
+  // 24 Jun 2025, 03:45 PM
+  return `${date.toLocaleDateString([], {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  })}, ${time}`;
+};

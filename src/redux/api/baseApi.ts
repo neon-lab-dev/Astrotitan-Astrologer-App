@@ -9,10 +9,10 @@ import {
 import { RootState } from '../store';
 import { clearAuth, setAuth } from '../features/auth/authSlice';
 
-const API_URL = 'https://astrotitan-server.onrender.com/api/v1';
+export const API_URL = 'https://astrotitan-server.onrender.com';
 
 const baseQuery = fetchBaseQuery({
-  baseUrl: API_URL,
+  baseUrl: `${API_URL}/api/v1`,
 
   prepareHeaders: (headers, { getState }) => {
     const token = (getState() as RootState).auth.token;
@@ -35,7 +35,7 @@ const baseQueryWithRefreshToken: BaseQueryFn<
   if (result.error?.status === 401) {
       console.log("🚨 401 API:", args);
     try {
-      const refreshResult = await fetch(`${API_URL}/auth/refresh-token`, {
+      const refreshResult = await fetch(`${API_URL}/api/v1/auth/refresh-token`, {
         method: 'POST',
         credentials: 'include',
       });
@@ -85,6 +85,8 @@ export const baseApi = createApi({
     'category',
     'productCheckout',
     'orders',
+    'consultationChat',
+    'consultation'
   ],
 
   endpoints: () => ({}),

@@ -8,6 +8,12 @@ import {
 import { SatoshiText } from "../../../reusable/Text/SatoshiText";
 import { SansText } from "../../../reusable/Text/SansText";
 import ReusableButton from "../../../reusable/ReusableButton/ReusableButton";
+import { useChangeBookingStatusMutation } from "../../../../redux/features/consultation/consultationApi";
+import { setSelectedConsultation } from "../../../../redux/features/consultation/consultationChatSlice";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { RootStackParamList } from "../../../../navigation/types";
+import { useNavigation } from "@react-navigation/native";
+import { useDispatch } from "react-redux";
 
 type Props = {
   item: {
@@ -15,21 +21,76 @@ type Props = {
     name: string;
     image: string;
   };
-  type: "Chat" | "Call";
   isVerified?: boolean;
-  onAccept?: () => void;
-  onCancel?: () => void;
 };
 
 const RequestCard = ({
   item,
-  type,
   isVerified = false,
-  onAccept,
-  onCancel,
 }: Props) => {
   const isDisabled =
     !isVerified;
+  type NavigationProp =
+    NativeStackNavigationProp<RootStackParamList>;
+  const dispatch =useDispatch()
+  const navigation = useNavigation<NavigationProp>();
+  const [changeBookingStatus, { isLoading }] = useChangeBookingStatusMutation();
+  const handleAccept = async () => {
+    try {
+      const payload = { status: "accepted" };
+      const response = await changeBookingStatus({
+        id: item?._id,
+        data: payload,
+      }).unwrap();
+
+      if (response?.success) {
+      }
+    } catch (err: any) {
+      console.error("Error accepting booking:", err);
+    }
+  };
+
+  const handleReject = async () => {
+    try {
+      const payload = { status: "rejected" };
+      const response = await changeBookingStatus({
+        id: item?._id,
+        data: payload,
+      }).unwrap();
+
+      if (response?.success) {
+      }
+    } catch (err: any) {
+      console.error("Error rejecting booking:", err);
+    }
+  };
+  const handleChatNow = (booking: any) => {
+    // Astrologer is the current user, participant is always the User
+    const participant = booking.user;
+
+    // ✅ Astrologer's Object ID (from booking.astrologer._id)
+    const currentParticipantId = booking.astrologer;
+
+    // Store selected consultation in Redux
+    dispatch(
+      setSelectedConsultation({
+        consultationId: booking._id,
+        currentParticipantId: currentParticipantId,
+        participant: {
+          _id: participant?._id,
+          name: participant?.fullName || participant?.displayName || "User",
+          firstName: participant?.firstName,
+          lastName: participant?.lastName,
+          profilePicture: participant?.profilePicture,
+          accountId: participant?.accountId,
+          role: "user", // Participant is always the user in astrologer panel
+        },
+      })
+    );
+
+    // Navigate to chat page
+    navigation.navigate("AstrologerChatScreen", { id: booking?._id })
+  };
 
   return (
     <View
@@ -66,23 +127,27 @@ const RequestCard = ({
       {/* IMAGE */}
 
       <Image
-        source={{uri: item.image,}}
+        source={{ uri: item?.user?.profilePicture, }}
         style={styles.requestImage}
       />
       {/* NAME */}
 
-      <SatoshiText style={styles.requestName}>{item.name}</SatoshiText>
+      <SatoshiText style={styles.requestName}>{item?.user?.fullName}</SatoshiText>
 
       {/* TYPE */}
 
-      <SansText style={styles.requestType}>{type} Request
+      <SansText style={styles.requestType}>Request Type : {item?.method}
       </SansText>
       {/* ACTIONS */}
-      <View style={styles.requestActions}>
+
+
+
+      {item?.status === "pending" ? (<View style={styles.requestActions}>
         {/* ACCEPT */}
-        <View style={{ flex: 1 }}><ReusableButton variant="solid" style={{ borderRadius: 12 }} height={44} onPress={()=>{onAccept}} title="Accept" /></View>
-        <View style={{ flex: 1 }}><ReusableButton variant="outline" style={{ borderRadius: 12 }} height={44} onPress={()=>{onCancel}} title="Cancel" /></View>
-      </View>
+        <View style={{ flex: 1 }}><ReusableButton variant="solid" style={{ borderRadius: 12 }} height={44} onPress={() => { handleAccept }} title="Accept" /></View>
+        <View style={{ flex: 1 }}><ReusableButton variant="outline" style={{ borderRadius: 12 }} height={44} onPress={() => { handleReject }} title="Reject" /></View>
+      </View>) : (<View style={{ flex: 1 }}><ReusableButton variant="solid" style={{ borderRadius: 12, paddingVertical: 0 }} textSize={12} height={24}
+        onPress={() => { handleChatNow(item) }} title="Chat Now" /></View>)}
     </View>
   );
 };
@@ -133,10 +198,9 @@ const styles =
 
     requestType: {
       fontSize: 13,
-
       color: "#7A7A7A",
-
       marginBottom: 14,
+      textTransform: "capitalize"
     },
 
     requestActions: {

@@ -83,6 +83,7 @@ export default function OtpScreen() {
       await Storage.setRefreshToken(refreshToken);
       await Storage.setUser(user);
       await Storage.setProfileCompleted(isProfileCompleted);
+      console.log(user,"opt screen profile status")
       setStatus("success");
       let finalUser = user;
       try {

@@ -24,6 +24,7 @@ import AstrologerCardSkeleton from "../../../components/tabs/astrologer/astrolog
 import { AstrologerCard } from "../../../components/tabs/astrologer/astrologer/AstrologerCard/AstrologerCard";
 import { useGetAstrologersQuery } from "../../../redux/features/astrologer/astrologerApi";
 import AnimatedScreen from "../../../components/layout/AnimatedScreen";
+import { useGetMyConsultationBookingsQuery } from "../../../redux/features/consultation/consultationApi";
 const HomeScreen = () => {
   const user = useSelector(selectUser);
   useEffect(() => {
@@ -74,6 +75,8 @@ const HomeScreen = () => {
   const { data, isLoading, isFetching, refetch } = useGetAstrologersQuery({
     isIdentityVerified: true,
   });
+  const { data: consultationBookings } = useGetMyConsultationBookingsQuery({});
+  const bookings = consultationBookings?.data?.bookings?.data || [];
   const astrologers = data?.data?.astrologers || [];
   const fetchLatestUser = useCallback(async () => {
     try {
@@ -177,61 +180,16 @@ const HomeScreen = () => {
                 paddingHorizontal: 16,
               }}
             >
-              {chatRequests.map((item) => (
+              {bookings?.map((item) => (
                 <RequestCard
-                  key={item.id}
+                  key={item._id}
                   item={item}
-                  type="Chat"
                   isVerified={user?.profile?.isIdentityVerified}
-                  onAccept={() => {
-                    console.log("ACCEPT:", item.id);
-                  }}
-                  onCancel={() => {
-                    console.log("CANCEL:", item.id);
-                  }}
                 />
               ))}
             </ScrollView>
           </View>
 
-          {/* CALL REQUESTS */}
-
-          <View style={styles.section}>
-            <ContentSection
-              title="Call Requests"
-              sectionStyle={{ paddingHorizontal: 16 }}
-            >
-              <SansText>
-                Your call requests will appear here. Sample requests shown for
-                preview.
-              </SansText>
-            </ContentSection>
-
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={{
-                gap: 14,
-                paddingTop: 14,
-                paddingHorizontal: 16,
-              }}
-            >
-              {chatRequests.map((item) => (
-                <RequestCard
-                  key={item.id}
-                  item={item}
-                  type="Call"
-                  isVerified={user?.profile?.isIdentityVerified}
-                  onAccept={() => {
-                    console.log("ACCEPT:", item.id);
-                  }}
-                  onCancel={() => {
-                    console.log("CANCEL:", item.id);
-                  }}
-                />
-              ))}
-            </ScrollView>
-          </View>
 
           {/* AVAILABILITY */}
 

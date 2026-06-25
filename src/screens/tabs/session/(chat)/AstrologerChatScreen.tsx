@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   StyleSheet,
   Text,
@@ -13,76 +13,284 @@ import AnimatedScreen from "../../../../components/layout/AnimatedScreen";
 import AppHeader from "../../../../components/reusable/AppHeader/AppHeader";
 import { SatoshiText } from "../../../../components/reusable/Text/SatoshiText";
 import ReusableButton from "../../../../components/reusable/ReusableButton/ReusableButton";
+import { useRoute } from "@react-navigation/native";
+import { useDispatch, useSelector } from "react-redux";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { RootStackParamList } from "../../../../navigation/types";
+import { useNavigation } from "@react-navigation/native";
+import { addConsultationMessage, clearSelectedConsultation, selectCurrentParticipantId, selectSelectedConsultationMessages, selectSelectedParticipant, setSelectedConsultationMessages, updateConsultationMessageId } from "../../../../redux/features/consultation/consultationChatSlice";
+import { useConsultationSocket } from "../../../../socket/useConsultationSocket";
+import { selectUser } from "../../../../redux/features/auth/authSlice";
+import { useGetConsultationMessagesQuery, useMarkConsultationMessagesReadMutation } from "../../../../redux/features/consultation/consultationChatApi";
+import {  formatMessageDate } from "../../../../utils/validators/dateValidators";
 
-interface Message {
-  id: string;
-  text: string;
-  sender: "user" | "astrologer";
-  time: string;
-}
 
 const AstrologerChatScreen = () => {
-  const [message, setMessage] = useState("");
+  const route = useRoute<any>();
+  const { id: consultationId } = route.params || {};
 
-  const messages: Message[] = [
-    {
-      id: "1",
-      text: "Jai Shree Ram! Sumit Ji, Please ask your questions.",
-      sender: "astrologer",
-      time: "09:07 AM",
-    },
-    {
-      id: "2",
-      text: "Guide me about my career and other life prospects.",
-      sender: "user",
-      time: "09:07 AM",
-    },
-    {
-      id: "3",
-      text: "Will I achieve my goals?",
-      sender: "user",
-      time: "09:08 AM",
-    },
-    {
-      id: "4",
-      text: "Will I be successful?",
-      sender: "user",
-      time: "10:10 AM",
-    },
-  ];
+  const renderMessage = ({ item }: { item: any }) => {
+    console.log(item, "message");
 
-  const renderMessage = ({ item }: { item: Message }) => {
-    const isUser = item.sender === "user";
+    const senderId =
+      typeof item.sender === "string"
+        ? item.sender
+        : item.sender?._id;
 
+    const isOwn = senderId === currentUser?.account?._id;
+  
     return (
       <View
         style={[
           styles.messageContainer,
-          isUser ? styles.userContainer : styles.receiverContainer,
+          isOwn ? styles.userContainer : styles.receiverContainer,
         ]}
       >
         <View
           style={[
             styles.messageBubble,
-            isUser ? styles.userBubble : styles.receiverBubble,
+            isOwn ? styles.userBubble : styles.receiverBubble,
           ]}
         >
-          <SansText style={styles.messageText}>{item.text}</SansText>
+          <SansText style={styles.messageText}>
+            {item.content}
+          </SansText>
+
           <View
             style={[
               styles.timeRow,
-              isUser
+              isOwn
                 ? { justifyContent: "flex-end" }
                 : { justifyContent: "flex-start" },
             ]}
           >
-            {isUser && <Text style={styles.tick}>✓✓</Text>}
-            <Text style={styles.time}>{item.time}</Text>
+            <Text style={styles.time}>
+              {formatMessageDate(item.createdAt) } {" "}
+            </Text>
+
+            {isOwn && (
+              <>
+                {item.isTemp ? (
+                  <Text style={styles.sendingText}>⌛ Sending...</Text>
+                ) : item.isRead ? (
+                  <Text style={styles.readText}>✓✓ Read</Text>
+                ) : (
+                  <Text style={styles.sentText}>✓ Sent</Text>
+                )}
+              </>
+            )}
           </View>
         </View>
       </View>
     );
   };
+  const dispatch = useDispatch();
+  type NavigationProp =
+    NativeStackNavigationProp<RootStackParamList>;
+
+  const navigation = useNavigation<NavigationProp>();
+  const [message, setMessage] = useState("");
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<TextInput>(null);
+  const hasInitializedRef = useRef(false);
+  const hasMarkedReadRef = useRef(false);
+
+  // Redux selectors
+  const participant = useSelector(selectSelectedParticipant);
+  const messages = useSelector(selectSelectedConsultationMessages);
+  const currentParticipantId = useSelector(selectCurrentParticipantId);
+
+
+  const messagesRef = useRef(messages);
+
+  // Update ref when messages change
+  useEffect(() => {
+    messagesRef.current = messages;
+  }, [messages]);
+  // Socket hook
+  const {
+    sendConsultationMessage,
+    markConsultationMessagesRead,
+    isConnected,
+    socket,
+  } = useConsultationSocket();
+
+  // Current user
+  const currentUser = useSelector(selectUser) as any;
+
+  // API hooks
+  const { data } = useGetConsultationMessagesQuery(consultationId, {
+    skip: !consultationId,
+  });
+
+  const [markMessagesAsRead] = useMarkConsultationMessagesReadMutation();
+
+  // Scroll to bottom
+  // useEffect(() => {
+  //   messagesEndRef.current?.scrollIntoView({
+  //     behavior: "smooth",
+  //     block: "end",
+  //   });
+  // }, [messages]);
+
+  useEffect(() => {
+    if (data?.data && consultationId && !hasInitializedRef.current) {
+      dispatch(setSelectedConsultationMessages(data.data));
+      hasInitializedRef.current = true;
+    }
+  }, [data, consultationId, dispatch]);
+
+  useEffect(() => {
+    hasInitializedRef.current = false;
+    hasMarkedReadRef.current = false;
+  }, [consultationId]);
+
+  useEffect(() => {
+    if (consultationId && isConnected && !hasMarkedReadRef.current) {
+      hasMarkedReadRef.current = true;
+      markConsultationMessagesRead(consultationId);
+      markMessagesAsRead(consultationId).catch(console.error);
+    }
+  }, [
+    consultationId,
+    isConnected,
+    markConsultationMessagesRead,
+    markMessagesAsRead,
+  ]);
+
+  useEffect(() => {
+    if (!socket) return;
+
+    const handleReceiveMessage = (incomingMsg: any) => {
+      if (incomingMsg.consultationId === consultationId) {
+        dispatch(addConsultationMessage(incomingMsg));
+      }
+    };
+
+    const handleMessageSent = (confirmation: any) => {
+      if (
+        confirmation.consultationId === consultationId &&
+        confirmation.tempId
+      ) {
+        dispatch(
+          updateConsultationMessageId({
+            tempId: confirmation.tempId,
+            realId: confirmation._id,
+            createdAt: confirmation.createdAt,
+          }),
+        );
+      }
+    };
+
+    socket.on("receiveConsultationMessage", handleReceiveMessage);
+    socket.on("consultationMessageSent", handleMessageSent);
+
+    return () => {
+      socket.off("receiveConsultationMessage", handleReceiveMessage);
+      socket.off("consultationMessageSent", handleMessageSent);
+    };
+  }, [socket, consultationId, dispatch]);
+
+  // Handle send message
+  const handleSendMessage = () => {
+
+    if (!message.trim()) {
+      console.warn("⚠️ Message is empty");
+      return;
+    }
+
+    if (!consultationId) {
+      console.warn("⚠️ No consultation ID");
+      return;
+    }
+
+    if (!participant) {
+      console.warn("⚠️ No participant found");
+      return;
+    }
+
+    if (!currentParticipantId) {
+      console.warn("⚠️ No current participant ID found");
+      return;
+    }
+
+    if (!currentUser) {
+      console.warn("⚠️ No user found");
+      return;
+    }
+
+    if (!isConnected) {
+      console.warn("⚠️ Socket not connected");
+      return;
+    }
+
+    const tempId = `temp-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
+
+    const messageData = {
+      _id: tempId,
+      consultationId,
+      sender: currentParticipantId,
+      receiver: participant._id,
+      content: message.trim(),
+      tempId,
+    };
+
+    console.log("📤 Sending message:", messageData);
+
+    // Optimistically add to UI
+    dispatch(
+      addConsultationMessage({
+        ...messageData,
+        _id: tempId,
+        isTemp: true,
+        isRead: false,
+        status: "sent",
+        createdAt: new Date().toISOString(),
+      }),
+    );
+
+    // Send via socket
+    const sent = sendConsultationMessage(messageData);
+
+    console.log("Message sent:", sent);
+
+    if (sent) {
+      setMessage("");
+      inputRef.current?.focus();
+    } else {
+      console.error("❌ Failed to send message");
+    }
+  };
+
+  // Handle end session
+  // const handleEndSession = useCallback(() => {
+  //   dispatch(clearSelectedConsultation());
+  //   navigate("/dashboard/astrologer");
+  // }, [dispatch, navigate]);
+
+  // Handle back button
+  // const handleBack = useCallback(() => {
+  //   dispatch(clearSelectedConsultation());
+  //   navigate(-1);
+  // }, [dispatch, navigate]);
+
+  // Check if current user is the astrologer or user
+  const isAstrologer = currentUser?.role === "astrologer";
+
+  // Get astrologer details from participant
+  const astrologerDetails = isAstrologer
+    ? {
+      name: currentUser?.name || "Astrologer",
+      profilePicture: currentUser?.profilePicture,
+      description: participant?.bio || "Experienced astrologer",
+      isVerified: true,
+    }
+    : {
+      name: participant?.name || "Astrologer",
+      profilePicture: participant?.profilePicture,
+      description: participant?.bio || "Experienced astrologer",
+      isVerified: true,
+    };
 
   return (
     <AnimatedScreen>
@@ -101,7 +309,7 @@ const AstrologerChatScreen = () => {
               </View>
             </View>
 
-           <ReusableButton width={84} height={56} title="End" onPress={()=>{}} />
+            <ReusableButton width={84} height={56} title="End" onPress={() => { }} />
           </View>
 
 
@@ -113,7 +321,7 @@ const AstrologerChatScreen = () => {
 
         <FlatList
           data={messages}
-          keyExtractor={(item) => item.id}
+          keyExtractor={(item) => item?._id}
           renderItem={renderMessage}
           contentContainerStyle={styles.chatContainer}
           showsVerticalScrollIndicator={false}
@@ -124,11 +332,17 @@ const AstrologerChatScreen = () => {
         <View style={styles.inputWrapper}>
           <View style={styles.inputContainer}>
             <TextInput
+              ref={inputRef}
               placeholder="Type your question here..."
               placeholderTextColor="#9A9A9A"
               value={message}
               onChangeText={setMessage}
               style={styles.input}
+              onKeyPress={({ nativeEvent }) => {
+                if (nativeEvent.key === 'Enter') {
+                  handleSendMessage();
+                }
+              }}
             />
           </View>
 
@@ -138,6 +352,7 @@ const AstrologerChatScreen = () => {
             size={72}
             iconColor="#0D0D0D"
             onPress={() => {
+              handleSendMessage()
             }}
           />
         </View>
@@ -179,7 +394,7 @@ const styles = StyleSheet.create({
 
   name: {
     fontSize: 18,
-    fontFamily:"Satoshi-Medium",
+    fontFamily: "Satoshi-Medium",
     color: "#222",
   },
 
@@ -304,5 +519,19 @@ const styles = StyleSheet.create({
     fontSize: 10,
     color: "#8A8A8A",
     marginBottom: 12,
+  },
+  sendingText: {
+    fontSize: 8,
+    color: '#D4AF37', // Primary color
+  },
+
+  readText: {
+    fontSize: 8,
+    color: '#22C55E', // Green
+  },
+
+  sentText: {
+    fontSize: 8,
+    color: '#A3A3A3', // Neutral gray
   },
 });

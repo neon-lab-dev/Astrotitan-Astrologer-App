@@ -1,4 +1,3 @@
-import ArrowRoundedIcon from "@/assets/icons/actions/arrow-down-round.svg";
 import ChatIcon from "@/assets/icons/actions/bubble-chat.svg";
 import CalenderIcon from "@/assets/icons/navigation/calendar.svg";
 import CallIcon from "@/assets/icons/visual/call.svg";
@@ -16,7 +15,7 @@ import {
 } from "react-native";
 import { SatoshiText } from "../../../components/reusable/Text/SatoshiText";
 import { SansText } from "../../../components/reusable/Text/SansText";
-import LinearGradient from "react-native-linear-gradient";
+// import LinearGradient from "react-native-linear-gradient";
 import ContentSection from "../../../components/reusable/ContentSectoin/ContentSection";
 import AnimatedScreen from "../../../components/layout/AnimatedScreen";
 import ScreenWrapper from "../../../components/layout/ScreenWrapper";
@@ -24,72 +23,30 @@ import AppHeader from "../../../components/reusable/AppHeader/AppHeader";
 import AuthTitle from "../../../components/auth/AuthTitle";
 import ReusableButton from "../../../components/reusable/ReusableButton/ReusableButton";
 import { useNavigation } from "@react-navigation/native";
+import { useChangeBookingStatusMutation, useGetMyConsultationBookingsQuery } from "../../../redux/features/consultation/consultationApi";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { RootStackParamList } from "../../../navigation/types";
+import { setSelectedConsultation } from "../../../redux/features/consultation/consultationChatSlice";
+import { useDispatch } from "react-redux";
 
-const sessionsData = {
-  today: [
-    {
-      id: "1",
-      name: "Minal Sharma",
-      duration: "25 Mins",
-      status: "Completed",
-      rating: "4.8",
-      type: "Subscription",
-      image:
-        "https://images.unsplash.com/photo-1494790108377-be9c29b29330",
-    },
 
-    {
-      id: "2",
-      name: "Rahul Sharma",
-      duration: "0 Mins",
-      status: "Cancelled",
-      rating: "NA",
-      type: "Trial",
-      image:
-        "https://images.unsplash.com/photo-1500648767791-00dcc994a43e",
-    },
-
-    {
-      id: "3",
-      name: "Mrunal Kumari",
-      duration: "0 Mins",
-      status: "Missed",
-      rating: "NA",
-      type: "Subscription",
-      image:
-        "https://images.unsplash.com/photo-1438761681033-6461ffad8d80",
-    },
-  ],
-
-  yesterday: [
-    {
-      id: "4",
-      name: "Minal Sharma",
-      duration: "20 Mins",
-      status: "Completed",
-      rating: "4.9",
-      type: "Subscription",
-      image:
-        "https://images.unsplash.com/photo-1494790108377-be9c29b29330",
-    },
-  ],
-};
 
 const SessionsScreen = () => {
-      const navigation = useNavigation<any>();
+
+  type NavigationProp =
+    NativeStackNavigationProp<RootStackParamList>;
+
+  const navigation = useNavigation<NavigationProp>();
+  const dispatch=useDispatch();
   const [activeTab, setActiveTab] =
     useState("calls");
-
   const [containerWidth, setContainerWidth] =
     useState(0);
-
   const [refreshing, setRefreshing] =
     useState(false);
-
   const translateX = useRef(
     new Animated.Value(0)
   ).current;
-
   const opacity = useRef(
     new Animated.Value(1)
   ).current;
@@ -162,8 +119,8 @@ const SessionsScreen = () => {
         style={styles.card}
         onPress={() => {
           navigation.navigate(
-              "SessionHistoryDetailsScreen",
- {
+            "SessionHistoryDetailsScreen",
+            {
               sessionType:
                 "call",
 
@@ -214,22 +171,12 @@ const SessionsScreen = () => {
             <SatoshiText
               style={styles.userName}
             >
-              {item.name}
+              {item?.user?.fullName}
             </SatoshiText>
 
             <View style={styles.statusRow}>
-              <SansText style={styles.durationText  }>{item.duration}</SansText>
+              <SansText style={styles.durationText}>Request Type : {item?.method}</SansText>
 
-              <SansText
-                style={[
-                  styles.statusText,
-                  isCompleted && {color:  "#1B7726",},
-                  isCancelled && {color:  "#882715",},
-                  isMissed && {color: "#484848",},
-                ]}
-              >
-                • {item.status}
-              </SansText>
             </View>
 
             <View
@@ -240,7 +187,7 @@ const SessionsScreen = () => {
                 height={24}
               />
 
-              <SansText style={styles.ratingText }  >
+              <SansText style={styles.ratingText}  >
                 {item.rating}
               </SansText>
             </View>
@@ -249,7 +196,7 @@ const SessionsScreen = () => {
 
         {/* RIGHT */}
 
-        <View
+        {/* <View
           style={styles.rightSection}
         >
           {item.type ===
@@ -308,13 +255,75 @@ const SessionsScreen = () => {
             </View>
           )}
 
-          <ArrowRoundedIcon
-            width={18}
-            height={18}
-          />
-        </View>
+        
+        </View> */}
+        {item?.status === "pending" ? (<View style={{ gap: 6 }}>
+          <View style={{ flex: 1 }}><ReusableButton variant="solid" style={{ borderRadius: 12, paddingVertical: 0 }} textSize={12} height={24} onPress={() => { handleAccept(item?._id) }} title="Accept" /></View>
+          <View style={{ flex: 1 }}><ReusableButton variant="outline" style={{ borderRadius: 12, paddingVertical: 0 }} textSize={12} height={24} onPress={() => { handleReject(item?._id) }} title="Reject" /></View>
+
+        </View>) : (<View style={{ flex: 1 }}><ReusableButton variant="solid" style={{ borderRadius: 12, paddingVertical: 0 }} textSize={12} height={24}
+          onPress={() => { handleChatNow(item) }} title="Chat Now" /></View>)}
       </TouchableOpacity>
     );
+  };
+
+  const [changeBookingStatus, { isLoading }] = useChangeBookingStatusMutation();
+  const handleAccept = async (id) => {
+    try {
+      const payload = { status: "accepted" };
+      const response = await changeBookingStatus({
+        id: id,
+        data: payload,
+      }).unwrap();
+
+      if (response?.success) {
+      }
+    } catch (err: any) {
+      console.error("Error accepting booking:", err);
+    }
+  };
+
+  const handleReject = async (id) => {
+    try {
+      const payload = { status: "rejected" };
+      const response = await changeBookingStatus({
+        id: id,
+        data: payload,
+      }).unwrap();
+
+      if (response?.success) {
+      }
+    } catch (err: any) {
+      console.error("Error rejecting booking:", err);
+    }
+  };
+
+  const handleChatNow = (booking:any) => {
+    // Astrologer is the current user, participant is always the User
+    const participant = booking.user;
+
+    // ✅ Astrologer's Object ID (from booking.astrologer._id)
+    const currentParticipantId = booking.astrologer;
+
+    // Store selected consultation in Redux
+    dispatch(
+      setSelectedConsultation({
+        consultationId: booking._id,
+        currentParticipantId: currentParticipantId,
+        participant: {
+          _id: participant?._id,
+          name: participant?.fullName || participant?.displayName || "User",
+          firstName: participant?.firstName,
+          lastName: participant?.lastName,
+          profilePicture: participant?.profilePicture,
+          accountId: participant?.accountId,
+          role: "user", // Participant is always the user in astrologer panel
+        },
+      })
+    );
+
+    // Navigate to chat page
+    navigation.navigate("AstrologerChatScreen", { id: booking?._id })
   };
 
   const renderContent =
@@ -340,27 +349,7 @@ const SessionsScreen = () => {
                 styles.cardsContainer
               }
             >
-              {sessionsData.today.map(
-                renderSessionCard
-              )}
-            </View>
-          </View>
-
-          {/* YESTERDAY */}
-
-          <View
-            style={
-              styles.section
-            }
-          >
-            <ContentSection title="Yesterday" sectionStyle={{ marginBottom: 12 }} />
-
-            <View
-              style={
-                styles.cardsContainer
-              }
-            >
-              {sessionsData.yesterday.map(
+              {bookings.map(
                 renderSessionCard
               )}
             </View>
@@ -369,8 +358,13 @@ const SessionsScreen = () => {
       );
     };
 
+
+  const { data: consultationBookings } = useGetMyConsultationBookingsQuery({});
+  const bookings = consultationBookings?.data?.bookings?.data || [];
+  console.log(consultationBookings,"booking")
+
   return (
-    <AnimatedScreen>
+    // <AnimatedScreen>
       <ScreenWrapper>
         <View style={styles.container}>
           {/* HEADER */}
@@ -520,7 +514,7 @@ const SessionsScreen = () => {
           </ScrollView>
         </View>
       </ScreenWrapper>
-    </AnimatedScreen>
+    // </AnimatedScreen>
   );
 };
 

@@ -48,7 +48,7 @@ function AppContent() {
   return (
     <Provider store={store}>
       <GestureHandlerRootView style={{ flex: 1 }}>
-        <SafeAreaProvider>
+      
           <NavigationContainer>
             <ScreenWrapper>
               <RootNavigator />
@@ -56,9 +56,9 @@ function AppContent() {
 
             <GlobalBottomSheet />
             <GlobalModal />
-            <DevResetPanel />
+            {/* <DevResetPanel /> */}
           </NavigationContainer>
-        </SafeAreaProvider>
+   
       </GestureHandlerRootView>
     </Provider>
   );
