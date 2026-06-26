@@ -81,7 +81,7 @@ const styles = StyleSheet.create({
   },
 
   check: {
-    fontSize: 28,
+    fontSize: 21,
     color: "#6BAA2F",
   },
   image: {
@@ -92,7 +92,7 @@ const styles = StyleSheet.create({
   },
 
   title: {
-    fontSize: 18,
+    fontSize: 16,
     textAlign: "center",
     fontFamily: "Satoshi-Bold",
     color: "#0D0D0D",

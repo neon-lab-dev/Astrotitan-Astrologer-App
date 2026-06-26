@@ -552,7 +552,7 @@ const styles =
     },
 
     name: {
-      fontSize: 28,
+      fontSize: 21,
 
       color:
         "#FFFFFF",

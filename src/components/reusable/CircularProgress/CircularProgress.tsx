@@ -59,7 +59,7 @@ const CircularProgress: React.FC<Props> = ({
       <SatoshiText
         style={{
           position: 'absolute',
-          fontSize: 18,
+          fontSize: 16,
           fontFamily:"Satoshi-Bold"
         }}
       >

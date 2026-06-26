@@ -10,6 +10,7 @@ import SelectableOptions from "../SelectableOptions/SelectableOptions";
 import { SansText } from "../Text/SansText";
 import BottomSheetService from "../../../redux/features/ui/GlobalSheet/BottomSheetService";
 import Ionicons from "@react-native-vector-icons/ionicons";
+import { ScrollView } from "react-native-gesture-handler";
 
 type InputVariant = "text" | "password" | "phone" | "dropdown" | "multiline" | "icon";
 
@@ -287,7 +288,7 @@ const styles = StyleSheet.create({
   },
 
   label: {
-    fontSize: 18,
+    fontSize: 16,
     color: "#0D0D0D",
     marginBottom: 8,
     lineHeight: 26,
@@ -313,7 +314,7 @@ const styles = StyleSheet.create({
   },
 
   codeText: {
-    fontSize: 16,
+    fontSize: 14,
     color: "#575757",
     includeFontPadding: false, // 🔥 ANDROID FIX
     textAlignVertical: "center",
@@ -324,7 +325,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     borderWidth: 1.2,
     borderColor: "#D4AF37",
-    fontSize: 15,
+    fontSize: 14,
     backgroundColor: "#E9D8A6",
     flex: 1,
     paddingHorizontal: 16,
@@ -373,14 +374,14 @@ const styles = StyleSheet.create({
   },
 
   dropdownText: {
-    fontSize: 15,
+    fontSize: 14,
     color: "#111",
   },
 
   multilineInput: {
     minHeight: 100,
     maxHeight: 460,
-    height:260,
+    height: 260,
     paddingTop: 12,
     paddingBottom: 12,
     textAlignVertical: "top",
@@ -437,15 +438,14 @@ const DropdownSheetContent = ({
     >
       <SansText
         style={{
-          fontSize: 24,
+          fontSize: 12,
           color: "#111",
           fontFamily: "Satoshi-Bold",
         }}
       >
         Select Option
       </SansText>
-
-      <SelectableOptions
+      <ScrollView style={{ paddingBottom: 42 }}><SelectableOptions
         options={options}
         value={selected}
         multiple={multiple}
@@ -454,7 +454,8 @@ const DropdownSheetContent = ({
 
           onSubmit(val);
         }}
-      />
+      /></ScrollView>
+
     </View>
   );
 };

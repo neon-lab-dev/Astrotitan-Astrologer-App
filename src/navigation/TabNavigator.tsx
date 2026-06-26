@@ -26,7 +26,9 @@ const hiddenRoutes = [
   "AstrologerDetailsScreen",
   "AstrologerChatScreen",
   "NotificationScreen",
-  "SelectContentType"
+  "SelectContentType",
+  "CreateArticleScreen",
+  "PersonalInformation"
 ];
 
 function shouldHideTabBar(route: any) {

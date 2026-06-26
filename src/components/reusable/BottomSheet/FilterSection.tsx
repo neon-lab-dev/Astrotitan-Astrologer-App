@@ -204,7 +204,7 @@ const styles = StyleSheet.create({
   },
 
   tabText: {
-    fontSize: 18,
+    fontSize: 16,
   },
 
   activeText: {
@@ -225,12 +225,12 @@ const styles = StyleSheet.create({
   },
 
   optionText: {
-    fontSize: 16,
+    fontSize: 14,
   },
 
   checkbox: {
-    width: 18,
-    height: 18,
+    width: 16,
+    height: 16,
     borderWidth: 2,
     borderColor: "#000",
     borderRadius: 3,

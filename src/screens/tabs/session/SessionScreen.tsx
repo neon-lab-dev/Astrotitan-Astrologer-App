@@ -1,19 +1,15 @@
 import ChatIcon from "@/assets/icons/actions/bubble-chat.svg";
 import CalenderIcon from "@/assets/icons/navigation/calendar.svg";
 import CallIcon from "@/assets/icons/visual/call.svg";
-import StarIcon from "@/assets/icons/visual/star.svg";
 import { useMemo, useRef, useState } from "react";
 import {
   Animated,
-  Image,
   Pressable,
   RefreshControl,
   ScrollView,
   StyleSheet,
-  TouchableOpacity,
   View,
 } from "react-native";
-import { SatoshiText } from "../../../components/reusable/Text/SatoshiText";
 import { SansText } from "../../../components/reusable/Text/SansText";
 // import LinearGradient from "react-native-linear-gradient";
 import ContentSection from "../../../components/reusable/ContentSectoin/ContentSection";
@@ -28,6 +24,9 @@ import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../../../navigation/types";
 import { setSelectedConsultation } from "../../../redux/features/consultation/consultationChatSlice";
 import { useDispatch } from "react-redux";
+import SessionCardSkeleton from "../../../components/tabs/session/SessionCard/SessionCardSkeleton";
+import SessionCard from "../../../components/tabs/session/SessionCard/SessionCard";
+import { formatDate } from "../../../utils/validators/dateValidators";
 
 
 
@@ -37,7 +36,7 @@ const SessionsScreen = () => {
     NativeStackNavigationProp<RootStackParamList>;
 
   const navigation = useNavigation<NavigationProp>();
-  const dispatch=useDispatch();
+  const dispatch = useDispatch();
   const [activeTab, setActiveTab] =
     useState("calls");
   const [containerWidth, setContainerWidth] =
@@ -97,178 +96,10 @@ const SessionsScreen = () => {
     }).start();
   };
 
-  const renderSessionCard = (
-    item: any
-  ) => {
-    const isCompleted =
-      item.status ===
-      "Completed";
 
-    const isCancelled =
-      item.status ===
-      "Cancelled";
-
-    const isMissed =
-      item.status ===
-      "Missed";
-
-    return (
-      <TouchableOpacity
-        key={item.id}
-        activeOpacity={0.85}
-        style={styles.card}
-        onPress={() => {
-          navigation.navigate(
-            "SessionHistoryDetailsScreen",
-            {
-              sessionType:
-                "call",
-
-              userName:
-                item.name,
-
-              date:
-                "17 February 2026",
-
-              time:
-                "10:30 AM",
-
-              duration:
-                item.duration,
-
-              status:
-                item.status,
-
-              rating:
-                item.rating,
-
-              subscriptionType:
-                item.type,
-
-              image:
-                item.image,
-            },
-          );
-        }}
-      >
-        {/* LEFT */}
-
-        <View
-          style={styles.leftSection}
-        >
-          <Image
-            source={{
-              uri: item.image,
-            }}
-            style={styles.userImage}
-          />
-
-          <View
-            style={{
-              flex: 1,
-            }}
-          >
-            <SatoshiText
-              style={styles.userName}
-            >
-              {item?.user?.fullName}
-            </SatoshiText>
-
-            <View style={styles.statusRow}>
-              <SansText style={styles.durationText}>Request Type : {item?.method}</SansText>
-
-            </View>
-
-            <View
-              style={styles.ratingRow}
-            >
-              <StarIcon
-                width={24}
-                height={24}
-              />
-
-              <SansText style={styles.ratingText}  >
-                {item.rating}
-              </SansText>
-            </View>
-          </View>
-        </View>
-
-        {/* RIGHT */}
-
-        {/* <View
-          style={styles.rightSection}
-        >
-          {item.type ===
-            "Subscription" ? (
-            <LinearGradient
-              colors={[
-                "#D4AF37",
-                "#E6D18B",
-              ]}
-              start={{
-                x: 1,
-                y: 0,
-              }}
-              end={{
-                x: 0,
-                y: 0,
-              }}
-              style={styles.tag}
-            >
-              <SansText
-                style={
-                  styles.tagText
-                }
-              >
-                {item.type}
-              </SansText>
-            </LinearGradient>
-          ) : (
-            <View
-              style={[
-                styles.tag,
-
-                {
-                  backgroundColor:
-                    "transparent",
-
-                  borderWidth: 1,
-
-                  borderColor:
-                    "#D4AF37",
-                },
-              ]}
-            >
-              <SansText
-                style={[
-                  styles.tagText,
-
-                  {
-                    color:
-                      "#7A5B00",
-                  },
-                ]}
-              >
-                {item.type}
-              </SansText>
-            </View>
-          )}
-
-        
-        </View> */}
-        {item?.status === "pending" ? (<View style={{ gap: 6 }}>
-          <View style={{ flex: 1 }}><ReusableButton variant="solid" style={{ borderRadius: 12, paddingVertical: 0 }} textSize={12} height={24} onPress={() => { handleAccept(item?._id) }} title="Accept" /></View>
-          <View style={{ flex: 1 }}><ReusableButton variant="outline" style={{ borderRadius: 12, paddingVertical: 0 }} textSize={12} height={24} onPress={() => { handleReject(item?._id) }} title="Reject" /></View>
-
-        </View>) : (<View style={{ flex: 1 }}><ReusableButton variant="solid" style={{ borderRadius: 12, paddingVertical: 0 }} textSize={12} height={24}
-          onPress={() => { handleChatNow(item) }} title="Chat Now" /></View>)}
-      </TouchableOpacity>
-    );
-  };
 
   const [changeBookingStatus, { isLoading }] = useChangeBookingStatusMutation();
-  const handleAccept = async (id) => {
+  const handleAccept = async (id:any) => {
     try {
       const payload = { status: "accepted" };
       const response = await changeBookingStatus({
@@ -283,7 +114,7 @@ const SessionsScreen = () => {
     }
   };
 
-  const handleReject = async (id) => {
+  const handleReject = async (id:any) => {
     try {
       const payload = { status: "rejected" };
       const response = await changeBookingStatus({
@@ -298,32 +129,27 @@ const SessionsScreen = () => {
     }
   };
 
-  const handleChatNow = (booking:any) => {
-    // Astrologer is the current user, participant is always the User
+  const handleChatNow = (booking: any) => {
     const participant = booking.user;
-
-    // ✅ Astrologer's Object ID (from booking.astrologer._id)
     const currentParticipantId = booking.astrologer;
-
-    // Store selected consultation in Redux
     dispatch(
-      setSelectedConsultation({
-        consultationId: booking._id,
-        currentParticipantId: currentParticipantId,
-        participant: {
-          _id: participant?._id,
-          name: participant?.fullName || participant?.displayName || "User",
-          firstName: participant?.firstName,
-          lastName: participant?.lastName,
-          profilePicture: participant?.profilePicture,
-          accountId: participant?.accountId,
-          role: "user", // Participant is always the user in astrologer panel
-        },
-      })
+        setSelectedConsultation({
+            consultationId: booking._id,
+            currentParticipantId: currentParticipantId,
+            participant: {
+                _id: participant?.accountId,
+                name: participant?.fullName,
+                firstName: participant?.firstName,
+                lastName: participant?.lastName,
+                profilePicture: participant?.profilePicture || "",
+                accountId: participant?.accountId,
+                role: "user",
+            },
+        })
     );
 
     // Navigate to chat page
-    navigation.navigate("AstrologerChatScreen", { id: booking?._id })
+    navigation.navigate("AstrologerChatScreen", { id: booking?._id,profilePicture:booking?.user?.profilePicture,name:booking?.user?.fullName, consultationFor: booking.consultationFor, })
   };
 
   const renderContent =
@@ -349,9 +175,34 @@ const SessionsScreen = () => {
                 styles.cardsContainer
               }
             >
-              {bookings.map(
-                renderSessionCard
-              )}
+              <View style={styles.cardsContainer}>
+                {isBookingLoading ? (
+                  <SessionCardSkeleton />
+                ) : (
+                  bookings.map((item: any) => (
+                    <SessionCard
+                      key={item._id}
+                      item={item}
+                      onPress={() =>
+                        navigation.navigate("SessionHistoryDetailsScreen", {
+                          sessionType: item.method,
+                          userName: item?.user?.fullName,
+                          date: formatDate(item.createdAt),
+                          time: "10:30 AM",
+                          duration: item?.duration,
+                          status: item?.status,
+                          rating: item?.rating,
+                          subscriptionType: item?.type,
+                          image: item?.user?.profilePicture,
+                        })
+                      }
+                      onAccept={handleAccept}
+                      onReject={handleReject}
+                      onChat={handleChatNow}
+                    />
+                  ))
+                )}
+              </View>
             </View>
           </View>
         </View>
@@ -359,161 +210,163 @@ const SessionsScreen = () => {
     };
 
 
-  const { data: consultationBookings } = useGetMyConsultationBookingsQuery({});
-  const bookings = consultationBookings?.data?.bookings?.data || [];
-  console.log(consultationBookings,"booking")
+  const {
+    data: consultationBookings,
+    isLoading: isBookingLoading,refetch:bookingRefetch
+  } = useGetMyConsultationBookingsQuery({});
+  const bookings = consultationBookings?.data?.data || [];
 
   return (
     // <AnimatedScreen>
-      <ScreenWrapper>
-        <View style={styles.container}>
-          {/* HEADER */}
+    <ScreenWrapper>
+      <View style={styles.container}>
+        {/* HEADER */}
 
-          <AppHeader
-            showBack={false}
-          >
-            <AuthTitle title="Sessions">
-              <SansText>
-                Review your
-                completed chat
-                and call
-                sessions.
-              </SansText>
-            </AuthTitle>
+        <AppHeader
+          showBack={false}
+        >
+          <AuthTitle title="Sessions">
+            <SansText>
+              Review your
+              completed chat
+              and call
+              sessions.
+            </SansText>
+          </AuthTitle>
 
-            {/* TABS */}
+          {/* TABS */}
 
-            <View
-              style={
-                styles.tabsContainer
-              }
-              onLayout={(e) =>
-                setContainerWidth(
-                  e.nativeEvent.layout.width
-                )
-              }
-            >
-              {tabs.map(
-                (tab, index) => {
-                  const isActive =
-                    activeTab ===
-                    tab.key;
-
-                  const Icon =
-                    tab.icon;
-
-                  return (
-                    <Pressable
-                      key={tab.key}
-                      style={
-                        styles.tabItem
-                      }
-                      onPress={() =>
-                        handleTabPress(
-                          index,
-                          tab.key
-                        )
-                      }
-                    >
-                      <View
-                        style={
-                          styles.tabInner
-                        }
-                      >
-                        <Icon
-                          width={18}
-                          height={18}
-                        />
-
-                        <SansText
-                          style={[
-                            styles.tabText,
-
-                            isActive &&
-                            styles.activeTabText,
-                          ]}
-                        >
-                          {
-                            tab.label
-                          }
-                        </SansText>
-                      </View>
-                    </Pressable>
-                  );
-                }
-              )}
-
-              <Animated.View
-                style={[
-                  styles.animatedIndicator,
-                  {
-                    width:
-                      TAB_WIDTH,
-
-                    transform: [
-                      {
-                        translateX,
-                      },
-                    ],
-                  },
-                ]}
-              />
-            </View>
-          </AppHeader>
-
-          {/* BODY */}
           <View
             style={
-              styles.filterRow
+              styles.tabsContainer
+            }
+            onLayout={(e) =>
+              setContainerWidth(
+                e.nativeEvent.layout.width
+              )
             }
           >
-            <View />
+            {tabs.map(
+              (tab, index) => {
+                const isActive =
+                  activeTab ===
+                  tab.key;
 
-            <ReusableButton title="Date Filter"
-              onPress={() => { }}
-              variant="outline"
-              iconPosition="left"
-              // iconName={CalenderIcon} 
-              icon={<CalenderIcon
-                width={24}
-                height={24}
-              />}
-              iconSize={20}
-              width={160}
-              style={{ borderRadius: 16 }} />
+                const Icon =
+                  tab.icon;
+
+                return (
+                  <Pressable
+                    key={tab.key}
+                    style={
+                      styles.tabItem
+                    }
+                    onPress={() =>
+                      handleTabPress(
+                        index,
+                        tab.key
+                      )
+                    }
+                  >
+                    <View
+                      style={
+                        styles.tabInner
+                      }
+                    >
+                      <Icon
+                        width={18}
+                        height={18}
+                      />
+
+                      <SansText
+                        style={[
+                          styles.tabText,
+
+                          isActive &&
+                          styles.activeTabText,
+                        ]}
+                      >
+                        {
+                          tab.label
+                        }
+                      </SansText>
+                    </View>
+                  </Pressable>
+                );
+              }
+            )}
+
+            <Animated.View
+              style={[
+                styles.animatedIndicator,
+                {
+                  width:
+                    TAB_WIDTH,
+
+                  transform: [
+                    {
+                      translateX,
+                    },
+                  ],
+                },
+              ]}
+            />
           </View>
-          <ScrollView
-            showsVerticalScrollIndicator={
-              false
-            }
-            refreshControl={
-              <RefreshControl
-                refreshing={
-                  refreshing
-                }
-                tintColor="#D4AF37"
-                colors={[
-                  "#D4AF37",
-                ]}
-                progressBackgroundColor="#FBF7EB"
-              />
-            }
-            contentContainerStyle={{
-              paddingHorizontal: 16,
-              paddingTop: 18,
-              paddingBottom: 140,
+        </AppHeader>
+
+        {/* BODY */}
+        <View
+          style={
+            styles.filterRow
+          }
+        >
+          <View />
+
+          <ReusableButton title="Date Filter"
+            onPress={() => { }}
+            variant="outline"
+            iconPosition="left"
+            // iconName={CalenderIcon} 
+            icon={<CalenderIcon
+              width={24}
+              height={24}
+            />}
+            iconSize={20}
+            width={160}
+            style={{ borderRadius: 16 }} />
+        </View>
+        <ScrollView
+          showsVerticalScrollIndicator={
+            false
+          }
+          refreshControl={
+            <RefreshControl
+              refreshing={
+                refreshing
+              }
+              tintColor="#D4AF37"
+              colors={[
+                "#D4AF37",
+              ]}
+              progressBackgroundColor="#FBF7EB"
+            />
+          }
+          contentContainerStyle={{
+            paddingHorizontal: 16,
+            paddingTop: 18,
+            paddingBottom: 140,
+          }}
+        >
+          <Animated.View
+            style={{
+              opacity,
             }}
           >
-            <Animated.View
-              style={{
-                opacity,
-              }}
-            >
-              {renderContent()}
-            </Animated.View>
-          </ScrollView>
-        </View>
-      </ScreenWrapper>
+            {renderContent()}
+          </Animated.View>
+        </ScrollView>
+      </View>
+    </ScreenWrapper>
     // </AnimatedScreen>
   );
 };
@@ -624,7 +477,7 @@ const styles =
     },
 
     sectionTitle: {
-      fontSize: 18,
+      fontSize: 16,
       color: "#0D0D0D",
       fontFamily:
         "Satoshi-Bold",
@@ -701,7 +554,7 @@ const styles =
     },
 
     ratingText: {
-      fontSize: 18,
+      fontSize: 16,
       color: "#0D0D0D",
       fontFamily:
         "GeneralSans-Bold",

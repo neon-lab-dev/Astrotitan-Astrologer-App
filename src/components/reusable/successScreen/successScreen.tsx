@@ -116,11 +116,8 @@ const styles = StyleSheet.create({
 
   description: {
     marginTop: 24,
-
     fontSize: 16,
-
     lineHeight: 26,
-
     color: "#5B5B5B",
   },
 

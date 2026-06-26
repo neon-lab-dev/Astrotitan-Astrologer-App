@@ -151,20 +151,12 @@ const RaiseQuery = () => {
                     images || [],
             };
 
-            console.log(
-                "QUERY PAYLOAD:",
-                payload
-            );
 
             const response =
                 await raiseQuery(
                     payload
                 ).unwrap();
 
-            console.log(
-                "QUERY RESPONSE:",
-                response
-            );
 
             navigation.replace("RaiseQuerySuccess",{slug:response.data.ticketId})
         } catch (error: any) {

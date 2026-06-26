@@ -54,11 +54,11 @@ const SelectableOptions: React.FC<Props> = ({
   return (
     <View>
       {label && (
-          <SatoshiText style={{ fontSize: 28, color: '#0D0D0D', fontFamily: 'Satoshi-Bold', marginBottom: 8 }}>{label}</SatoshiText>
+          <SatoshiText style={{ fontSize: 21, color: '#0D0D0D', fontFamily: 'Satoshi-Bold', marginBottom: 8 }}>{label}</SatoshiText>
        
       )}
       {description && (
-          <SansText style={{ fontSize: 18, color: '#0D0D0D',marginBottom: 16 }}>{description}</SansText>
+          <SansText style={{ fontSize: 16, color: '#0D0D0D',marginBottom: 16 }}>{description}</SansText>
        
       )}
       <View style={[
@@ -139,7 +139,7 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   text: {
-    fontSize: 16,
+    fontSize: 14,
     color: '#111',
   },
   circle: {

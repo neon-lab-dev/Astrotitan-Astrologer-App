@@ -130,9 +130,6 @@ export const authApi = baseApi.injectEndpoints({
         if (timeOfBirth) {
           formData.append("timeOfBirth", timeOfBirth);
         }
-
-        console.log("UPLOADING FILE:", file);
-
         return {
           url: "/account/update-profile",
           method: "PUT",

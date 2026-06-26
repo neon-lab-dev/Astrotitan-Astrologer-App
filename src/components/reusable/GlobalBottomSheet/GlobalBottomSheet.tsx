@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect } from "react";
 import { BackHandler, Keyboard, StyleSheet, TouchableOpacity, View } from "react-native";
-import Animated, {
+import {
   useAnimatedStyle,
   useSharedValue,
   withTiming,
@@ -35,16 +35,16 @@ export default function GlobalBottomSheet() {
     translateY.value = withTiming(sheet.visible ? 0 : 800, { duration: 280 });
   }, [sheet.visible, translateY]);
   const close = useCallback(() => {
-  translateY.value = withTiming(800, { duration: 250 });
+    translateY.value = withTiming(800, { duration: 250 });
 
-  setTimeout(() => {
-    BottomSheetService.close();
+    setTimeout(() => {
+      BottomSheetService.close();
 
-    if (sheet.redirectTo) {
-      navigation.navigate(sheet.redirectTo);
-    }
-  }, 250);
-}, [sheet.redirectTo, navigation, translateY]);
+      if (sheet.redirectTo) {
+        navigation.navigate(sheet.redirectTo);
+      }
+    }, 250);
+  }, [sheet.redirectTo, navigation, translateY]);
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [
       {
@@ -74,7 +74,7 @@ export default function GlobalBottomSheet() {
   );
 
   return (
-    
+
     <View
       pointerEvents={sheet.visible ? "auto" : "none"}
       style={[styles.root, { opacity: sheet.visible ? 1 : 0 }]}
@@ -86,25 +86,24 @@ export default function GlobalBottomSheet() {
         onPress={close}
       />
 
-      <Animated.View
-  style={[
-    styles.sheet,
-    animatedStyle,
-    sheet.height ? { height: sheet.height } : { maxHeight: "85%" },
-  ]}
->
-  {sheet.hasGradient ? (
-    <LinearGradient 
-      colors={["#EDDEAD", "#F1E8C9", "#F5F5F5"]}
-      locations={[0, 0.45, 1]}
-      style={{ flex: 1 }}
-    >
-      {sheet.content}
-    </LinearGradient>
-  ) : (
-    sheet.content
-  )}
-</Animated.View>
+      <View
+        style={[
+          styles.sheet,
+          sheet.height ? { height: sheet.height } : { maxHeight: "85%" },
+        ]}
+      >
+        {sheet.hasGradient ? (
+          <LinearGradient
+            colors={["#EDDEAD", "#F1E8C9", "#F5F5F5"]}
+            locations={[0, 0.45, 1]}
+            style={{ flex: 1 }}
+          >
+            {sheet.content}
+          </LinearGradient>
+        ) : (
+          sheet.content
+        )}
+      </View>
     </View>
   );
 }
@@ -124,13 +123,13 @@ const styles = StyleSheet.create({
     ], // half of width
   },
   root: {
-  ...StyleSheet.absoluteFill,
+    ...StyleSheet.absoluteFill,
     zIndex: 99999,
     elevation: 99999,
     justifyContent: "flex-end",
   },
   backdrop: {
-  ...StyleSheet.absoluteFill,
+    ...StyleSheet.absoluteFill,
     backgroundColor: "rgba(0,0,0,0.5)",
   },
   // sheet: {
@@ -143,7 +142,7 @@ const styles = StyleSheet.create({
   sheet: {
     position: "relative",
     backgroundColor: "#F9F9F9",
-    overflow:"hidden",
+    overflow: "hidden",
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
 

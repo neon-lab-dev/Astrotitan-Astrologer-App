@@ -87,7 +87,7 @@ const styles = StyleSheet.create({
     },
 
     label: {
-        fontSize: 18,
+        fontSize: 16,
         fontFamily: "Satoshi-Bold",
         color: "#4A4A4A",
     },

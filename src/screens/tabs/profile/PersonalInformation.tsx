@@ -38,13 +38,13 @@ import { isValidDate } from "../../../utils/validators/dateValidators";
 import ReusableButton from "../../../components/reusable/ReusableButton/ReusableButton";
 
 type FormValues = {
+  displayName: string;
   firstName: string;
   lastName: string;
   gender: string;
-  intents: string[];
+  areaOfPractice: string[];
   phoneNumber: string;
   email: string;
-  dateOfBirth: string;
 };
 
 const PersonalInformation =
@@ -69,7 +69,6 @@ const PersonalInformation =
       },
     ] =
       useUpdateProfileMutation();
-
     const profile =
       userData?.data
         ?.profile;
@@ -89,21 +88,20 @@ const PersonalInformation =
     } =
       useForm<FormValues>({
         defaultValues: {
+          displayName: "",
           firstName: "",
 
           lastName: "",
 
           gender: "",
 
-          intents: [],
+          areaOfPractice: [],
 
           phoneNumber:
             "",
 
           email: "",
 
-          dateOfBirth:
-            "",
         },
       });
 
@@ -127,6 +125,11 @@ const PersonalInformation =
         return;
 
       setValue(
+        "displayName",
+        profile?.displayName ||
+        ""
+      );
+      setValue(
         "firstName",
         profile?.firstName ||
         ""
@@ -144,16 +147,16 @@ const PersonalInformation =
         ""
       );
 
-      let formattedIntents: string[] =
+      let formattedAreaOfPractice: string[] =
         [];
 
       if (
         Array.isArray(
-          profile?.intents
+          profile?.areaOfPractice
         )
       ) {
-        formattedIntents =
-          profile.intents.flatMap(
+        formattedAreaOfPractice =
+          profile.areaOfPractice.flatMap(
             (
               item: string
             ) => {
@@ -178,8 +181,8 @@ const PersonalInformation =
       }
 
       setValue(
-        "intents",
-        formattedIntents
+        "areaOfPractice",
+        formattedAreaOfPractice
       );
 
       setValue(
@@ -194,32 +197,6 @@ const PersonalInformation =
         ""
       );
 
-      if (
-        profile?.dateOfBirth
-      ) {
-        const date =
-          new Date(
-            profile.dateOfBirth
-          );
-
-        const formattedDate = `${String(
-          date.getDate()
-        ).padStart(
-          2,
-          "0"
-        )}/${String(
-          date.getMonth() +
-          1
-        ).padStart(
-          2,
-          "0"
-        )}/${date.getFullYear()}`;
-
-        setValue(
-          "dateOfBirth",
-          formattedDate
-        );
-      }
     }, [
       profile,
       account,
@@ -238,11 +215,6 @@ const PersonalInformation =
             quality: 0.7,
             selectionLimit: 1,
           });
-
-          console.log(
-            "IMAGE RESULT:",
-            result
-          );
 
           if (result.assets?.length) {
             setProfileImage(result.assets[0]);
@@ -263,26 +235,12 @@ const PersonalInformation =
         data: FormValues
       ) => {
         try {
-          console.log(
-            "PROFILE IMAGE:",
-            profileImage
-          );
-          console.log(
-            "IMAGE URI:",
-            profileImage?.uri
+           console.log(
+              data,"form data"
+          
           );
 
-          console.log(
-            "IMAGE TYPE:",
-            profileImage?.mimeType
-          );
-
-          console.log(
-            "IMAGE NAME:",
-            profileImage?.fileName
-          );
-
-          const response =
+       
             await updateProfile(
               {
                 file:
@@ -294,25 +252,20 @@ const PersonalInformation =
                 lastName:
                   data.lastName,
 
-                gender:
+                guidance:
                   data.gender,
 
-                intents:
-                  data.intents,
+                areaOfPractice:
+                  data.areaOfPractice,
 
                 phoneNumber:
                   data.phoneNumber,
 
-                dateOfBirth:
-                  data.dateOfBirth,
+              
               }
             ).unwrap();
 
-          console.log(
-            "UPDATE RESPONSE:",
-            response
-          );
-
+          
           const meRes =
             await refetch();
 
@@ -324,15 +277,6 @@ const PersonalInformation =
             updateUser(
               latestUser
             )
-          );
-
-          console.log(
-            "LATEST USER:",
-            latestUser
-          );
-
-          console.log(
-            "PROFILE UPDATED SUCCESSFULLY"
           );
         } catch (
         error
@@ -359,7 +303,7 @@ const PersonalInformation =
                 }}
               >
                 Help us tailor
-                guidance that
+                areaOfPractice that
                 feels more
                 relevant to
                 you.
@@ -475,6 +419,14 @@ const PersonalInformation =
                 control={
                   control
                 }
+                name="displayName"
+                label="Display Name"
+                placeholder="Enter Display Name"
+              />
+              <FormInput
+                control={
+                  control
+                }
                 name="firstName"
                 label="First Name"
                 placeholder="Enter first name"
@@ -526,17 +478,17 @@ const PersonalInformation =
                 ]}
               />
 
-              {/* INTENTS */}
+              {/* areaOfPractice */}
 
               <FormInput
                 control={
                   control
                 }
-                name="intents"
+                name="areaOfPractice"
                 variant="dropdown"
                 multiple
-                label="Intent"
-                placeholder="Select intent"
+                label="Area Of Practice"
+                placeholder="Select Area Of Practice"
                 dropdownData={[
                   {
                     label:
@@ -620,24 +572,7 @@ const PersonalInformation =
 
               {/* DOB */}
 
-              <FormInput
-                control={
-                  control
-                }
-                name="dateOfBirth"
-                label="Date of birth"
-                placeholder="DD/MM/YYYY"
-                rules={{
-                  validate:
-                    (
-                      value: string
-                    ) =>
-                      isValidDate(
-                        value
-                      ) ||
-                      "Invalid DOB",
-                }}
-              />
+              
             </ScrollView>
 
             {/* BUTTON */}

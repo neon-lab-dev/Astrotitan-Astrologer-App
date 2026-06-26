@@ -17,7 +17,7 @@ import { Storage } from "../../../services/storage/storage";
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { RootStackParamList } from "../../../navigation/types";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import RequestCard from "../../../components/tabs/home/home/RequestCard";
+import RequestCard from "../../../components/tabs/home/home/RequestCard/RequestCard";
 import ReusableButton from "../../../components/reusable/ReusableButton/ReusableButton";
 import EditIcon from '@/assets/icons/actions/edit.svg';
 import AstrologerCardSkeleton from "../../../components/tabs/astrologer/astrologer/AstrologerCard/AstrologerCardSkeleton";
@@ -25,11 +25,9 @@ import { AstrologerCard } from "../../../components/tabs/astrologer/astrologer/A
 import { useGetAstrologersQuery } from "../../../redux/features/astrologer/astrologerApi";
 import AnimatedScreen from "../../../components/layout/AnimatedScreen";
 import { useGetMyConsultationBookingsQuery } from "../../../redux/features/consultation/consultationApi";
+import RequestCardSkeleton from "../../../components/tabs/home/home/RequestCard/RequestCardSkeleton";
 const HomeScreen = () => {
   const user = useSelector(selectUser);
-  useEffect(() => {
-    console.log("AUTH CHANGED", user);
-  }, [user]);
   const [refreshing, setRefreshing] = useState(false);
   const { data: userData } = useGetMeQuery({});
   const profile = userData?.data?.profile;
@@ -39,30 +37,6 @@ const HomeScreen = () => {
     NativeStackNavigationProp<RootStackParamList>;
 
   const navigation = useNavigation<NavigationProp>();
-  const chatRequests = [
-    {
-      id: "1",
-      name: "Meera Joshi",
-      image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330",
-    },
-
-    {
-      id: "2",
-      name: "Rahul Sharma",
-      image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e",
-    },
-    {
-      id: "3",
-      name: "Meera Joshi",
-      image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330",
-    },
-
-    {
-      id: "4",
-      name: "Rahul Sharma",
-      image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e",
-    },
-  ];
   const DAYS = [
     { short: "Mon", full: "Monday" },
     { short: "Tue", full: "Tuesday" },
@@ -75,8 +49,8 @@ const HomeScreen = () => {
   const { data, isLoading, isFetching, refetch } = useGetAstrologersQuery({
     isIdentityVerified: true,
   });
-  const { data: consultationBookings } = useGetMyConsultationBookingsQuery({});
-  const bookings = consultationBookings?.data?.bookings?.data || [];
+  const { data: consultationBookings, isLoading: isBookingLoading, isFetching: isBookingFetching, refetch: refetchBooking } = useGetMyConsultationBookingsQuery({});
+  const bookings = consultationBookings?.data?.data || [];
   const astrologers = data?.data?.astrologers || [];
   const fetchLatestUser = useCallback(async () => {
     try {
@@ -96,6 +70,7 @@ const HomeScreen = () => {
     try {
       setRefreshing(true);
       refetch();
+      refetchBooking();
       fetchLatestUser();
       await Promise.all([
       ]);
@@ -105,7 +80,6 @@ const HomeScreen = () => {
       setRefreshing(false);
     }
   }, []);
-  console.log(user, "user")
   useFocusEffect(
     useCallback(() => {
       fetchLatestUser();
@@ -180,13 +154,21 @@ const HomeScreen = () => {
                 paddingHorizontal: 16,
               }}
             >
-              {bookings?.map((item) => (
-                <RequestCard
-                  key={item._id}
-                  item={item}
-                  isVerified={user?.profile?.isIdentityVerified}
-                />
-              ))}
+              {isBookingLoading ? (
+                <>
+                  <RequestCardSkeleton />
+                  <RequestCardSkeleton />
+                  <RequestCardSkeleton />
+                </>
+              ) : (
+                bookings?.map((item) => (
+                  <RequestCard
+                    key={item._id}
+                    item={item}
+                    isVerified={user?.profile?.isIdentityVerified}
+                  />
+                ))
+              )}
             </ScrollView>
           </View>
 
@@ -334,13 +316,13 @@ const styles = StyleSheet.create({
   },
 
   greeting: {
-    fontSize: 18,
+    fontSize: 16,
     color: "#4A4A4A",
     marginBottom: 4,
   },
 
   userName: {
-    fontSize: 22,
+    fontSize: 21,
     color: "#111",
     fontFamily: "Satoshi-Bold",
   },
@@ -366,7 +348,7 @@ const styles = StyleSheet.create({
   },
 
   profileTitle: {
-    fontSize: 24,
+    fontSize: 21,
     color: "#111",
     fontFamily: "Satoshi-Bold",
   },
@@ -393,7 +375,7 @@ const styles = StyleSheet.create({
   },
 
   sectionTitle: {
-    fontSize: 20,
+    fontSize: 21,
     color: "#111",
     fontFamily: "Satoshi-Bold",
   },
@@ -422,13 +404,13 @@ const styles = StyleSheet.create({
   },
 
   timeText: {
-    fontSize: 24,
+    fontSize: 21,
     color: "#4A4A4A",
     fontFamily: "Satoshi-Bold",
   },
 
   dash: {
-    fontSize: 22,
+    fontSize: 21,
     color: "#8A8A8A",
   },
 
@@ -493,7 +475,7 @@ const styles = StyleSheet.create({
   },
 
   editAvailabilityText: {
-    fontSize: 15,
+    fontSize: 14,
     color: "#111",
     fontFamily: "GeneralSans-Medium",
   },

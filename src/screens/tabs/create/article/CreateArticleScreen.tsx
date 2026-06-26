@@ -152,42 +152,42 @@ const pickImage = async () => {
   const handlePublish = async () => {
     // Common validations
     if (!title.trim()) {
-      Alert.alert("Error", "Please enter article title");
+      // Alert.alert("Error", "Please enter article title");
       return;
     }
     if (!category) {
-      Alert.alert("Error", "Please select a category");
+      // Alert.alert("Error", "Please select a category");
       return;
     }
     if (!content.trim()) {
-      Alert.alert("Error", "Please write article content");
+      // Alert.alert("Error", "Please write article content");
       return;
     }
     if (!coverImage) {
-      Alert.alert("Error", "Please add a cover image");
+      // Alert.alert("Error", "Please add a cover image");
       return;
     }
 
     // Zodiac specific validations
     if (isZodiacTips) {
       if (!zodiacSign) {
-        Alert.alert("Error", "Please select a zodiac sign");
+        // Alert.alert("Error", "Please select a zodiac sign");
         return;
       }
       if (!dateRange.trim()) {
-        Alert.alert("Error", "Please enter date range");
+        // Alert.alert("Error", "Please enter date range");
         return;
       }
       if (!element) {
-        Alert.alert("Error", "Please select an element");
+        // Alert.alert("Error", "Please select an element");
         return;
       }
       if (!luckyColor.trim()) {
-        Alert.alert("Error", "Please enter lucky color");
+        // Alert.alert("Error", "Please enter lucky color");
         return;
       }
       if (!luckyNumber) {
-        Alert.alert("Error", "Please enter lucky number");
+        // Alert.alert("Error", "Please enter lucky number");
         return;
       }
     }
@@ -228,26 +228,6 @@ const pickImage = async () => {
         name: filename || `thumbnail_${Date.now()}.jpg`,
         type: imageType,
       } as any);
-
-      console.log("FORM DATA:", {
-        title,
-        category,
-        content,
-        blogType: contentType,
-        status,
-        ...(isZodiacTips && {
-          zodiacSpecific: {
-            zodiacSign,
-            dateRange,
-            element,
-            luckyColor,
-            luckyNumber: parseInt(luckyNumber),
-            compatibility,
-          },
-        }),
-        thumbnail: coverImage.uri,
-      });
-
       const response = await addBlog(formData).unwrap();
       if (response?.success) {
         navigation.replace("CreateScreen");
@@ -498,7 +478,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#F8F1D7",
   },
   label: {
-    fontSize: 18,
+    fontSize: 16,
     color: "#0D0D0D",
     marginBottom: 10,
   },
@@ -533,7 +513,7 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   uploadTitle: {
-    fontSize: 18,
+    fontSize: 16,
     color: "#0D0D0D",
     fontFamily: "SatoshiBold",
   },

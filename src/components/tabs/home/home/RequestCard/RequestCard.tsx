@@ -5,13 +5,13 @@ import {
   StyleSheet,
   View
 } from "react-native";
-import { SatoshiText } from "../../../reusable/Text/SatoshiText";
-import { SansText } from "../../../reusable/Text/SansText";
-import ReusableButton from "../../../reusable/ReusableButton/ReusableButton";
-import { useChangeBookingStatusMutation } from "../../../../redux/features/consultation/consultationApi";
-import { setSelectedConsultation } from "../../../../redux/features/consultation/consultationChatSlice";
+import { SatoshiText } from "../../../../reusable/Text/SatoshiText";
+import { SansText } from "../../../../reusable/Text/SansText";
+import ReusableButton from "../../../../reusable/ReusableButton/ReusableButton";
+import { useChangeBookingStatusMutation } from "../../../../../redux/features/consultation/consultationApi";
+import { setSelectedConsultation } from "../../../../../redux/features/consultation/consultationChatSlice";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { RootStackParamList } from "../../../../navigation/types";
+import { RootStackParamList } from "../../../../../navigation/types";
 import { useNavigation } from "@react-navigation/native";
 import { useDispatch } from "react-redux";
 
@@ -32,7 +32,7 @@ const RequestCard = ({
     !isVerified;
   type NavigationProp =
     NativeStackNavigationProp<RootStackParamList>;
-  const dispatch =useDispatch()
+  const dispatch = useDispatch()
   const navigation = useNavigation<NavigationProp>();
   const [changeBookingStatus, { isLoading }] = useChangeBookingStatusMutation();
   const handleAccept = async () => {
@@ -89,7 +89,7 @@ const RequestCard = ({
     );
 
     // Navigate to chat page
-    navigation.navigate("AstrologerChatScreen", { id: booking?._id })
+    navigation.navigate("AstrologerChatScreen", { id: booking?._id, profilePicture: booking?.user?.profilePicture, name: booking?.user?.fullName, consultationFor: booking.consultationFor, })
   };
 
   return (
@@ -142,12 +142,39 @@ const RequestCard = ({
 
 
 
-      {item?.status === "pending" ? (<View style={styles.requestActions}>
-        {/* ACCEPT */}
-        <View style={{ flex: 1 }}><ReusableButton variant="solid" style={{ borderRadius: 12 }} height={44} onPress={() => { handleAccept }} title="Accept" /></View>
-        <View style={{ flex: 1 }}><ReusableButton variant="outline" style={{ borderRadius: 12 }} height={44} onPress={() => { handleReject }} title="Reject" /></View>
-      </View>) : (<View style={{ flex: 1 }}><ReusableButton variant="solid" style={{ borderRadius: 12, paddingVertical: 0 }} textSize={12} height={24}
-        onPress={() => { handleChatNow(item) }} title="Chat Now" /></View>)}
+
+      {item?.status === "pending" ? (
+        <View style={styles.requestActions}>
+          {/* ACCEPT */}
+          <View style={{ flex: 1 }}><ReusableButton variant="solid" style={{ borderRadius: 12 }} onPress={() => { handleAccept }} title="Accept" /></View>
+          <View style={{ flex: 1 }}><ReusableButton variant="outline" style={{ borderRadius: 12 }} onPress={() => { handleReject }} title="Decline" /></View>
+        </View>
+      ) : item?.status === "accepted" ? (
+        <View style={styles.chatButtonContainer}>
+          <ReusableButton
+            variant="solid"
+            title={`${item.method} Now`}
+            height={32}
+            textSize={12}
+            style={styles.button}
+            onPress={() =>{ handleChatNow(item)}}
+          />
+        </View>
+      ) : (
+        <View style={styles.chatButtonContainer}>
+          <View
+
+            style={{
+              paddingVertical: 6,
+              paddingHorizontal: 12,
+              borderRadius: 12,
+              borderWidth: 1,
+              borderColor: "#D4AF37",
+              backgroundColor: item.status === "ended" ? "#E8CC7254" : "#F51E1E8F",
+            }}
+          > <SansText>{item.status === "ended" ? "Session Ended" : "Declined"}</SansText></View>
+        </View>
+      )}
     </View>
   );
 };
@@ -187,6 +214,7 @@ const styles =
       height: 84,
       borderRadius: 999,
       marginBottom: 10,
+      backgroundColor: "#FBF7EB",
     },
 
     requestName: {
@@ -258,5 +286,21 @@ const styles =
       fontSize: 13,
 
       color: "#D96C6C",
+    },
+    buttonContainer: {
+      justifyContent: "center",
+      gap: 8,
+      marginLeft: 12,
+    },
+
+    chatButtonContainer: {
+      justifyContent: "center",
+      marginLeft: 12,
+    },
+
+    button: {
+      borderRadius: 10,
+      minWidth: 90,
+      textTransform: "capitalize"
     },
   });

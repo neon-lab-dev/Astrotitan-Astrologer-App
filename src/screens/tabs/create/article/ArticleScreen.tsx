@@ -37,7 +37,6 @@ export default function ArticleScreen() {
   });
 
   const blog = data?.data;
-  console.log(blog);
 
 
 
@@ -218,13 +217,13 @@ export default function ArticleScreen() {
               />
 
               {/* BACK BUTTON */}
-              <TouchableOpacity
+              <TouchableOpacityv
                 style={styles.backBtn}
                 activeOpacity={0.8}
-                onPress={() => navigation.back()}
+                onPress={() => navigation.goBack()}
               >
                 <Ionicons name="arrow-back" size={22} color="#4A4A4A" />
-              </TouchableOpacity>
+              </TouchableOpacityv>
 
               {/* OVERLAY */}
               <View style={styles.overlayContent}>
@@ -314,7 +313,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   title: {
-    fontSize: 28,
+    fontSize: 21,
     lineHeight: 34,
     color: "#F5F5F5",
     fontFamily: "Satoshi-Bold",

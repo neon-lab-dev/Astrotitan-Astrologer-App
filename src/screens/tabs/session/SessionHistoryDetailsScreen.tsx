@@ -23,19 +23,16 @@ import { useRoute } from "@react-navigation/native";
 const SessionHistoryDetailsScreen =
   () => {
        const route = useRoute<any>();
-       const params = route.params as string;
+      const params = route.params as string;
 
     const sessionType =
-      params.sessionType ||
-      "call";
+      params.sessionType
 
     const userName =
-      params.userName ||
-      "Minal Sharma";
+      params.userName
 
     const date =
-      params.date ||
-      "17 February 2026";
+      params.date 
 
     const time =
       params.time ||
@@ -46,20 +43,17 @@ const SessionHistoryDetailsScreen =
       "25 Mins";
 
     const status =
-      params.status ||
-      "Completed";
+      params.status 
 
     const rating =
-      params.rating ||
-      "4.8";
+      params.rating
 
     const subscriptionType =
       params.subscriptionType ||
       "Subscription";
 
     const image =
-      params.image ||
-      "https://images.unsplash.com/photo-1494790108377-be9c29b29330";
+      params.image
 
     /*
       NOTES
@@ -457,7 +451,7 @@ const styles =
     },
 
     heading: {
-      fontSize: 36,
+      fontSize: 21,
       color: "#0D0D0D",
       fontFamily:
         "Satoshi-Bold",
@@ -476,14 +470,14 @@ const styles =
     },
 
     userName: {
-      fontSize: 24,
+      fontSize: 21,
       color: "#0D0D0D",
       fontFamily:"Satoshi-Bold",
       marginBottom: 6,
     },
 
     dateText: {
-      fontSize: 18,
+      fontSize: 16,
       color: "#4A4A4A",
     },
 
@@ -501,7 +495,7 @@ const styles =
     },
 
     sectionTitle: {
-      fontSize: 24,
+      fontSize: 21,
       color: "#0D0D0D",
       fontFamily:
         "Satoshi-Bold",
@@ -576,14 +570,14 @@ const styles =
     },
 
     statLabel: {
-      fontSize: 18,
+      fontSize: 16,
       color: "#4A4A4A",
       marginTop: 8,
       marginBottom: 6,
     },
 
     statValue: {
-      fontSize: 18,
+      fontSize: 16,
       color: "#0D0D0D",
       fontFamily:"Satoshi-Bold",
       textAlign: "center",
@@ -600,20 +594,20 @@ const styles =
     },
 
     bullet: {
-      fontSize: 18,
+      fontSize: 16,
       color: "#4A4A4A",
       lineHeight: 24,
     },
 
     noteText: {
       flex: 1,
-      fontSize: 16,
+      fontSize: 14,
       color: "#4A4A4A",
       lineHeight: 24,
     },
 
     emptyText: {
-      fontSize: 16,
+      fontSize: 14,
       color: "#7A7A7A",
       lineHeight: 24,
     },

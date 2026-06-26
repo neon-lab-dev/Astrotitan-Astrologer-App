@@ -99,7 +99,7 @@ const styles =
         },
 
         name: {
-            fontSize: 18,
+            fontSize: 16,
             lineHeight: 26,
             fontFamily: "Satoshi-Bold",
             color: "#0D0D0D",
@@ -112,7 +112,7 @@ const styles =
         },
 
         rating: {
-            fontSize: 18,
+            fontSize: 14,
             color: "#0D0D0D",
             fontFamily:
                 "Satoshi-Bold",

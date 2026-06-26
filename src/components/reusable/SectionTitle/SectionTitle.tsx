@@ -13,7 +13,7 @@ const SectionTitle = ({
 }) => {
   return (
     <View style={{ flexDirection: "row",alignContent:"center", justifyContent:"space-between"  }}>
-      <SatoshiText style={[styles.title,{  fontSize: titleFontSize||28,}]}>{title}</SatoshiText>
+      <SatoshiText style={[styles.title,{  fontSize: titleFontSize||21,}]}>{title}</SatoshiText>
 {
         children
 }

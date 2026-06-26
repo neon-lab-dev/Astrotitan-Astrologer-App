@@ -49,7 +49,7 @@ const QueryCard = ({
         >
           <SatoshiText
             style={{
-              fontSize: 18,
+              fontSize: 16,
               lineHeight: 26,
               fontFamily:"Satoshi-Medium",
               color: "#0D0D0D",

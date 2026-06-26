@@ -69,7 +69,6 @@ const ProfileScreen = () => {
       const finalUser = meRes.data;
       await Storage.setUser(finalUser);
       dispatch(updateUser(finalUser));
-       console.log("Profile upated");
     } catch (error) {
       console.log("GET ME ERROR:", error);
     }
@@ -90,7 +89,7 @@ const ProfileScreen = () => {
   useFocusEffect(
     useCallback(() => {
       fetchLatestUser();
-    }, []) // ← don't pass fetchLatestUser here
+    }, []) 
   );
   return (
     // <AnimatedScreen>
@@ -98,7 +97,7 @@ const ProfileScreen = () => {
 
         <AppHeader showBack={false} >
           <AuthTitle title="Profile">
-            <SansText style={{ fontSize: 18 }}>
+            <SansText style={{ fontSize: 16 }}>
               Manage your personal details & preferences.
             </SansText>
           </AuthTitle>
@@ -223,7 +222,7 @@ const styles = StyleSheet.create({
   },
 
   title: {
-    fontSize: 24,
+    fontSize: 21,
     fontWeight: "700",
   },
 
@@ -256,14 +255,14 @@ const styles = StyleSheet.create({
 
   name: {
     color: "#F5F5F5",
-    fontSize: 18,
+    fontSize: 16,
     fontFamily: "Satoshi-Bold",
     lineHeight: 26,
   },
 
   desc: {
     color: "#F5F5F5",
-    fontSize: 18,
+    fontSize: 16,
     lineHeight: 26,
   },
 
@@ -289,7 +288,7 @@ const styles = StyleSheet.create({
   },
 
   rowText: {
-    fontSize: 18,
+    fontSize: 16,
     color: "#0D0D0D"
   },
 

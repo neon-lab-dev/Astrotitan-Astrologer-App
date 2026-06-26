@@ -53,13 +53,13 @@ const styles = StyleSheet.create({
 },
 
     title: {
-        fontSize: 28,
+        fontSize: 21,
         fontFamily: "Satoshi-Bold",
         color: "#0D0D0D",
     },
 
     description: {
-        fontSize: 18,
+        fontSize: 16,
         color: "#000",
         lineHeight: 26,
     },

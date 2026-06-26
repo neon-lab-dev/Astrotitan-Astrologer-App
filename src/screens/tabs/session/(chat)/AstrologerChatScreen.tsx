@@ -1,10 +1,10 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   StyleSheet,
-  Text,
   TextInput,
   View,
   FlatList,
+  Image,
 } from "react-native";
 import { SansText } from "../../../../components/reusable/Text/SansText";
 import IconButton from "../../../../components/reusable/IconButton/IconButton";
@@ -22,23 +22,24 @@ import { addConsultationMessage, clearSelectedConsultation, selectCurrentPartici
 import { useConsultationSocket } from "../../../../socket/useConsultationSocket";
 import { selectUser } from "../../../../redux/features/auth/authSlice";
 import { useGetConsultationMessagesQuery, useMarkConsultationMessagesReadMutation } from "../../../../redux/features/consultation/consultationChatApi";
-import {  formatMessageDate } from "../../../../utils/validators/dateValidators";
+import { formatMessageDate } from "../../../../utils/validators/dateValidators";
+import { useEndConsultationSessionMutation } from "../../../../redux/features/consultation/consultationApi";
 
 
 const AstrologerChatScreen = () => {
   const route = useRoute<any>();
-  const { id: consultationId } = route.params || {};
+  const { id: consultationId, profilePicture, name, consultationFor } = route.params || {};
+  const [endConsultationSession] = useEndConsultationSessionMutation();
 
   const renderMessage = ({ item }: { item: any }) => {
-    console.log(item, "message");
-
     const senderId =
       typeof item.sender === "string"
         ? item.sender
         : item.sender?._id;
 
-    const isOwn = senderId === currentUser?.account?._id;
-  
+    const isOwn =
+      senderId === currentUser?.account?._id;
+
     return (
       <View
         style={[
@@ -64,21 +65,15 @@ const AstrologerChatScreen = () => {
                 : { justifyContent: "flex-start" },
             ]}
           >
-            <Text style={styles.time}>
-              {formatMessageDate(item.createdAt) } {" "}
-            </Text>
+            <SansText style={styles.time}>
+              {formatMessageDate(item.createdAt)} {" "}
+            </SansText>
 
-            {isOwn && (
-              <>
-                {item.isTemp ? (
-                  <Text style={styles.sendingText}>⌛ Sending...</Text>
-                ) : item.isRead ? (
-                  <Text style={styles.readText}>✓✓ Read</Text>
-                ) : (
-                  <Text style={styles.sentText}>✓ Sent</Text>
-                )}
-              </>
-            )}
+
+
+            {item?.isTemp && <SansText style={styles.sendingText}>⌛ Sending...</SansText>}
+            {isOwn && !item?.isTemp && item?.status === "read" && <SansText style={styles.readText}>✓✓ Read</SansText>}
+            {isOwn && !item?.isTemp && item?.status === "sent" && <SansText style={styles.sentText}>✓ Sent</SansText>}
           </View>
         </View>
       </View>
@@ -229,7 +224,7 @@ const AstrologerChatScreen = () => {
     const messageData = {
       _id: tempId,
       consultationId,
-      sender: currentParticipantId,
+      sender: currentUser?.account?._id,
       receiver: participant._id,
       content: message.trim(),
       tempId,
@@ -262,35 +257,18 @@ const AstrologerChatScreen = () => {
     }
   };
 
-  // Handle end session
-  // const handleEndSession = useCallback(() => {
-  //   dispatch(clearSelectedConsultation());
-  //   navigate("/dashboard/astrologer");
-  // }, [dispatch, navigate]);
-
-  // Handle back button
-  // const handleBack = useCallback(() => {
-  //   dispatch(clearSelectedConsultation());
-  //   navigate(-1);
-  // }, [dispatch, navigate]);
-
-  // Check if current user is the astrologer or user
-  const isAstrologer = currentUser?.role === "astrologer";
-
-  // Get astrologer details from participant
-  const astrologerDetails = isAstrologer
-    ? {
-      name: currentUser?.name || "Astrologer",
-      profilePicture: currentUser?.profilePicture,
-      description: participant?.bio || "Experienced astrologer",
-      isVerified: true,
+  const handleEndSession = async () => {
+    try {
+      const response = await endConsultationSession(consultationId).unwrap();
+      if (response?.success) {
+        dispatch(clearSelectedConsultation());
+        navigation.navigate("SessionsScreen")
+      }
+    } catch (err: any) {
+      console.log(err);
     }
-    : {
-      name: participant?.name || "Astrologer",
-      profilePicture: participant?.profilePicture,
-      description: participant?.bio || "Experienced astrologer",
-      isVerified: true,
-    };
+  };
+
 
   return (
     <AnimatedScreen>
@@ -299,17 +277,17 @@ const AstrologerChatScreen = () => {
         <AppHeader showBack={false}>
           <View style={styles.header}>
             <View style={styles.profileSection}>
-              <View style={styles.avatar} />
+              <Image src={profilePicture} style={styles.avatar} />
 
               <View>
-                <SatoshiText style={styles.name}>Rahul Sharma</SatoshiText>
+                <SatoshiText style={styles.name}> {name}</SatoshiText>
                 <SansText style={styles.subtitle}>
-                  Career & clarity guidance
+                  {consultationFor}
                 </SansText>
               </View>
             </View>
 
-            <ReusableButton width={84} height={56} title="End" onPress={() => { }} />
+            <ReusableButton width={84} height={56} title="End" onPress={() => { handleEndSession() }} />
           </View>
 
 
@@ -357,9 +335,9 @@ const AstrologerChatScreen = () => {
           />
         </View>
 
-        <Text style={styles.footerText}>
+        <SatoshiText style={styles.footerText}>
           You can ask 2 more questions.
-        </Text>
+        </SatoshiText>
       </View></AnimatedScreen>
   );
 };
@@ -393,13 +371,13 @@ const styles = StyleSheet.create({
   },
 
   name: {
-    fontSize: 18,
+    fontSize: 16,
     fontFamily: "Satoshi-Medium",
     color: "#222",
   },
 
   subtitle: {
-    fontSize: 18,
+    fontSize: 16,
     color: "#555",
     marginTop: 2,
   },
@@ -453,7 +431,7 @@ const styles = StyleSheet.create({
   },
 
   messageText: {
-    fontSize: 16,
+    fontSize: 14,
     color: "#333",
     lineHeight: 24,
   },
@@ -494,7 +472,7 @@ const styles = StyleSheet.create({
   },
 
   input: {
-    fontSize: 16,
+    fontSize: 14,
     color: "#333",
     fontFamily: "GeneralSans-Regular"
   },
@@ -510,7 +488,7 @@ const styles = StyleSheet.create({
   },
 
   sendIcon: {
-    fontSize: 16,
+    fontSize: 14,
     color: "#7C6A1D",
   },
 
@@ -521,17 +499,17 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   sendingText: {
-    fontSize: 8,
+    fontSize: 10,
     color: '#D4AF37', // Primary color
   },
 
   readText: {
-    fontSize: 8,
+    fontSize: 10,
     color: '#22C55E', // Green
   },
 
   sentText: {
-    fontSize: 8,
+    fontSize: 10,
     color: '#A3A3A3', // Neutral gray
   },
 });

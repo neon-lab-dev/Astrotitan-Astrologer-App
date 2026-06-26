@@ -43,7 +43,7 @@ export default function ReusableButton({
   iconSize = 20,
   style,
   width,
-  height,
+  height=56,
   textSize,
   backgroundColor,
   borderColor,
@@ -149,7 +149,6 @@ export default function ReusableButton({
 
 const styles = StyleSheet.create({
   base: {
-    minHeight: 56,
     borderRadius: 999, // 👈 makes it pill shape
     alignItems: "center",
     justifyContent: "center",
@@ -188,6 +187,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontFamily: "Satoshi-Medium",
     letterSpacing: 0.08,
+    textTransform:"capitalize"
   },
   icon: {
     height: 24,

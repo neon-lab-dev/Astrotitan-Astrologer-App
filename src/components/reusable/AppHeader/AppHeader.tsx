@@ -3,6 +3,7 @@ import React, { useCallback, useEffect } from "react";
 import { BackHandler, StyleSheet, TouchableOpacity, View } from "react-native";
 import Ionicons from '@react-native-vector-icons/ionicons';
 import { useNavigation } from '@react-navigation/native';
+import { SansText } from "../Text/SansText";
 type Props = {
   showBack?: boolean;
   onPressBack?: () => void;
@@ -76,7 +77,7 @@ const AppHeader = ({
           </TouchableOpacity>
 
           {/* TEXT */}
-          <View style={{ flex: 1 }}>{backText}</View>
+          <SansText style={{ flex: 1 }}>{backText}</SansText>
         </View>
       )}
 

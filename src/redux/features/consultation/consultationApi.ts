@@ -52,6 +52,14 @@ const consultationApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["consultation"],
     }),
+    endConsultationSession: builder.mutation({
+      query: (id) => ({
+        url:`/consultation/end-session/${id}`,
+        method: "PATCH",
+        credentials: "include",
+      }),
+      invalidatesTags: ["consultation"],
+    }),
   }),
 });
 
@@ -59,4 +67,5 @@ export const {
   useGetMyConsultationBookingsQuery,
   useGetSingleConsultationBookingsQuery,
   useChangeBookingStatusMutation,
+  useEndConsultationSessionMutation,
 } = consultationApi;

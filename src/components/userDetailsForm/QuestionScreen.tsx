@@ -93,7 +93,7 @@ const QuestionScreen: React.FC<Props> = ({ questionKey, questionText, questionDe
             <AppHeader onPressBack={handleBack} showBack={true}>
                 <StepHeader step={step} total={totalSteps} />
                 <AuthTitle title={questionText}>
-                    <SansText style={{ fontSize: 18 }}>
+                    <SansText style={{ fontSize: 16 }}>
                         {questionDescription}
                     </SansText>
                 </AuthTitle>

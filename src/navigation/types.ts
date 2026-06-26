@@ -12,7 +12,12 @@ export type RootStackParamList = {
   ProfileCompleted: undefined;
   HomeTabs: undefined;
   HomeScreen: undefined;
-  AstrologerChatScreen: undefined;
+  AstrologerChatScreen: {
+    id: string;
+    consultationFor: string;
+    profilePicture: string;
+    name: string;
+  };
   AstrologerScreen: undefined;
   AvailabilityScreen: undefined;
   CreateArticleScreen: {
@@ -45,14 +50,25 @@ export type RootStackParamList = {
   RaiseQuery: undefined;
   ChatHistory: undefined;
   SessionHistoryDetails: {
-  sessionType?: string;
-  userName?: string;
-  date?: string;
-  time?: string;
-  duration?: string;
-  status?: string;
-  rating?: string;
-  subscriptionType?: string;
-  image?: string;
-};
+    sessionType?: string;
+    userName?: string;
+    date?: string;
+    time?: string;
+    duration?: string;
+    status?: string;
+    rating?: string;
+    subscriptionType?: string;
+    image?: string;
+  };
+  SessionHistoryDetailsScreen: {
+    sessionType: string;
+    userName: string;
+    date: string;
+    time: string;
+    duration: string;
+    status: string;
+    rating?: number;
+    subscriptionType?: string;
+    image?: string;
+  };
 };

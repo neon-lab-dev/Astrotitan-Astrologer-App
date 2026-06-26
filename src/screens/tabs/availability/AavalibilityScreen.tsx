@@ -361,7 +361,7 @@ const styles = StyleSheet.create({
   },
 
   sectionTitle: {
-    fontSize: 24,
+    fontSize: 21,
     lineHeight: 28,
     color: "#0D0D0D",
     fontFamily: "Satoshi-Bold",

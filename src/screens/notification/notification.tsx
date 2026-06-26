@@ -114,7 +114,7 @@ const NotificationScreen = () =>{
                                     <View key={section.title}>
 
                                         {/* SECTION TITLE */}
-                                        <SatoshiText style={{ fontSize: 18, color: "#0D0D0D", fontFamily: "Satoshi-Bold" ,paddingHorizontal:16, paddingVertical:12}}>
+                                        <SatoshiText style={{ fontSize: 16, color: "#0D0D0D", fontFamily: "Satoshi-Bold" ,paddingHorizontal:16, paddingVertical:12}}>
                                             {section.title}
                                         </SatoshiText>
 
@@ -171,7 +171,7 @@ const NotificationItem = ({ item }: any) => {
 
                 {/* TEXT */}
                 <View style={{ flex: 1, gap:4 }}>
-                    <SatoshiText style={{ fontSize: 18, fontFamily: "Satoshi-Medium", color: "#0D0D0D" ,lineHeight: 26}}>
+                    <SatoshiText style={{ fontSize: 16, fontFamily: "Satoshi-Medium", color: "#0D0D0D" ,lineHeight: 26}}>
                         {item.title}
                     </SatoshiText>
 

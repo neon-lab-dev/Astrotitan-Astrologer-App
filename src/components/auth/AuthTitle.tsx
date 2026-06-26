@@ -14,7 +14,7 @@ const AuthTitle = ({
 }) => {
   return (
     <View style={{ marginBottom: 24 }}>
-      <SatoshiText style={[styles.title,{  fontSize: titleFontSize||28,}]}>{title}</SatoshiText>
+      <SatoshiText style={[styles.title,{  fontSize: titleFontSize||21,}]}>{title}</SatoshiText>
 
       {children && <SansText style={styles.subtitle}>{children}</SansText>}
     </View>
@@ -32,7 +32,7 @@ const styles = StyleSheet.create({
   },
 
   subtitle: {
-    fontSize: 18,
+    fontSize: 16,
     marginTop: 8,
     color: "#0D0D0D",
     lineHeight: 26,

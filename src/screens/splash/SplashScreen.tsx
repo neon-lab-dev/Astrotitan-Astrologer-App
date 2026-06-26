@@ -94,7 +94,7 @@ const SplashScreen = () => {
           <SatoshiText
             style={{
               color: "#0D0D0D",
-              fontSize: 28,
+              fontSize: 21,
               fontFamily: "Satoshi-Regular",
             }}
           >

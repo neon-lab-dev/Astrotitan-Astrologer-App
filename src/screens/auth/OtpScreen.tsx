@@ -73,24 +73,25 @@ export default function OtpScreen() {
       const accessToken = data?.accessToken;
       const refreshToken = data?.refreshToken;
       const user = data?.user;
-      console.log(accessToken)
       dispatch(setAuth({ token: accessToken, user: user }));
-      const isProfileCompleted =
+      let isProfileCompleted =
         user?.profile?.isProfileCompleted ||
         user?.isProfileComplete ||
         false;
       await Storage.setAccessToken(accessToken);
       await Storage.setRefreshToken(refreshToken);
       await Storage.setUser(user);
-      await Storage.setProfileCompleted(isProfileCompleted);
-      console.log(user,"opt screen profile status")
       setStatus("success");
       let finalUser = user;
       try {
         const meRes = await getMe({}).unwrap();
         finalUser = meRes.data;
         await Storage.setUser(finalUser);
-        console.log("user from login", finalUser)
+        isProfileCompleted =
+          finalUser?.profile?.isProfileCompleted
+        false;
+
+
       } catch {
         console.log("Using fallback user");
       }
@@ -191,91 +192,91 @@ export default function OtpScreen() {
 
   return (
     <AuthLayout>
-        <View style={styles.container}>
-          <View>
-            <AppHeader>
-              <AuthTitle title="OTP Verification">
+      <View style={styles.container}>
+        <View>
+          <AppHeader>
+            <AuthTitle title="OTP Verification">
+              <SansText>
+                Enter the 4-digit OTP sent to your{" "}
+                {params.source === "login"
+                  ? "mobile number"
+                  : "email"}{" "}
+                <SatoshiText style={styles.param}>
+                  {params.phone || params.email}
+                </SatoshiText>
+              </SansText>
+            </AuthTitle>
+          </AppHeader>
+
+          <View style={styles.content}>
+            <View style={styles.otpContainer}>
+              {[0, 1, 2, 3].map((_, index) => (
+                <TextInput
+                  key={index}
+                  value={otp[index] || ""}
+                  onChangeText={(text) => handleChange(text, index)}
+                  onKeyPress={({ nativeEvent }) =>
+                    handleBackspace(nativeEvent.key, index)
+                  }
+                  keyboardType="number-pad"
+                  maxLength={1}
+                  style={[
+                    styles.otpBox,
+                    status === "error" && styles.errorBorder,
+                    status === "success" && styles.successBorder,
+                  ]}
+                  ref={(ref) => {
+                    if (ref) inputs.current[index] = ref;
+                  }}
+                />
+              ))}
+            </View>
+
+            {/* STATUS */}
+            {loading && <ActivityIndicator />}
+
+            {status === "success" && (
+              <SansText style={styles.successText}>
+                OTP verified successfully
+              </SansText>
+            )}
+
+            {status === "error" && (
+              <SansText style={styles.errorText}>
+                {errorMessage}
+              </SansText>
+            )}
+
+            {status === "expired" && (
+              <SansText style={styles.errorText}>
+                {errorMessage}
+              </SansText>
+            )}
+
+            {status === "not_received" && (
+              <SansText>Didn’t receive the OTP? You can request a new one.</SansText>
+            )}
+
+            {!canResend &&
+              status === "default" && (
                 <SansText>
-                  Enter the 4-digit OTP sent to your{" "}
-                  {params.source === "login"
-                    ? "mobile number"
-                    : "email"}{" "}
-                  <SatoshiText style={styles.param}>
-                    {params.phone || params.email}
-                  </SatoshiText>
-                </SansText>
-              </AuthTitle>
-            </AppHeader>
-
-            <View style={styles.content}>
-              <View style={styles.otpContainer}>
-                {[0, 1, 2, 3].map((_, index) => (
-                  <TextInput
-                    key={index}
-                    value={otp[index] || ""}
-                    onChangeText={(text) => handleChange(text, index)}
-                    onKeyPress={({ nativeEvent }) =>
-                      handleBackspace(nativeEvent.key, index)
-                    }
-                    keyboardType="number-pad"
-                    maxLength={1}
-                    style={[
-                      styles.otpBox,
-                      status === "error" && styles.errorBorder,
-                      status === "success" && styles.successBorder,
-                    ]}
-                    ref={(ref) => {
-                      if (ref) inputs.current[index] = ref;
-                    }}
-                  />
-                ))}
-              </View>
-
-              {/* STATUS */}
-              {loading && <ActivityIndicator />}
-
-              {status === "success" && (
-                <SansText style={styles.successText}>
-                  OTP verified successfully
+                  Resend OTP in {timer}s
                 </SansText>
               )}
-
-              {status === "error" && (
-                <SansText style={styles.errorText}>
-                  {errorMessage}
-                </SansText>
-              )}
-
-              {status === "expired" && (
-                <SansText style={styles.errorText}>
-                  {errorMessage}
-                </SansText>
-              )}
-
-              {status === "not_received" && (
-                <SansText>Didn’t receive the OTP? You can request a new one.</SansText>
-              )}
-
-              {!canResend &&
-                status === "default" && (
-                  <SansText>
-                    Resend OTP in {timer}s
-                  </SansText>
-                )}
-            </View>
           </View>
-
-          {canResend && (
-            <View style={styles.resendBox}>
-              <ReusableButton
-                title={loading ? "Please wait..." : "Resend OTP"}
-                variant="solid"
-                onPress={handleResend}
-              />
-            </View>
-          )}
         </View>
-      </AuthLayout>
+
+        {canResend && (
+          <View style={styles.resendBox}>
+            <ReusableButton
+              title={loading ? "Please wait..." : "Resend OTP"}
+              variant="solid"
+              onPress={handleResend}
+            />
+          </View>
+        )}
+      </View>
+    </AuthLayout>
   );
 }
 

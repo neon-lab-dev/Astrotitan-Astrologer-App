@@ -17,36 +17,36 @@ type Props = {
 export default function AnimatedScreen({ children, delay = 0 }: Props) {
     const route = useRoute();
 
-  const translateY = useSharedValue(40);
-  const opacity = useSharedValue(0);
+  // const translateY = useSharedValue(40);
+  // const opacity = useSharedValue(0);
 
-  useEffect(() => {
-    translateY.value = 120;
-    opacity.value = 0;
+  // useEffect(() => {
+  //   translateY.value = 120;
+  //   opacity.value = 0;
 
-    translateY.value = withDelay(
-      delay,
-      withTiming(0, {
-        duration: 500,
-        easing: Easing.out(Easing.exp),
-      })
-    );
+  //   translateY.value = withDelay(
+  //     delay,
+  //     withTiming(0, {
+  //       duration: 500,
+  //       easing: Easing.out(Easing.exp),
+  //     })
+  //   );
 
-    opacity.value = withDelay(
-      delay,
-      withTiming(1, {
-        duration: 600,
-      })
-    );
-  }, [route.name, delay,opacity, translateY]);
+  //   opacity.value = withDelay(
+  //     delay,
+  //     withTiming(1, {
+  //       duration: 600,
+  //     })
+  //   );
+  // }, [route.name, delay,opacity, translateY]);
 
-  const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ translateY: translateY.value }],
-    opacity: opacity.value,
-  }));
+  // const animatedStyle = useAnimatedStyle(() => ({
+  //   transform: [{ translateY: translateY.value }],
+  //   opacity: opacity.value,
+  // }));
 
   return (
-    <Animated.View style={[{ flex: 1 }, animatedStyle]}>
+    <Animated.View style={[{ flex: 1 },]}>
       {children}
     </Animated.View>
   );
