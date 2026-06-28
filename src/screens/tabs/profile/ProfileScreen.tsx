@@ -4,7 +4,7 @@ import { Image, RefreshControl, ScrollView, StyleSheet, TouchableOpacity, View }
 import { useDispatch, useSelector } from "react-redux";
 import { IconName, ICONS } from '../../../assets/svg';
 import { SansText } from '../../../components/reusable/Text/SansText';
-import { useLazyGetMeQuery } from '../../../redux/features/auth/authApi';
+import { useDeleteAccountMutation, useLazyGetMeQuery } from '../../../redux/features/auth/authApi';
 import { Storage } from '../../../services/storage/storage';
 import { clearAuth, selectUser, updateUser } from '../../../redux/features/auth/authSlice';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -27,8 +27,8 @@ const ProfileScreen = () => {
     useLazyGetMeQuery();
   type NavigationProp =
     NativeStackNavigationProp<RootStackParamList>;
-
   const navigation = useNavigation<NavigationProp>();
+  const [deleteAccount, {isLoading:isDeleteAccountLoading}]=useDeleteAccountMutation({})
   const user = useSelector(selectUser);
   const [refreshing, setRefreshing] = useState(false);
   const resetAuth = async () => {
@@ -55,7 +55,7 @@ const ProfileScreen = () => {
   };
   const onPressDelete = () => {
     BottomSheetService.open(
-      <DeleteAccountSection onCancel={BottomSheetService.close} onLogout={() => { }} />,
+       <DeleteAccountSection onCancel={BottomSheetService.close} onDelete={() => { deleteAccount }} isLoading={isDeleteAccountLoading}/>,
       {
         height: 400,
         hasGradient: true,
@@ -270,14 +270,15 @@ const styles = StyleSheet.create({
   card: {
     backgroundColor: "#F5F5F5",
     borderRadius: 24,
-    marginTop: 12
+    marginTop: 12,
+    paddingVertical:12
   },
 
   row: {
     flexDirection: "row",
     justifyContent: "space-between",
-    paddingHorizontal: 24,
-    paddingVertical: 24,
+    paddingHorizontal: 18,
+    paddingVertical: 12,
     alignItems: "center",
   },
 

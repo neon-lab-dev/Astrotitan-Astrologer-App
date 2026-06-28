@@ -5,10 +5,11 @@ import { SansText } from "../Text/SansText";
 
 type Props = {
     onCancel: () => void;
-    onLogout: () => void;
+    onDelete: () => void;
+    isLoading:boolean
 };
 
-const DeleteAccountSection = ({ onCancel, onLogout }: Props) => {
+const DeleteAccountSection = ({ onCancel, onDelete ,isLoading=false}: Props) => {
     return (
         <View style={styles.container}>
 <View style={{gap:8}}><SatoshiText style={styles.title}>Are you sure?</SatoshiText>
@@ -31,11 +32,12 @@ const DeleteAccountSection = ({ onCancel, onLogout }: Props) => {
                 <View style={{ flex: 1 }}>
                     <ReusableButton
                         title="Delete Account"
-                        onPress={onLogout}
+                        onPress={onDelete}
                         variant="outline"
                         borderColor="#C2371E"
                         textColor="#C2371E"
                         width="100%"
+                        loading={isLoading}
                     />
                 </View>
             </View>
