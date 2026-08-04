@@ -26,6 +26,7 @@ import { useGetAstrologersQuery } from "../../../redux/features/astrologer/astro
 import AnimatedScreen from "../../../components/layout/AnimatedScreen";
 import { useGetMyConsultationBookingsQuery } from "../../../redux/features/consultation/consultationApi";
 import RequestCardSkeleton from "../../../components/tabs/home/home/RequestCard/RequestCardSkeleton";
+import { useGetMyNotificationsQuery } from "../../../redux/features/notification/notificationApi";
 const HomeScreen = () => {
   const user = useSelector(selectUser);
   const [refreshing, setRefreshing] = useState(false);
@@ -52,6 +53,11 @@ const HomeScreen = () => {
   const { data: consultationBookings, isLoading: isBookingLoading, isFetching: isBookingFetching, refetch: refetchBooking } = useGetMyConsultationBookingsQuery({});
   const bookings = consultationBookings?.data?.data || [];
   const astrologers = data?.data?.astrologers || [];
+  const { data: myNotifications } = useGetMyNotificationsQuery({});
+  const [notifications, setNotifications] = useState<any[]>([]);
+  const unreadCount = notifications.filter(
+    (notification) => !notification.isRead,
+  ).length;
   const fetchLatestUser = useCallback(async () => {
     try {
       const meRes = await getMe({}).unwrap();
@@ -128,6 +134,8 @@ const HomeScreen = () => {
                 onPress={() => {
                   navigation.navigate("NotificationScreen");
                 }}
+                update={unreadCount > 0}
+                updateCount={unreadCount}
               />
             </View>
           </View>

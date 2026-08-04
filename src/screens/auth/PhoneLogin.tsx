@@ -59,12 +59,12 @@ export default function PhoneLogin() {
 
   const onSubmit = async (data: LoginForm) => {
     try {
-      const fullPhone = formatPhone(country.callingCode, data.phone);
+      // const fullPhone = formatPhone(country.callingCode, data.phone);
 
       const payload = {
-        email: "",
-        phoneNumber: fullPhone, // ⚠️ backend expects lowercase n
-         role: "astrologer",
+        phoneNumber: data.phone,
+                email: "",
+                 role: "astrologer",
       };
 
       await login(payload).unwrap();
@@ -73,7 +73,7 @@ export default function PhoneLogin() {
         name: "OTPScreen",
         params: {
           source: "login",
-          phone: fullPhone,
+          phone:  data.phone,
         },
       });
     } catch (err: any) {

@@ -178,19 +178,19 @@ const questions = [
             },
             {
               label: "6–10 years",
-              value: "5+",
+              value: "6",
             },
             {
               label: "10-15 years",
-              value: "10+",
+              value: "11",
             },
             {
               label: "15-20 years",
-              value: "15+",
+              value: "16",
             },
             {
               label: "More than 20 years",
-              value: "20+",
+              value: "21",
             },
           ]}
           value={value}
