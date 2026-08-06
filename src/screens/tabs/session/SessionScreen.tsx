@@ -27,6 +27,7 @@ import { useDispatch } from "react-redux";
 import SessionCardSkeleton from "../../../components/tabs/session/SessionCard/SessionCardSkeleton";
 import SessionCard from "../../../components/tabs/session/SessionCard/SessionCard";
 import { formatDate } from "../../../utils/validators/dateValidators";
+import ConnectGoogleCalendar from "../../../components/ConnectGoogleCalendar";
 
 
 
@@ -152,6 +153,11 @@ const SessionsScreen = () => {
     navigation.navigate("AstrologerChatScreen", { id: booking?._id,profilePicture:booking?.user?.profilePicture,name:booking?.user?.fullName, consultationFor: booking.consultationFor, })
   };
 
+  const handleCalendarConnected = () => {
+    console.log('✅ Google Calendar connected!');
+    // You can refresh other data or show a success message
+  };
+
   const renderContent =
     () => {
       return (
@@ -227,10 +233,7 @@ const SessionsScreen = () => {
         >
           <AuthTitle title="Sessions">
             <SansText>
-              Review your
-              completed chat
-              and call
-              sessions.
+              Review your completed chat and call sessions.
             </SansText>
           </AuthTitle>
 
@@ -321,6 +324,10 @@ const SessionsScreen = () => {
           }
         >
           <View />
+
+          <View style={styles.card}>
+          <ConnectGoogleCalendar />
+        </View>
 
           <ReusableButton title="Date Filter"
             onPress={() => { }}
