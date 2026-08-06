@@ -1,3 +1,4 @@
+/* eslint-disable react-native/no-inline-styles */
 import React from "react";
 import {
   Dimensions,
@@ -217,13 +218,13 @@ export default function ArticleScreen() {
               />
 
               {/* BACK BUTTON */}
-              <TouchableOpacityv
+              <TouchableOpacity
                 style={styles.backBtn}
                 activeOpacity={0.8}
                 onPress={() => navigation.goBack()}
               >
                 <Ionicons name="arrow-back" size={22} color="#4A4A4A" />
-              </TouchableOpacityv>
+              </TouchableOpacity>
 
               {/* OVERLAY */}
               <View style={styles.overlayContent}>

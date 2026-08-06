@@ -55,6 +55,7 @@ import UserIcon from "@/assets/icons/visual/user-circle.svg";
 import StatusIcon from "@/assets/icons/visual/user-status.svg";
 import ClockIcon from "@/assets/icons/visual/clock.svg";
 import ValidationIcon from "@/assets/icons/visual/validation.svg";
+import CalendarIcon from "@/assets/icons/visual/calendar.svg";
 import SentIcon from "@/assets/icons/actions/sent.svg";
 import EditIcon from "@/assets/icons/actions/edit.svg";
 
@@ -103,13 +104,14 @@ export const ICONS = {
   FileVerifiedIcon: FileVerifiedIcon,
   MedalFirstIcon: MedalFirstIcon,
   ValidationIcon: ValidationIcon,
-  HelpIcon:HelpIcon,
-  DocumentSearchIcon:DocumentSearchIcon,
-  UserIcon:UserIcon,
-  SentIcon:SentIcon,
-  EditIcon:EditIcon,
-  ClockIcon:ClockIcon,
-  StatusIcon:StatusIcon,
+  HelpIcon: HelpIcon,
+  DocumentSearchIcon: DocumentSearchIcon,
+  UserIcon: UserIcon,
+  SentIcon: SentIcon,
+  EditIcon: EditIcon,
+  ClockIcon: ClockIcon,
+  StatusIcon: StatusIcon,
+  CalendarIcon: CalendarIcon
 };
 
 export type IconName = keyof typeof ICONS;

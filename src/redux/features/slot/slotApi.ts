@@ -1,6 +1,6 @@
 import { baseApi } from "../../api/baseApi";
 
-const consultationApi = baseApi.injectEndpoints({
+const slotApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     getMyConsultationBookings: builder.query({
       query: ({
@@ -49,15 +49,16 @@ const consultationApi = baseApi.injectEndpoints({
       providesTags: ["consultation"],
     }),
 
-    changeBookingStatus: builder.mutation({
-      query: ({ id, data }) => ({
-        url: `/consultation/change-status/${id}`,
-        method: "PATCH",
+    addSlot: builder.mutation({
+      query: (data) => ({
+        url: `/slot/add`,
+        method: "POST",
         body: data,
         credentials: "include",
       }),
-      invalidatesTags: ["consultation"],
+      invalidatesTags: ["slot"],
     }),
+
     endConsultationSession: builder.mutation({
       query: (id) => ({
         url: `/consultation/end-session/${id}`,
@@ -81,7 +82,7 @@ const consultationApi = baseApi.injectEndpoints({
 export const {
   useGetMyConsultationBookingsQuery,
   useGetSingleConsultationBookingsQuery,
-  useChangeBookingStatusMutation,
+  useAddSlotMutation,
   useEndConsultationSessionMutation,
   useScheduleMeetingMutation,
-} = consultationApi;
+} = slotApi;

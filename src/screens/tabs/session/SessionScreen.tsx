@@ -1,7 +1,8 @@
-import ChatIcon from "@/assets/icons/actions/bubble-chat.svg";
-import CalenderIcon from "@/assets/icons/navigation/calendar.svg";
-import CallIcon from "@/assets/icons/visual/call.svg";
-import { useMemo, useRef, useState } from "react";
+/* eslint-disable react-native/no-inline-styles */
+import ChatIcon from '@/assets/icons/actions/bubble-chat.svg';
+import CalenderIcon from '@/assets/icons/navigation/calendar.svg';
+import CallIcon from '@/assets/icons/visual/call.svg';
+import { useMemo, useRef, useState } from 'react';
 import {
   Animated,
   Pressable,
@@ -9,72 +10,65 @@ import {
   ScrollView,
   StyleSheet,
   View,
-} from "react-native";
-import { SansText } from "../../../components/reusable/Text/SansText";
-// import LinearGradient from "react-native-linear-gradient";
-import ContentSection from "../../../components/reusable/ContentSectoin/ContentSection";
-import AnimatedScreen from "../../../components/layout/AnimatedScreen";
-import ScreenWrapper from "../../../components/layout/ScreenWrapper";
-import AppHeader from "../../../components/reusable/AppHeader/AppHeader";
-import AuthTitle from "../../../components/auth/AuthTitle";
-import ReusableButton from "../../../components/reusable/ReusableButton/ReusableButton";
-import { useNavigation } from "@react-navigation/native";
-import { useChangeBookingStatusMutation, useGetMyConsultationBookingsQuery } from "../../../redux/features/consultation/consultationApi";
-import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { RootStackParamList } from "../../../navigation/types";
-import { setSelectedConsultation } from "../../../redux/features/consultation/consultationChatSlice";
-import { useDispatch } from "react-redux";
-import SessionCardSkeleton from "../../../components/tabs/session/SessionCard/SessionCardSkeleton";
-import SessionCard from "../../../components/tabs/session/SessionCard/SessionCard";
-import { formatDate } from "../../../utils/validators/dateValidators";
-import ConnectGoogleCalendar from "../../../components/ConnectGoogleCalendar";
-
-
+  TouchableOpacity,
+  Modal,
+} from 'react-native';
+import { SansText } from '../../../components/reusable/Text/SansText';
+import ScreenWrapper from '../../../components/layout/ScreenWrapper';
+import AppHeader from '../../../components/reusable/AppHeader/AppHeader';
+import AuthTitle from '../../../components/auth/AuthTitle';
+import ReusableButton from '../../../components/reusable/ReusableButton/ReusableButton';
+import { useGetMyConsultationBookingsQuery } from '../../../redux/features/consultation/consultationApi';
+import Consultations from '../../../components/SessionScreenPage/Consultations/Consultations';
+import CustomCalendar from '../../../components/reusable/CustomCalendar/CustomCalendar';
+// import ConnectGoogleCalendar from '../../../components/ConnectGoogleCalendar';
 
 const SessionsScreen = () => {
+  const [activeTab, setActiveTab] = useState('call');
+  const [containerWidth, setContainerWidth] = useState(0);
+  const [refreshing, setRefreshing] = useState(false);
+  const translateX = useRef(new Animated.Value(0)).current;
+  const opacity = useRef(new Animated.Value(1)).current;
 
-  type NavigationProp =
-    NativeStackNavigationProp<RootStackParamList>;
+  // Filter states
+  const [showFilterModal, setShowFilterModal] = useState(false);
+  const [selectedStatus, setSelectedStatus] = useState<string>('all');
+  const [selectedDate, setSelectedDate] = useState<string>('');
 
-  const navigation = useNavigation<NavigationProp>();
-  const dispatch = useDispatch();
-  const [activeTab, setActiveTab] =
-    useState("calls");
-  const [containerWidth, setContainerWidth] =
-    useState(0);
-  const [refreshing, setRefreshing] =
-    useState(false);
-  const translateX = useRef(
-    new Animated.Value(0)
-  ).current;
-  const opacity = useRef(
-    new Animated.Value(1)
-  ).current;
+  // Temporary filter states (applied only when "Apply Filters" is pressed)
+  const [tempStatus, setTempStatus] = useState<string>('all');
+  const [tempDate, setTempDate] = useState<string>('');
+
+  // Calendar visibility
+  const [showCalendar, setShowCalendar] = useState(false);
 
   const tabs = useMemo(
     () => [
       {
-        key: "calls",
-        label: "Calls",
+        key: 'call',
+        label: 'Calls',
         icon: CallIcon,
       },
 
       {
-        key: "chats",
-        label: "Chats",
+        key: 'chat',
+        label: 'Chats',
         icon: ChatIcon,
       },
     ],
-    []
+    [],
   );
 
-  const TAB_WIDTH =
-    containerWidth / tabs.length;
+  const statusOptions = [
+    { key: 'all', label: 'All' },
+    { key: 'pending', label: 'Pending' },
+    { key: 'scheduled', label: 'Scheduled' },
+    { key: 'ended', label: 'Ended' },
+  ];
 
-  const handleTabPress = (
-    index: number,
-    key: string
-  ) => {
+  const TAB_WIDTH = containerWidth / tabs.length;
+
+  const handleTabPress = (index: number, key: string) => {
     Animated.sequence([
       Animated.timing(opacity, {
         toValue: 0,
@@ -97,130 +91,148 @@ const SessionsScreen = () => {
     }).start();
   };
 
-
-
-  const [changeBookingStatus, { isLoading }] = useChangeBookingStatusMutation();
-  const handleAccept = async (id:any) => {
-    try {
-      const payload = { status: "accepted" };
-      const response = await changeBookingStatus({
-        id: id,
-        data: payload,
-      }).unwrap();
-
-      if (response?.success) {
-      }
-    } catch (err: any) {
-      console.error("Error accepting booking:", err);
-    }
-  };
-
-  const handleReject = async (id:any) => {
-    try {
-      const payload = { status: "rejected" };
-      const response = await changeBookingStatus({
-        id: id,
-        data: payload,
-      }).unwrap();
-
-      if (response?.success) {
-      }
-    } catch (err: any) {
-      console.error("Error rejecting booking:", err);
-    }
-  };
-
-  const handleChatNow = (booking: any) => {
-    const participant = booking.user;
-    const currentParticipantId = booking.astrologer;
-    dispatch(
-        setSelectedConsultation({
-            consultationId: booking._id,
-            currentParticipantId: currentParticipantId,
-            participant: {
-                _id: participant?.accountId,
-                name: participant?.fullName,
-                firstName: participant?.firstName,
-                lastName: participant?.lastName,
-                profilePicture: participant?.profilePicture || "",
-                accountId: participant?.accountId,
-                role: "user",
-            },
-        })
-    );
-
-    // Navigate to chat page
-    navigation.navigate("AstrologerChatScreen", { id: booking?._id,profilePicture:booking?.user?.profilePicture,name:booking?.user?.fullName, consultationFor: booking.consultationFor, })
-  };
-
-  const handleCalendarConnected = () => {
-    console.log('✅ Google Calendar connected!');
-    // You can refresh other data or show a success message
-  };
-
-  const renderContent =
-    () => {
-      return (
-        <View>
-          {/* FILTER */}
-
-
-
-
-          {/* TODAY */}
-
-          <View
-            style={
-              styles.section
-            }
-          >
-            <ContentSection title="Today" sectionStyle={{ marginBottom: 12 }} />
-
-            <View
-              style={
-                styles.cardsContainer
-              }
-            >
-              <View style={styles.cardsContainer}>
-                {isBookingLoading ? (
-                  <SessionCardSkeleton />
-                ) : (
-                  bookings.map((item: any) => (
-                    <SessionCard
-                      key={item._id}
-                      item={item}
-                      onPress={() =>
-                        navigation.navigate("SessionHistoryDetailsScreen", {
-                          sessionType: item.method,
-                          userName: item?.user?.fullName,
-                          date: formatDate(item.createdAt),
-                          time: "10:30 AM",
-                          duration: item?.duration,
-                          status: item?.status,
-                          rating: item?.rating,
-                          subscriptionType: item?.type,
-                          image: item?.user?.profilePicture,
-                        })
-                      }
-                      onAccept={handleAccept}
-                      onReject={handleReject}
-                      onChat={handleChatNow}
-                    />
-                  ))
-                )}
-              </View>
-            </View>
-          </View>
-        </View>
-      );
-    };
-
-
   const {
     data: consultationBookings,
-    isLoading: isBookingLoading,refetch:bookingRefetch
-  } = useGetMyConsultationBookingsQuery({});
+    isLoading: isBookingLoading,
+    isFetching: isBookingFetching,
+    refetch: bookingRefetch,
+  } = useGetMyConsultationBookingsQuery(
+    { date: selectedDate, status: selectedStatus, method: activeTab },
+    { skip: false },
+  );
   const bookings = consultationBookings?.data?.data || [];
+
+  // Open filter modal - reset temp values to current applied values
+  const openFilterModal = () => {
+    setTempStatus(selectedStatus);
+    setTempDate(selectedDate);
+    setShowFilterModal(true);
+  };
+
+  // Handle filter apply - only applies when button is pressed
+  const handleApplyFilters = () => {
+    setSelectedStatus(tempStatus);
+    setSelectedDate(tempDate);
+    setShowFilterModal(false);
+    // Refetch with new filters
+    bookingRefetch();
+  };
+
+  // Handle filter reset
+  const handleResetFilters = () => {
+    setTempStatus('all');
+    setTempDate('');
+    setShowCalendar(false);
+  };
+
+  // Handle date selection from calendar
+  const handleDateSelect = (date: string) => {
+    setTempDate(date);
+    setShowCalendar(false);
+  };
+
+  const renderFilterModal = () => (
+    <Modal
+      visible={showFilterModal}
+      transparent
+      animationType="slide"
+      onRequestClose={() => setShowFilterModal(false)}
+    >
+      <TouchableOpacity
+        style={styles.modalOverlay}
+        activeOpacity={1}
+        onPress={() => setShowFilterModal(false)}
+      >
+        <View style={styles.modalContent}>
+          <View style={styles.modalHeader}>
+            <SansText style={styles.modalTitle}>Filters</SansText>
+            <TouchableOpacity onPress={() => setShowFilterModal(false)}>
+              <SansText style={styles.modalClose}>✕</SansText>
+            </TouchableOpacity>
+          </View>
+
+          {/* Status Filter */}
+          <View style={styles.filterSection}>
+            <SansText style={styles.filterSectionTitle}>Status</SansText>
+            <View style={styles.statusChipContainer}>
+              {statusOptions.map(status => (
+                <TouchableOpacity
+                  key={status.key}
+                  style={[
+                    styles.statusChip,
+                    tempStatus === status.key && styles.statusChipActive,
+                  ]}
+                  onPress={() => setTempStatus(status.key)}
+                >
+                  <SansText
+                    style={[
+                      styles.statusChipText,
+                      tempStatus === status.key && styles.statusChipTextActive,
+                    ]}
+                  >
+                    {status.label}
+                  </SansText>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+
+          {/* Date Filter */}
+          <View style={styles.filterSection}>
+            <SansText style={styles.filterSectionTitle}>Date</SansText>
+
+            {/* Date Button */}
+            <TouchableOpacity
+              style={styles.datePickerButton}
+              onPress={() => setShowCalendar(!showCalendar)}
+            >
+              <CalenderIcon width={20} height={20} />
+              <SansText style={styles.datePickerText}>
+                {tempDate || 'Select Date'}
+              </SansText>
+              {tempDate && (
+                <TouchableOpacity
+                  onPress={() => setTempDate('')}
+                  style={styles.clearDateButton}
+                >
+                  <SansText style={styles.clearDateText}>✕</SansText>
+                </TouchableOpacity>
+              )}
+            </TouchableOpacity>
+
+            {/* Custom Calendar */}
+            {showCalendar && (
+              <CustomCalendar
+                onDateSelect={handleDateSelect}
+                selectedDate={tempDate}
+                onClose={() => setShowCalendar(false)}
+              />
+            )}
+          </View>
+
+          {/* Action Buttons */}
+          <View style={styles.modalActions}>
+            <ReusableButton
+              title="Reset"
+              onPress={handleResetFilters}
+              variant="outline"
+              borderColor="#D4AF37"
+              textColor="#D4AF37"
+              width="45%"
+              height={44}
+            />
+            <ReusableButton
+              title="Apply Filters"
+              onPress={handleApplyFilters}
+              variant="solid"
+              width="55%"
+              height={44}
+            />
+          </View>
+        </View>
+      </TouchableOpacity>
+    </Modal>
+  );
 
   return (
     // <AnimatedScreen>
@@ -228,83 +240,44 @@ const SessionsScreen = () => {
       <View style={styles.container}>
         {/* HEADER */}
 
-        <AppHeader
-          showBack={false}
-        >
+        <AppHeader showBack={false}>
           <AuthTitle title="Sessions">
-            <SansText>
-              Review your completed chat and call sessions.
-            </SansText>
+            <SansText>Review your completed chat and call sessions.</SansText>
           </AuthTitle>
 
           {/* TABS */}
 
           <View
-            style={
-              styles.tabsContainer
-            }
-            onLayout={(e) =>
-              setContainerWidth(
-                e.nativeEvent.layout.width
-              )
-            }
+            style={styles.tabsContainer}
+            onLayout={e => setContainerWidth(e.nativeEvent.layout.width)}
           >
-            {tabs.map(
-              (tab, index) => {
-                const isActive =
-                  activeTab ===
-                  tab.key;
+            {tabs.map((tab, index) => {
+              const isActive = activeTab === tab.key;
+              const Icon = tab.icon;
+              return (
+                <Pressable
+                  key={tab.key}
+                  style={styles.tabItem}
+                  onPress={() => handleTabPress(index, tab.key)}
+                >
+                  <View style={styles.tabInner}>
+                    <Icon width={18} height={18} />
 
-                const Icon =
-                  tab.icon;
-
-                return (
-                  <Pressable
-                    key={tab.key}
-                    style={
-                      styles.tabItem
-                    }
-                    onPress={() =>
-                      handleTabPress(
-                        index,
-                        tab.key
-                      )
-                    }
-                  >
-                    <View
-                      style={
-                        styles.tabInner
-                      }
+                    <SansText
+                      style={[styles.tabText, isActive && styles.activeTabText]}
                     >
-                      <Icon
-                        width={18}
-                        height={18}
-                      />
-
-                      <SansText
-                        style={[
-                          styles.tabText,
-
-                          isActive &&
-                          styles.activeTabText,
-                        ]}
-                      >
-                        {
-                          tab.label
-                        }
-                      </SansText>
-                    </View>
-                  </Pressable>
-                );
-              }
-            )}
+                      {tab.label}
+                    </SansText>
+                  </View>
+                </Pressable>
+              );
+            })}
 
             <Animated.View
               style={[
                 styles.animatedIndicator,
                 {
-                  width:
-                    TAB_WIDTH,
+                  width: TAB_WIDTH,
 
                   transform: [
                     {
@@ -318,43 +291,61 @@ const SessionsScreen = () => {
         </AppHeader>
 
         {/* BODY */}
-        <View
-          style={
-            styles.filterRow
-          }
-        >
-          <View />
+        {/* Filter Row */}
+        <View style={styles.filterRow}>
+          {/* Active Filters Display */}
+          <View style={styles.activeFilters}>
+            {selectedStatus !== 'all' && (
+              <View style={styles.activeFilterChip}>
+                <SansText style={styles.activeFilterText}>
+                  {selectedStatus}
+                </SansText>
+                <TouchableOpacity
+                  onPress={() => {
+                    setSelectedStatus('all');
+                    bookingRefetch();
+                  }}
+                  style={styles.activeFilterRemove}
+                >
+                  <SansText style={styles.activeFilterRemoveText}>✕</SansText>
+                </TouchableOpacity>
+              </View>
+            )}
+            {selectedDate && (
+              <View style={styles.activeFilterChip}>
+                <SansText style={styles.activeFilterText}>
+                  {selectedDate}
+                </SansText>
+                <TouchableOpacity
+                  onPress={() => {
+                    setSelectedDate('');
+                    bookingRefetch();
+                  }}
+                  style={styles.activeFilterRemove}
+                >
+                  <SansText style={styles.activeFilterRemoveText}>✕</SansText>
+                </TouchableOpacity>
+              </View>
+            )}
+          </View>
 
-          <View style={styles.card}>
-          <ConnectGoogleCalendar />
+          {/* Filter Button */}
+          <TouchableOpacity
+            style={styles.filterButton}
+            onPress={openFilterModal}
+          >
+            <CalenderIcon width={18} height={18} />
+            <SansText style={styles.filterButtonText}>Filter</SansText>
+          </TouchableOpacity>
         </View>
 
-          <ReusableButton title="Date Filter"
-            onPress={() => { }}
-            variant="outline"
-            iconPosition="left"
-            // iconName={CalenderIcon} 
-            icon={<CalenderIcon
-              width={24}
-              height={24}
-            />}
-            iconSize={20}
-            width={160}
-            style={{ borderRadius: 16 }} />
-        </View>
         <ScrollView
-          showsVerticalScrollIndicator={
-            false
-          }
+          showsVerticalScrollIndicator={false}
           refreshControl={
             <RefreshControl
-              refreshing={
-                refreshing
-              }
+              refreshing={refreshing}
               tintColor="#D4AF37"
-              colors={[
-                "#D4AF37",
-              ]}
+              colors={['#D4AF37']}
               progressBackgroundColor="#FBF7EB"
             />
           }
@@ -369,10 +360,16 @@ const SessionsScreen = () => {
               opacity,
             }}
           >
-            {renderContent()}
+            <Consultations
+              isLoading={isBookingLoading || isBookingFetching || refreshing}
+              bookings={bookings || []}
+            />
           </Animated.View>
         </ScrollView>
       </View>
+
+      {/* Filter Modal */}
+      {renderFilterModal()}
     </ScreenWrapper>
     // </AnimatedScreen>
   );
@@ -380,220 +377,251 @@ const SessionsScreen = () => {
 
 export default SessionsScreen;
 
-const styles =
-  StyleSheet.create({
-    container: {
-      flex: 1,
-      backgroundColor:
-        "#F8F1D7",
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#F8F1D7',
+  },
+
+  tabsContainer: {
+    flexDirection: 'row',
+
+    position: 'relative',
+  },
+
+  tabItem: {
+    flex: 1,
+
+    alignItems: 'center',
+
+    justifyContent: 'center',
+
+    paddingBottom: 16,
+
+    paddingTop: 2,
+  },
+
+  tabInner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+
+  tabText: {
+    fontSize: 16,
+    color: '#0D0D0D',
+    fontFamily: 'GeneralSans-Medium',
+  },
+
+  activeTabText: {
+    fontFamily: 'GeneralSans-Semibold',
+  },
+
+  animatedIndicator: {
+    position: 'absolute',
+
+    bottom: 0,
+
+    height: 3,
+
+    backgroundColor: '#D4AF37',
+
+    borderRadius: 999,
+  },
+
+  filterRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    backgroundColor: '#F8F1D7',
+  },
+
+  activeFilters: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    flex: 1,
+  },
+
+  activeFilterChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#E8E0D0',
+    gap: 6,
+  },
+
+  activeFilterText: {
+    fontSize: 12,
+    color: '#0D0D0D',
+    fontFamily: 'GeneralSans-Medium',
+    textTransform: 'capitalize',
+  },
+
+  activeFilterRemove: {
+    width: 16,
+    height: 16,
+    borderRadius: 8,
+    backgroundColor: '#F0EDE8',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
+  activeFilterRemoveText: {
+    fontSize: 9,
+    color: '#666666',
+    fontFamily: 'GeneralSans-Regular',
+  },
+
+  filterButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: '#FFFFFF',
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#E8E0D0',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 1,
     },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 2,
+  },
 
-    tabsContainer: {
-      flexDirection: "row",
+  filterButtonText: {
+    fontSize: 13,
+    color: '#0D0D0D',
+    fontFamily: 'GeneralSans-Medium',
+  },
 
-      position:
-        "relative",
+  // Modal Styles
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'flex-end',
+  },
 
-    },
+  modalContent: {
+    backgroundColor: '#FFFFFF',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    paddingHorizontal: 20,
+    paddingTop: 20,
+    paddingBottom: 32,
+    maxHeight: '90%',
+  },
 
-    tabItem: {
-      flex: 1,
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingBottom: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F0EDE8',
+  },
 
-      alignItems:
-        "center",
+  modalTitle: {
+    fontSize: 18,
+    fontFamily: 'Satoshi-Bold',
+    color: '#0D0D0D',
+  },
 
-      justifyContent:
-        "center",
+  modalClose: {
+    fontSize: 18,
+    color: '#999999',
+    fontFamily: 'GeneralSans-Medium',
+    padding: 4,
+  },
 
-      paddingBottom: 16,
+  filterSection: {
+    marginTop: 20,
+  },
 
-      paddingTop: 2,
-    },
+  filterSectionTitle: {
+    fontSize: 14,
+    color: '#666666',
+    fontFamily: 'GeneralSans-Medium',
+    marginBottom: 10,
+  },
 
-    tabInner: {
-      flexDirection: "row",
-      alignItems: "center",
-      gap: 8,
-    },
+  statusChipContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
 
-    tabText: {
-      fontSize: 16,
-      color: "#0D0D0D",
-      fontFamily:
-        "GeneralSans-Medium",
-    },
+  statusChip: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    backgroundColor: '#F5F5F5',
+    borderWidth: 1,
+    borderColor: '#E8E0D0',
+  },
 
-    activeTabText: {
-      fontFamily:
-        "GeneralSans-Bold",
-    },
+  statusChipActive: {
+    backgroundColor: '#D4AF37',
+    borderColor: '#D4AF37',
+  },
 
-    animatedIndicator: {
-      position: "absolute",
+  statusChipText: {
+    fontSize: 13,
+    color: '#666666',
+    fontFamily: 'GeneralSans-Medium',
+    textTransform: 'capitalize',
+  },
 
-      bottom: 0,
+  statusChipTextActive: {
+    color: '#FFFFFF',
+  },
 
-      height: 3,
+  datePickerButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    backgroundColor: '#F5F5F5',
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E8E0D0',
+  },
 
-      backgroundColor:
-        "#D4AF37",
+  datePickerText: {
+    fontSize: 14,
+    color: '#666666',
+    fontFamily: 'GeneralSans-Regular',
+    flex: 1,
+  },
 
-      borderRadius: 999,
-    },
+  clearDateButton: {
+    padding: 4,
+  },
 
-    filterRow: {
-      flexDirection: "row",
-      justifyContent:
-        "space-between",
+  clearDateText: {
+    fontSize: 14,
+    color: '#999999',
+    fontFamily: 'GeneralSans-Medium',
+  },
 
-      alignItems: "center",
-
-      marginTop: 16,
-      paddingHorizontal: 16
-    },
-
-    filterButton: {
-      height: 42,
-
-      borderRadius: 12,
-
-      borderWidth: 1.2,
-
-      borderColor:
-        "#D4AF37",
-
-      backgroundColor:
-        "#FBF7EB",
-
-      paddingHorizontal: 14,
-
-      flexDirection: "row",
-
-      alignItems: "center",
-
-      gap: 8,
-    },
-
-    filterText: {
-      fontSize: 14,
-      color: "#4A4A4A",
-    },
-
-    section: {
-      marginBottom: 24,
-    },
-
-    sectionTitle: {
-      fontSize: 16,
-      color: "#0D0D0D",
-      fontFamily:
-        "Satoshi-Bold",
-      marginBottom: 12,
-    },
-
-    cardsContainer: {
-      backgroundColor:
-        "#FBF7EB",
-
-      borderRadius: 16,
-
-      borderWidth: 1,
-
-      borderColor:
-        "#D4AF37",
-
-      overflow: "hidden",
-    },
-
-    card: {
-      flexDirection: "row",
-
-      justifyContent:
-        "space-between",
-
-      alignItems: "center",
-
-      padding: 14,
-    },
-
-    leftSection: {
-      flexDirection: "row",
-      alignItems: "center",
-      gap: 12,
-      flex: 1,
-    },
-
-    userImage: {
-      width: 84,
-      height: 84,
-      borderRadius: 12,
-    },
-
-    userName: {
-      fontSize: 18,
-      color: "#0D0D0D",
-      lineHeight: 26,
-      fontFamily:
-        "Satoshi-Bold",
-      marginBottom: 4,
-    },
-
-    statusRow: {
-      flexDirection: "row",
-      alignItems: "center",
-      gap: 4,
-      marginBottom: 4,
-    },
-
-    durationText: {
-      fontSize: 14,
-      color: "#0D0D0D",
-    },
-
-    statusText: {
-      fontSize: 14,
-    },
-
-    ratingRow: {
-      flexDirection: "row",
-      alignItems: "center",
-      gap: 4,
-    },
-
-    ratingText: {
-      fontSize: 16,
-      color: "#0D0D0D",
-      fontFamily:
-        "GeneralSans-Bold",
-    },
-
-    rightSection: {
-      alignItems: "flex-end",
-      justifyContent:
-        "space-between",
-      gap: 16,
-    },
-
-    tag: {
-      // height: 28,
-
-      borderRadius: 12,
-
-      backgroundColor:
-        "#D4AF37",
-
-      justifyContent:
-        "center",
-
-      alignItems:
-        "center",
-
-      paddingHorizontal: 12,
-      paddingVertical: 9
-    },
-
-    tagText: {
-      fontSize: 12,
-      color: "#0D0D0D",
-    },
-  });
+  modalActions: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: 12,
+    marginTop: 20,
+    paddingTop: 16,
+    borderTopWidth: 1,
+    borderTopColor: '#F0EDE8',
+  },
+});

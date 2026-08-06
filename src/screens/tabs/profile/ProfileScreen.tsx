@@ -13,7 +13,6 @@ import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import BottomSheetService from '../../../redux/features/ui/GlobalSheet/BottomSheetService';
 import LogoutSection from '../../../components/reusable/BottomSheet/LogoutSection';
 import DeleteAccountSection from '../../../components/reusable/BottomSheet/DeleteAccountSection';
-import AnimatedScreen from '../../../components/layout/AnimatedScreen';
 import ScreenWrapper from '../../../components/layout/ScreenWrapper';
 import AppHeader from '../../../components/reusable/AppHeader/AppHeader';
 import AuthTitle from '../../../components/auth/AuthTitle';

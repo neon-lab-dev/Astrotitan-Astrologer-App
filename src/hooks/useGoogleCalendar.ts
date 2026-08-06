@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { useState, useEffect, useCallback } from 'react';
 import { Alert } from 'react-native';
 import googleCalendarService from '../utils/googleCalendar.service';
@@ -14,20 +15,41 @@ export const useGoogleCalendar = () => {
 
     const checkStatus = useCallback(async () => {
         try {
-            const signedIn = await googleCalendarService.isSignedIn();
+            const response = await fetch(
+                `${API_URL}/api/v1/google-calendar/status`,
+                {
+                    method: 'GET',
+                    headers: {
+                        Authorization: `${token}`,
+                        'Content-Type': 'application/json',
+                    },
+                }
+            );
 
-            setIsConnected(signedIn);
+            const data = await response.json();
 
-            if (signedIn) {
-                const currentUser = await googleCalendarService.getCurrentUser();
-                setUser(currentUser?.user || currentUser);
+            if (response.ok && data.success) {
+                setIsConnected(data.data?.isConnected ?? false);
+
+                if (data.data?.user) {
+                    setUser(data.data.user);
+                } else if (data.data?.email) {
+                    setUser({
+                        email: data.data.email,
+                    });
+                } else {
+                    setUser(null);
+                }
             } else {
+                setIsConnected(false);
                 setUser(null);
             }
         } catch (err) {
-            console.log(err);
+            console.log('Status Error:', err);
+            setIsConnected(false);
+            setUser(null);
         }
-    }, []);
+    }, [token]);
 
     useEffect(() => {
         checkStatus();

@@ -1,271 +1,371 @@
-import React, { useState } from "react";
-import { Image, StyleSheet, TouchableOpacity, View } from "react-native";
-import ReusableButton from "../../../reusable/ReusableButton/ReusableButton";
-import { SansText } from "../../../reusable/Text/SansText";
-import { SatoshiText } from "../../../reusable/Text/SatoshiText";
-import StarIcon from '@/assets/icons/visual/star.svg';
+import React, { useState } from 'react';
+import { Image, StyleSheet, TouchableOpacity, View } from 'react-native';
+import ReusableButton from '../../../reusable/ReusableButton/ReusableButton';
+import { SansText } from '../../../reusable/Text/SansText';
+import { SatoshiText } from '../../../reusable/Text/SatoshiText';
+import BottomSheetService from '../../../../redux/features/ui/GlobalSheet/BottomSheetService';
+import ConnectGoogleSection from '../../../reusable/BottomSheet/ConnectGoogleSection';
+import { formatDate } from '../../../../utils/formatDate';
+import { ICONS } from '../../../../assets/svg';
 
 type Props = {
-    item: any;
-    onPress: () => void;
-    onAccept: (id: string) => void;
-    onReject: (id: string) => void;
-    onChat: (item: any) => void;
+  item: any;
+  onPress: () => void;
+  onChat: (item: any) => void;
 };
 
-const SessionCard = ({
-    item,
-    onPress,
-    onAccept,
-    onReject,
-    onChat,
-}: Props) => {
-    const [imageError, setImageError] = useState(false);
-    return (
-        <TouchableOpacity
-            activeOpacity={0.85}
-            style={styles.card}
-            onPress={onPress}
-        >
-            <View style={styles.leftSection}>
-                <Image
-                    source={
-                        item?.user?.profilePicture && !imageError
-                        && { uri: item.user.profilePicture }
-                    }
-                    onError={() => setImageError(true)}
-                    style={styles.userImage}
-                />
+const SessionCard = ({ item, onPress, onChat }: Props) => {
+  const [imageError, setImageError] = useState(false);
 
-                <View style={{ flex: 1 }}>
-                    <SatoshiText style={styles.userName}>
-                        {item?.user?.fullName}
-                    </SatoshiText>
-
-                    <View style={styles.statusRow}>
-                        <SansText style={styles.durationText}>
-                            {`${item?.method} Request`}
-                        </SansText>
-                    </View>
-
-                    <View style={styles.ratingRow}>
-                        <StarIcon width={24} height={24} />
-
-                        <SansText style={styles.ratingText}>
-                            {item?.rating ?? "N/A"}
-                        </SansText>
-                    </View>
-                </View>
-            </View>
-
-            {item?.status === "pending" ? (
-                <View style={styles.buttonContainer}>
-                    <ReusableButton
-                        variant="solid"
-                        title="Accept"
-                        height={30}
-                        textSize={12}
-                        style={styles.button}
-                        onPress={() => onAccept(item._id)}
-                    />
-
-                    <ReusableButton
-                        variant="outline"
-                        title="Decline"
-                        height={30}
-                        textSize={12}
-                        style={styles.button}
-                        onPress={() => onReject(item._id)}
-                    />
-                </View>
-            ) : item?.status === "accepted" ? (
-                <View style={styles.chatButtonContainer}>
-                    <ReusableButton
-                        variant="solid"
-                        title={`${item.method} Now`}
-                        height={32}
-                        textSize={12}
-                        style={styles.button}
-                        onPress={() => onChat(item)}
-                    />
-                </View>
-            ) : (
-                <View style={styles.chatButtonContainer}>
-                    <View
-
-                        style={{
-                            paddingVertical: 6,
-                            paddingHorizontal: 12,
-                            borderRadius: 12,
-                            borderWidth: 1,
-                            borderColor: "#D4AF37",
-                            backgroundColor: item.status === "ended" ? "#E8CC7254" : "#F51E1E8F",
-                        }}
-                    > <SansText>{item.status === "ended" ? "Session Ended" : "Declined"}</SansText></View>
-                </View>
-            )}
-        </TouchableOpacity>
+  const onScheduleCallPress = () => {
+    BottomSheetService.open(
+      React.createElement(ConnectGoogleSection as React.ComponentType<any>, {
+        consultationId: item?._id,
+        userName: item?.user?.fullName,
+        userImage: item?.user?.profilePicture,
+        date: item?.slotId?.date,
+        time: `${item?.bookedSlot?.startTime} - ${item?.bookedSlot?.endTime}`,
+        onCancel: BottomSheetService.close,
+      }),
+      {
+        height: 400,
+        hasGradient: true,
+      },
     );
+  };
+
+  const handleJoinCall = () => {
+    if (item?.meeting?.link) {
+      console.log('Joining call:', item?.meeting?.link);
+    }
+  };
+
+  const handleReschedule = () => {
+    console.log('Reschedule requested:', item?.meeting?.rescheduleRequest);
+  };
+
+  const hasRescheduleRequest = item?.meeting?.rescheduleRequest?.reason;
+
+  const formatBookingDate = (date: string) => {
+    if (!date) return '';
+    try {
+      return formatDate(date);
+    } catch {
+      return date;
+    }
+  };
+
+  // Determine status color
+  const getStatusColor = () => {
+    if (item?.status === 'ended') return '#E0E0E0';
+    if (item?.status === 'scheduled') return '#D4AF37';
+    if (item?.status === 'pending') return '#FFB74D';
+    return '#E0E0E0';
+  };
+
+  const getStatusText = () => {
+    if (item?.status === 'ended') return 'Ended';
+    if (item?.status === 'scheduled') return 'Scheduled';
+    if (item?.status === 'pending') return 'Pending';
+    return 'Unknown';
+  };
+
+  // Check if status badge should be shown
+  const shouldShowStatusBadge = () => {
+    // Don't show status badge for chat method with pending status
+    if (item?.method === 'chat' && item?.status === 'pending') {
+      return false;
+    }
+    return true;
+  };
+
+  return (
+    <TouchableOpacity
+      activeOpacity={0.85}
+      style={styles.card}
+      onPress={onPress}
+    >
+      {/* Top Row: User Info + Status */}
+      <View style={styles.topRow}>
+        <View style={styles.leftSection}>
+          <Image
+            source={
+              item?.user?.profilePicture &&
+              !imageError && { uri: item.user.profilePicture }
+            }
+            onError={() => setImageError(true)}
+            style={styles.userImage}
+          />
+
+          <View style={styles.userInfo}>
+            <SatoshiText style={styles.userName} numberOfLines={1}>
+              {item?.user?.fullName}
+            </SatoshiText>
+
+            {/* Consultation For Tag */}
+            {item?.consultationFor && (
+              <View style={styles.consultationTag}>
+                <SansText style={styles.consultationText}>
+                  {item?.consultationFor}
+                </SansText>
+              </View>
+            )}
+          </View>
+        </View>
+
+        {/* Status Badge - Hide for chat pending */}
+        {shouldShowStatusBadge() && (
+          <View
+            style={[styles.statusBadge, { backgroundColor: getStatusColor() }]}
+          >
+            <SansText style={styles.statusBadgeText}>
+              {getStatusText()}
+            </SansText>
+          </View>
+        )}
+      </View>
+
+      {/* Bottom Row: Booking Details + Action Button */}
+      <View style={styles.bottomRow}>
+        {/* Left: Booking Details */}
+        <View style={styles.detailsSection}>
+          {/* Show booking details for call method */}
+          {item?.method === 'call' && (
+            <View style={styles.detailsGrid}>
+              {item?.slotId?.date && (
+                <View style={styles.detailItem}>
+                  <ICONS.CalendarIcon
+                    width={18}
+                    height={18}
+                  />
+                  <SansText style={styles.detailText}>
+                    {formatBookingDate(item?.slotId?.date)}
+                  </SansText>
+                </View>
+              )}
+
+              {item?.bookedSlot?.startTime && item?.bookedSlot?.endTime && (
+                <View style={styles.detailItem}>
+                  <SansText style={styles.detailIcon}>🕐</SansText>
+                  <SansText style={styles.detailText}>
+                    {item?.bookedSlot?.startTime} - {item?.bookedSlot?.endTime}
+                  </SansText>
+                </View>
+              )}
+            </View>
+          )}
+
+          {/* Show createdAt for both call and chat */}
+          {item?.createdAt && (
+            <View style={styles.detailItem}>
+              <SansText style={styles.detailIcon}>📆</SansText>
+              <SansText style={styles.detailText}>
+                Booked: {formatBookingDate(item?.createdAt)}
+              </SansText>
+            </View>
+          )}
+        </View>
+
+        {/* Right: Action Buttons */}
+        <View style={styles.actionSection}>
+          {item?.method === 'call' ? (
+            <View style={styles.buttonWrapper}>
+              {item?.status === 'scheduled' ? (
+                <ReusableButton
+                  variant="solid"
+                  title="Join Call"
+                  height={32}
+                  textSize={12}
+                  style={styles.button}
+                  onPress={handleJoinCall}
+                />
+              ) : item?.status === 'pending' ? (
+                <ReusableButton
+                  variant="solid"
+                  title="Schedule"
+                  height={32}
+                  textSize={12}
+                  style={styles.button}
+                  onPress={onScheduleCallPress}
+                />
+              ) : null}
+            </View>
+          ) : item?.method === 'chat' ? (
+            <View style={styles.buttonWrapper}>
+              {item?.status === 'scheduled' || item?.status === 'pending' ? (
+                <ReusableButton
+                  variant="solid"
+                  title="Chat Now"
+                  height={32}
+                  textSize={12}
+                  style={styles.button}
+                  onPress={() => onChat(item)}
+                />
+              ) : null}
+            </View>
+          ) : null}
+
+          {/* Reschedule Button */}
+          {hasRescheduleRequest && (
+            <TouchableOpacity
+              style={styles.rescheduleButton}
+              onPress={handleReschedule}
+              activeOpacity={0.7}
+            >
+              <SansText style={styles.rescheduleText}>↻ Reschedule</SansText>
+            </TouchableOpacity>
+          )}
+        </View>
+      </View>
+    </TouchableOpacity>
+  );
 };
 
 export default SessionCard;
 
-const styles =
-    StyleSheet.create({
-        container: {
-            flex: 1,
-            backgroundColor:
-                "#F8F1D7",
-        },
+const styles = StyleSheet.create({
+  card: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 14,
+    padding: 16,
+    marginVertical: 6,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 3,
+    borderWidth: 1,
+    borderColor: '#F0F0F0',
+  },
 
-        tabsContainer: {
-            flexDirection: "row",
+  topRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: 12,
+  },
 
-            position:
-                "relative",
+  leftSection: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
 
-        },
+  userImage: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    marginRight: 12,
+    borderWidth: 2,
+    borderColor: '#D4AF37',
+  },
 
-        tabItem: {
-            flex: 1,
+  userInfo: {
+    flex: 1,
+    gap: 4,
+  },
 
-            alignItems:
-                "center",
+  userName: {
+    fontSize: 16,
+    fontFamily: 'Satoshi-Bold',
+    color: '#0D0D0D',
+  },
 
-            justifyContent:
-                "center",
+  consultationTag: {
+    backgroundColor: '#F5F0E8',
+    paddingHorizontal: 10,
+    paddingVertical: 2,
+    borderRadius: 8,
+    alignSelf: 'flex-start',
+  },
 
-            paddingBottom: 16,
+  consultationText: {
+    fontSize: 10,
+    color: '#8B7A5E',
+    fontFamily: 'GeneralSans-Medium',
+    textTransform: 'capitalize',
+  },
 
-            paddingTop: 2,
-        },
+  statusBadge: {
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 12,
+    alignSelf: 'flex-start',
+    minWidth: 70,
+    alignItems: 'center',
+  },
 
-        tabInner: {
-            flexDirection: "row",
-            alignItems: "center",
-            gap: 8,
-        },
+  statusBadgeText: {
+    fontSize: 11,
+    color: '#FFFFFF',
+    fontFamily: 'GeneralSans-Medium',
+    textTransform: 'capitalize',
+  },
 
-        tabText: {
-            fontSize: 16,
-            color: "#0D0D0D",
-            fontFamily:
-                "GeneralSans-Medium",
-        },
+  bottomRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    borderTopWidth: 1,
+    borderTopColor: '#F5F5F5',
+    paddingTop: 12,
+  },
 
-        activeTabText: {
-            fontFamily:
-                "GeneralSans-Bold",
-        },
+  detailsSection: {
+    flex: 1,
+    marginRight: 12,
+  },
 
-        animatedIndicator: {
-            position: "absolute",
+  detailsGrid: {
+    gap: 4,
+  },
 
-            bottom: 0,
+  detailItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
 
-            height: 3,
+  detailIcon: {
+    fontSize: 12,
+    width: 20,
+  },
 
-            backgroundColor:
-                "#D4AF37",
+  detailText: {
+    fontSize: 12,
+    color: '#666666',
+    fontFamily: 'GeneralSans-Regular',
+  },
 
-            borderRadius: 999,
-        },
+  actionSection: {
+    alignItems: 'flex-end',
+    gap: 6,
+  },
 
-        card: {
-            flexDirection: "row",
+  buttonWrapper: {
+    alignItems: 'flex-end',
+  },
 
-            justifyContent:
-                "space-between",
+  button: {
+    borderRadius: 8,
+    minWidth: 80,
+  },
 
-            alignItems: "center",
+  rescheduleButton: {
+    paddingVertical: 4,
+    paddingHorizontal: 10,
+    borderRadius: 6,
+    backgroundColor: '#FFF3E0',
+    borderWidth: 1,
+    borderColor: '#FFB74D',
+  },
 
-            padding: 14,
-        },
-
-
-        statusText: {
-            fontSize: 14,
-        },
-
-
-        rightSection: {
-            alignItems: "flex-end",
-            justifyContent:
-                "space-between",
-            gap: 16,
-        },
-
-        tag: {
-            // height: 28,
-
-            borderRadius: 12,
-
-            backgroundColor:
-                "#D4AF37",
-
-            justifyContent:
-                "center",
-
-            alignItems:
-                "center",
-
-            paddingHorizontal: 12,
-            paddingVertical: 9
-        },
-
-        tagText: {
-            fontSize: 12,
-            color: "#0D0D0D",
-        },
-        leftSection: {
-            flexDirection: "row",
-            alignItems: "center",
-            flex: 1,
-        },
-
-        userImage: {
-            width: 60,
-            height: 60,
-            borderRadius: 30,
-            marginRight: 12,
-        },
-
-        userName: {
-            fontSize: 16,
-        },
-
-        statusRow: {
-            marginTop: 4,
-        },
-
-        durationText: {
-            fontSize: 13,
-        },
-
-        ratingRow: {
-            flexDirection: "row",
-            alignItems: "center",
-            marginTop: 6,
-            gap: 4,
-        },
-
-        ratingText: {
-            fontSize: 13,
-        },
-
-        buttonContainer: {
-            justifyContent: "center",
-            gap: 8,
-            marginLeft: 12,
-        },
-
-        chatButtonContainer: {
-            justifyContent: "center",
-            marginLeft: 12,
-        },
-
-        button: {
-            borderRadius: 10,
-            minWidth: 90,
-        },
-    });
+  rescheduleText: {
+    fontSize: 10,
+    color: '#E65100',
+    fontFamily: 'GeneralSans-Medium',
+  },
+});
