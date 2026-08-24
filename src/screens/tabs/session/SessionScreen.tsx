@@ -2,7 +2,7 @@
 import ChatIcon from '@/assets/icons/actions/bubble-chat.svg';
 import CalenderIcon from '@/assets/icons/navigation/calendar.svg';
 import CallIcon from '@/assets/icons/visual/call.svg';
-import { useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import {
   Animated,
   Pressable,
@@ -21,6 +21,7 @@ import ReusableButton from '../../../components/reusable/ReusableButton/Reusable
 import { useGetMyConsultationBookingsQuery } from '../../../redux/features/consultation/consultationApi';
 import Consultations from '../../../components/SessionScreenPage/Consultations/Consultations';
 import CustomCalendar from '../../../components/reusable/CustomCalendar/CustomCalendar';
+import AnimatedScreen from '../../../components/layout/AnimatedScreen';
 // import ConnectGoogleCalendar from '../../../components/ConnectGoogleCalendar';
 
 const SessionsScreen = () => {
@@ -95,7 +96,7 @@ const SessionsScreen = () => {
     data: consultationBookings,
     isLoading: isBookingLoading,
     isFetching: isBookingFetching,
-    refetch: bookingRefetch,
+    refetch,
   } = useGetMyConsultationBookingsQuery(
     { date: selectedDate, status: selectedStatus, method: activeTab },
     { skip: false },
@@ -114,8 +115,6 @@ const SessionsScreen = () => {
     setSelectedStatus(tempStatus);
     setSelectedDate(tempDate);
     setShowFilterModal(false);
-    // Refetch with new filters
-    bookingRefetch();
   };
 
   // Handle filter reset
@@ -234,144 +233,178 @@ const SessionsScreen = () => {
     </Modal>
   );
 
+  const onRefresh = useCallback(async () => {
+    if (refreshing) return;
+
+    try {
+      setRefreshing(true);
+
+      await Promise.all([refetch().unwrap()]);
+    } catch (error) {
+      console.log('REFRESH ERROR:', error);
+    } finally {
+      setRefreshing(false);
+    }
+  }, [refreshing, refetch]);
+
   return (
-    // <AnimatedScreen>
-    <ScreenWrapper>
-      <View style={styles.container}>
-        {/* HEADER */}
+    <AnimatedScreen>
+      <ScreenWrapper>
+        <View style={styles.container}>
+          {/* HEADER */}
 
-        <AppHeader showBack={false}>
-          <AuthTitle title="Sessions">
-            <SansText>Review your completed chat and call sessions.</SansText>
-          </AuthTitle>
+          <AppHeader showBack={false}>
+            <AuthTitle title="Session Logs">
+              <SansText>Manage your sessions</SansText>
+            </AuthTitle>
 
-          {/* TABS */}
+            {/* TABS */}
 
-          <View
-            style={styles.tabsContainer}
-            onLayout={e => setContainerWidth(e.nativeEvent.layout.width)}
-          >
-            {tabs.map((tab, index) => {
-              const isActive = activeTab === tab.key;
-              const Icon = tab.icon;
-              return (
-                <Pressable
-                  key={tab.key}
-                  style={styles.tabItem}
-                  onPress={() => handleTabPress(index, tab.key)}
-                >
-                  <View style={styles.tabInner}>
-                    <Icon width={18} height={18} />
+            <View
+              style={styles.tabsContainer}
+              onLayout={e => setContainerWidth(e.nativeEvent.layout.width)}
+            >
+              {tabs.map((tab, index) => {
+                const isActive = activeTab === tab.key;
+                const Icon = tab.icon;
+                return (
+                  <Pressable
+                    key={tab.key}
+                    style={styles.tabItem}
+                    onPress={() => handleTabPress(index, tab.key)}
+                  >
+                    <View style={styles.tabInner}>
+                      <Icon width={18} height={18} />
 
-                    <SansText
-                      style={[styles.tabText, isActive && styles.activeTabText]}
-                    >
-                      {tab.label}
-                    </SansText>
-                  </View>
-                </Pressable>
-              );
-            })}
+                      <SansText
+                        style={[
+                          styles.tabText,
+                          isActive && styles.activeTabText,
+                        ]}
+                      >
+                        {tab.label}
+                      </SansText>
+                    </View>
+                  </Pressable>
+                );
+              })}
 
-            <Animated.View
-              style={[
-                styles.animatedIndicator,
-                {
-                  width: TAB_WIDTH,
+              <Animated.View
+                style={[
+                  styles.animatedIndicator,
+                  {
+                    width: TAB_WIDTH,
 
-                  transform: [
-                    {
-                      translateX,
-                    },
-                  ],
-                },
-              ]}
-            />
+                    transform: [
+                      {
+                        translateX,
+                      },
+                    ],
+                  },
+                ]}
+              />
+            </View>
+          </AppHeader>
+
+          {/* BODY */}
+          {/* Filter Row */}
+          <View style={styles.filterRow}>
+            {/* Active Filters Display */}
+            <View style={styles.activeFilters}>
+              {selectedStatus !== 'all' && (
+                <View style={styles.activeFilterChip}>
+                  <SansText style={styles.activeFilterText}>
+                    {selectedStatus}
+                  </SansText>
+                  <TouchableOpacity
+                    onPress={() => {
+                      setSelectedStatus('all');
+                    }}
+                    style={styles.activeFilterRemove}
+                  >
+                    <SansText style={styles.activeFilterRemoveText}>✕</SansText>
+                  </TouchableOpacity>
+                </View>
+              )}
+              {selectedDate && (
+                <View style={styles.activeFilterChip}>
+                  <SansText style={styles.activeFilterText}>
+                    {selectedDate}
+                  </SansText>
+                  <TouchableOpacity
+                    onPress={() => {
+                      setSelectedDate('');
+                    }}
+                    style={styles.activeFilterRemove}
+                  >
+                    <SansText style={styles.activeFilterRemoveText}>✕</SansText>
+                  </TouchableOpacity>
+                </View>
+              )}
+            </View>
+
+            {/* Filter Button */}
+            <TouchableOpacity
+              style={styles.filterButton}
+              onPress={openFilterModal}
+            >
+              <CalenderIcon width={18} height={18} />
+              <SansText style={styles.filterButtonText}>Filter</SansText>
+            </TouchableOpacity>
           </View>
-        </AppHeader>
 
-        {/* BODY */}
-        {/* Filter Row */}
-        <View style={styles.filterRow}>
-          {/* Active Filters Display */}
-          <View style={styles.activeFilters}>
-            {selectedStatus !== 'all' && (
-              <View style={styles.activeFilterChip}>
-                <SansText style={styles.activeFilterText}>
-                  {selectedStatus}
-                </SansText>
-                <TouchableOpacity
-                  onPress={() => {
-                    setSelectedStatus('all');
-                    bookingRefetch();
-                  }}
-                  style={styles.activeFilterRemove}
-                >
-                  <SansText style={styles.activeFilterRemoveText}>✕</SansText>
-                </TouchableOpacity>
-              </View>
-            )}
-            {selectedDate && (
-              <View style={styles.activeFilterChip}>
-                <SansText style={styles.activeFilterText}>
-                  {selectedDate}
-                </SansText>
-                <TouchableOpacity
-                  onPress={() => {
-                    setSelectedDate('');
-                    bookingRefetch();
-                  }}
-                  style={styles.activeFilterRemove}
-                >
-                  <SansText style={styles.activeFilterRemoveText}>✕</SansText>
-                </TouchableOpacity>
-              </View>
-            )}
-          </View>
-
-          {/* Filter Button */}
-          <TouchableOpacity
-            style={styles.filterButton}
-            onPress={openFilterModal}
-          >
-            <CalenderIcon width={18} height={18} />
-            <SansText style={styles.filterButtonText}>Filter</SansText>
-          </TouchableOpacity>
-        </View>
-
-        <ScrollView
-          showsVerticalScrollIndicator={false}
-          refreshControl={
-            <RefreshControl
-              refreshing={refreshing}
-              tintColor="#D4AF37"
-              colors={['#D4AF37']}
-              progressBackgroundColor="#FBF7EB"
-            />
-          }
-          contentContainerStyle={{
-            paddingHorizontal: 16,
-            paddingTop: 18,
-            paddingBottom: 140,
-          }}
-        >
-          <Animated.View
-            style={{
-              opacity,
+          <ScrollView
+          
+            showsVerticalScrollIndicator={false}
+            refreshControl={
+              <RefreshControl
+                onRefresh={onRefresh}
+                refreshing={refreshing}
+                tintColor="#D4AF37"
+                colors={['#D4AF37']}
+                progressBackgroundColor="#FBF7EB"
+              />
+            }
+            contentContainerStyle={{
+              paddingHorizontal: 16,
+              paddingTop: 18,
+              paddingBottom: 140,
+              flexGrow: 1, // Add this to allow centering when empty
             }}
           >
-            <Consultations
-              isLoading={isBookingLoading || isBookingFetching || refreshing}
-              bookings={bookings || []}
-            />
-          </Animated.View>
-        </ScrollView>
-      </View>
-
-      {/* Filter Modal */}
-      {renderFilterModal()}
-    </ScreenWrapper>
-    // </AnimatedScreen>
+            <Animated.View
+              style={{
+                opacity,
+                flex: 1, // Add this to fill the space
+              }}
+            >
+              {!isBookingLoading &&
+              !isBookingFetching &&
+              !refreshing &&
+              bookings?.length === 0 ? (
+                <View style={styles.emptyStateContainer}>
+                  <SansText style={styles.emptyStateText}>
+                    No bookings scheduled
+                  </SansText>
+                  <SansText style={styles.emptyStateSubText}>
+                    You don't have any appointments scheduled.
+                  </SansText>
+                </View>
+              ) : (
+                <Consultations
+                  isLoading={
+                    isBookingLoading || isBookingFetching || refreshing
+                  }
+                  bookings={bookings || []}
+                />
+              )}
+            </Animated.View>
+          </ScrollView>
+        </View>
+        {/* Filter Modal */}
+        {renderFilterModal()}
+      </ScreenWrapper>
+    </AnimatedScreen>
   );
 };
 
@@ -623,5 +656,57 @@ const styles = StyleSheet.create({
     paddingTop: 16,
     borderTopWidth: 1,
     borderTopColor: '#F0EDE8',
+  },
+  emptyStateContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    minHeight: 400,
+  },
+  emptyStateIconContainer: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: '#FBF7EB',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: '#D4AF37',
+  },
+  emptyStateIcon: {
+    fontSize: 40,
+  },
+  emptyStateTitle: {
+    fontSize: 20,
+    fontFamily: 'Satoshi-Bold',
+    color: '#1A1A1A',
+    marginBottom: 8,
+  },
+  emptyStateDescription: {
+    fontSize: 14,
+    fontFamily: 'Satoshi-Regular',
+    color: '#8E8E93',
+    textAlign: 'center',
+    marginBottom: 24,
+    lineHeight: 20,
+  },
+  emptyStateButton: {
+    width: '80%',
+    maxWidth: 250,
+  },
+  emptyStateText: {
+    fontSize: 16,
+    fontFamily: 'Satoshi-Bold',
+    color: '#1A1A1A',
+    marginBottom: 8,
+  },
+  emptyStateSubText: {
+    fontSize: 14,
+    fontFamily: 'Satoshi-Regular',
+    color: '#8E8E93',
+    textAlign: 'center',
+    paddingHorizontal: 20,
   },
 });

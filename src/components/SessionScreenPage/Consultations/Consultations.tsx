@@ -19,7 +19,6 @@ const Consultations = ({
   isLoading: boolean;
   bookings: TConsultation[];
 }) => {
-  console.log(bookings, 'iiii');
   const navigation = useNavigation<NavigationProp>();
   const dispatch = useDispatch();
 
@@ -54,7 +53,7 @@ const Consultations = ({
     <View>
       {/* TODAY */}
       <View style={styles.section}>
-        <ContentSection title="Today" sectionStyle={{ marginBottom: 12 }} />
+        <ContentSection title="All Consultations" sectionStyle={{ marginBottom: 12 }} />
 
         <View>
           {isLoading ? (

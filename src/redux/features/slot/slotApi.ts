@@ -49,6 +49,15 @@ const slotApi = baseApi.injectEndpoints({
       providesTags: ["consultation"],
     }),
 
+    getAllSlotsByAstrologerId: builder.query({
+      query: (date) => ({
+        url: `/slot/my/${date}`,
+        method: "GET",
+        credentials: "include",
+      }),
+      providesTags: ["slot"],
+    }),
+
     addSlot: builder.mutation({
       query: (data) => ({
         url: `/slot/add`,
@@ -82,6 +91,7 @@ const slotApi = baseApi.injectEndpoints({
 export const {
   useGetMyConsultationBookingsQuery,
   useGetSingleConsultationBookingsQuery,
+  useGetAllSlotsByAstrologerIdQuery,
   useAddSlotMutation,
   useEndConsultationSessionMutation,
   useScheduleMeetingMutation,
