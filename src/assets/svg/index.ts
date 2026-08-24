@@ -62,6 +62,7 @@ import EditIcon from "@/assets/icons/actions/edit.svg";
 import AnalyzeKundli from "@/assets/icons/visual/analyze-kundli.svg";
 import GenerateKundli from "@/assets/icons/visual/generate-kundli.svg";
 import RightArrow from "@/assets/icons/visual/right-arrow.svg";
+import UploadFile from "@/assets/icons/visual/upload-file.svg";
 
 export const ICONS = {
   homeActive: HomeActive,
@@ -119,7 +120,8 @@ export const ICONS = {
   EmptyFile: EmptyFile,
   RightArrow: RightArrow,
   AnalyzeKundli: AnalyzeKundli,
-  GenerateKundli: GenerateKundli
+  GenerateKundli: GenerateKundli,
+  UploadFile: UploadFile
 };
 
 export type IconName = keyof typeof ICONS;

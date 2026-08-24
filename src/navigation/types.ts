@@ -75,4 +75,7 @@ export type RootStackParamList = {
   KundliRequestDetails: {
     id: string;
   };
+  UploadReport: {
+    id: string;
+  };
 };

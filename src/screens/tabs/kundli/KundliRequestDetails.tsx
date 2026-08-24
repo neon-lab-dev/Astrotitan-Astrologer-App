@@ -9,7 +9,7 @@ import {
   Linking,
   StatusBar,
   SafeAreaView,
-  Image,
+  Alert,
 } from 'react-native';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import { SansText } from '../../../components/reusable/Text/SansText';
@@ -39,6 +39,21 @@ const KundliRequestDetails = () => {
     await refetch();
     setRefreshing(false);
   }, [refetch]);
+
+  // Helper function to open report URL
+  const openReport = async (url: string) => {
+    try {
+      const supported = await Linking.canOpenURL(url);
+      if (supported) {
+        await Linking.openURL(url);
+      } else {
+        Alert.alert('Error', 'Unable to open the report. Please try again later.');
+      }
+    } catch (error) {
+      Alert.alert('Error', 'Failed to open the report.');
+      console.error('Error opening report:', error);
+    }
+  };
 
   if (isLoading)
     return (
@@ -180,51 +195,56 @@ const KundliRequestDetails = () => {
           </View>
         )}
 
-        {/* --- SECTION: ASSIGNED EXPERT --- */}
-        {request?.astrologerId && (
-          <TouchableOpacity
-            style={styles.expertSection}
-            onPress={() =>
-              navigation.navigate('AstrologerProfile', {
-                id: request?.astrologerId?._id,
-              })
-            }
-            activeOpacity={0.6}
-          >
-            <View style={styles.expertAvatar}>
-              {request?.astrologerId?.profilePicture ? (
-                <Image
-                  source={{ uri: request?.astrologerId?.profilePicture }}
-                  style={styles.expertAvatarImage}
-                />
-              ) : (
-                <SansText style={styles.avatarLetter}>
-                  {request?.astrologerId?.displayName
-                    ?.charAt(0)
-                    ?.toUpperCase() || 'A'}
-                </SansText>
-              )}
-            </View>
-            <View style={{ flex: 1 }}>
-              <SansText style={styles.expertLabel}>
-                Consulting Specialist
-              </SansText>
-              <SatoshiText style={styles.expertName}>
-                {request?.astrologerId?.displayName}
-              </SatoshiText>
-            </View>
-            <SansText style={styles.arrow}>❯</SansText>
-          </TouchableOpacity>
+        {/* --- SECTION: REPORT (if available) --- */}
+        {request.reportUrl && (
+          <View style={styles.reportSection}>
+            <SatoshiText style={styles.sectionHeading}>
+              Generated Report
+            </SatoshiText>
+            <TouchableOpacity
+              style={styles.reportButton}
+              onPress={() => openReport(request.reportUrl)}
+              activeOpacity={0.7}
+            >
+              <View style={styles.reportButtonContent}>
+                <SansText style={styles.reportButtonIcon}>📄</SansText>
+                <View style={styles.reportButtonTextContainer}>
+                  <SatoshiText style={styles.reportButtonTitle}>
+                    View Report
+                  </SatoshiText>
+                  <SansText style={styles.reportButtonSubtext}>
+                    Click to open the generated report
+                  </SansText>
+                </View>
+                <SansText style={styles.reportButtonArrow}>→</SansText>
+              </View>
+            </TouchableOpacity>
+          </View>
         )}
 
         {/* --- ACTION BUTTON --- */}
-        {request.status === 'completed' && request.reportUrl && (
+        {request.status !== 'completed' && !request.reportUrl && (
           <View style={{ marginTop: 20 }}>
             <ReusableButton
-              title=" Download Completed Report"
+              title="Upload Report"
               variant="solid"
-              onPress={() => Linking.openURL(request.reportUrl!)}
+              onPress={() => navigation.navigate('UploadReport', { id: request?._id })}
             />
+          </View>
+        )}
+
+        {/* If report is already uploaded, show a "Report Submitted" status */}
+        {request.reportUrl && (
+          <View style={styles.reportSubmittedContainer}>
+            <View style={styles.reportSubmittedBadge}>
+              <SansText style={styles.reportSubmittedIcon}>✅</SansText>
+              <SansText style={styles.reportSubmittedText}>
+                Report Submitted
+              </SansText>
+            </View>
+            <SansText style={styles.reportSubmittedDate}>
+              Submitted on {formatDate(request.completedAt || request.updatedAt)}
+            </SansText>
           </View>
         )}
 
@@ -329,7 +349,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     textTransform: 'uppercase',
     letterSpacing: 1.2,
-    marginBottom: 18,
+    marginBottom: 10,
   },
 
   grid: {
@@ -371,43 +391,76 @@ const styles = StyleSheet.create({
   },
   fileLinkText: { color: '#007AFF', fontWeight: '500', fontSize: 14 },
 
-  expertSection: {
+  // Report Section Styles
+  reportSection: {
+    marginTop: 18,
+  },
+  reportButton: {
+    backgroundColor: '#F8F9FA',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E8E8E8',
+    padding: 16,
+    marginTop: 4,
+  },
+  reportButtonContent: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FAFAFA',
+  },
+  reportButtonIcon: {
+    fontSize: 24,
+    marginRight: 12,
+  },
+  reportButtonTextContainer: {
+    flex: 1,
+  },
+  reportButtonTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#1A1A1A',
+  },
+  reportButtonSubtext: {
+    fontSize: 12,
+    color: '#8E8E93',
+    marginTop: 2,
+  },
+  reportButtonArrow: {
+    fontSize: 18,
+    color: '#D4AF37',
+    fontWeight: '600',
+  },
+
+  // Report Submitted Status
+  reportSubmittedContainer: {
+    marginTop: 20,
+    backgroundColor: '#F0FDF4',
     borderRadius: 12,
     padding: 16,
-    marginTop: 30,
     borderWidth: 1,
-    borderColor: '#F0F0F0',
-    marginBottom: 20,
-  },
-  expertAvatar: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: 'rgba(212, 175, 55, 0.12)',
+    borderColor: '#86EFAC',
     alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 12,
-    overflow: 'hidden',
   },
-  expertAvatarImage: {
-    width: '100%',
-    height: '100%',
-    borderRadius: 24,
+  reportSubmittedBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
   },
-  avatarLetter: {
-    fontSize: 20,
-    fontFamily: 'Satoshi-Bold',
-    color: '#D4AF37',
+  reportSubmittedIcon: {
+    fontSize: 18,
   },
-  expertLabel: { fontSize: 11, color: '#8E8E93' },
-  expertName: { fontSize: 15, fontWeight: 'bold', color: '#1A1A1A' },
-  arrow: { color: '#CCC', fontSize: 12 },
+  reportSubmittedText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#166534',
+  },
+  reportSubmittedDate: {
+    fontSize: 12,
+    color: '#6B7280',
+    marginTop: 4,
+  },
 
   primaryButton: {
-    backgroundColor: '#1A1A1A', // Darker, more professional button
+    backgroundColor: '#1A1A1A',
     marginTop: 30,
     height: 54,
     borderRadius: 12,

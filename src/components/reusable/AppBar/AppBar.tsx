@@ -133,6 +133,7 @@ const AppBar = ({
 
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
           <IconButton
+            size={40}
             Icon={NotificationIcon}
             iconColor="#0D0D0D"
             onPress={() => {
@@ -175,8 +176,8 @@ const styles = StyleSheet.create({
   // LEFT / RIGHT ICON BUTTON
   // --------------------------------
   iconButton: {
-    width: 40,
-    height: 40,
+    width: 20,
+    height: 20,
 
     borderRadius: 20,
 
