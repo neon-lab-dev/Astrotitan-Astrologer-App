@@ -64,12 +64,20 @@ export type RootStackParamList = {
     sessionType: string;
     userName: string;
     date: string;
-    time: string;
-    duration: string;
+    time: string; // if it's call
+    meetingDate?: string;
+    startTime?: string;
+    endTime?: string;
+    consultationFor?: string;
     status: string;
     rating?: number;
     subscriptionType?: string;
     image?: string;
+    consultationId: string;
+    recommendations?: string;
+  };
+  ProvideNotes : {
+    id: string
   };
   KundliScreen: undefined;
   KundliRequestDetails: {

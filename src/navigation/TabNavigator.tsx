@@ -70,7 +70,7 @@ export default function TabNavigator() {
         component={KundliNavigator}
         options={({ route }): any => ({
           title: 'Kundli',
-          tabIcon: { active: 'userActive', inactive: 'userInactive' },
+          tabIcon: { active: 'KundliActive', inactive: 'Kundli' },
           tabBarStyle: shouldHideTabBar(route)
             ? { display: 'none' }
             : undefined,

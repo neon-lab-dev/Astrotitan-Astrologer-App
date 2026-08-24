@@ -1,25 +1,24 @@
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useState } from 'react';
 import {
   FlatList,
   RefreshControl,
   ScrollView,
   StyleSheet,
   View,
-} from "react-native";
-import { useGetMyBlogsQuery } from "../../../redux/features/blog/blogApi";
-import FeatureCard from "../../../components/tabs/home/home/FeatureCard/FeatureCard";
-import FeatureCardSkeleton from "../../../components/tabs/home/home/FeatureCard/FeatureCardSkeleton";
-import AnimatedScreen from "../../../components/layout/AnimatedScreen";
-import ScreenWrapper from "../../../components/layout/ScreenWrapper";
-import AppHeader from "../../../components/reusable/AppHeader/AppHeader";
-import AuthTitle from "../../../components/auth/AuthTitle";
-import { SansText } from "../../../components/reusable/Text/SansText";
-import ContentSection from "../../../components/reusable/ContentSectoin/ContentSection";
-import ReusableButton from "../../../components/reusable/ReusableButton/ReusableButton";
-import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { RootStackParamList } from "../../../navigation/types";
-import { useNavigation } from "@react-navigation/native";
-
+} from 'react-native';
+import { useGetMyBlogsQuery } from '../../../redux/features/blog/blogApi';
+import FeatureCardSkeleton from '../../../components/tabs/home/home/FeatureCard/FeatureCardSkeleton';
+import AnimatedScreen from '../../../components/layout/AnimatedScreen';
+import ScreenWrapper from '../../../components/layout/ScreenWrapper';
+import AppHeader from '../../../components/reusable/AppHeader/AppHeader';
+import AuthTitle from '../../../components/auth/AuthTitle';
+import { SansText } from '../../../components/reusable/Text/SansText';
+import ContentSection from '../../../components/reusable/ContentSectoin/ContentSection';
+import ReusableButton from '../../../components/reusable/ReusableButton/ReusableButton';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RootStackParamList } from '../../../navigation/types';
+import { useNavigation } from '@react-navigation/native';
+import BlogCard from '../../../components/BlogPage/BlogCard';
 
 const CreateScreen = () => {
   const [refreshing, setRefreshing] = useState(false);
@@ -39,10 +38,9 @@ const CreateScreen = () => {
     },
   );
 
-  type NavigationProp =
-      NativeStackNavigationProp<RootStackParamList>;
-  
-    const navigation = useNavigation<NavigationProp>();
+  type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
+
+  const navigation = useNavigation<NavigationProp>();
   const blogs = blogsResponse?.data?.data || [];
   const onRefresh = useCallback(async () => {
     if (refreshing) return;
@@ -50,33 +48,21 @@ const CreateScreen = () => {
       setRefreshing(true);
       await Promise.all([refetchBlogs().unwrap()]);
     } catch (error) {
-      console.log("REFRESH ERROR:", error);
+      console.log('REFRESH ERROR:', error);
     } finally {
       setRefreshing(false);
     }
   }, [refreshing, refetchBlogs]);
 
   const renderBlogItem = ({ item: blog }: { item: any }) => (
-    <View style={styles.cardWrapper}>
-      <FeatureCard
-        key={blog._id}
-        title={blog?.title || "Untitled Blog"}
-        description={blog?.content?.slice(0, 60) + "..."}
-        image={{
-          uri: blog?.thumbnail,
-        }}
-        ctaText="Read Article"
-        height={194}
-        onPress={() =>
-          navigation.navigate(
-         "ArticleScreen",
-             {
-              id: blog?._id,
-            },
-          )
-        }
-      />
-    </View>
+    <BlogCard
+      key={blog._id}
+      title={blog?.title || 'Untitled Blog'}
+      thumbnail={{
+        uri: blog?.thumbnail,
+      }}
+      onPress={() => navigation.navigate('ArticleScreen', { id: blog?._id })}
+    />
   );
 
   const renderSkeletonItem = () => (
@@ -109,7 +95,7 @@ const CreateScreen = () => {
                   refreshing={refreshing}
                   onRefresh={onRefresh}
                   tintColor="#816B22"
-                  colors={["#816B22"]}
+                  colors={['#816B22']}
                   progressBackgroundColor="#FBF7EB"
                 />
               }
@@ -117,7 +103,7 @@ const CreateScreen = () => {
           ) : blogs?.length > 0 ? (
             <FlatList
               data={blogs}
-              keyExtractor={(item) => item._id}
+              keyExtractor={item => item._id}
               renderItem={renderBlogItem}
               showsVerticalScrollIndicator={false}
               contentContainerStyle={styles.flatListContent}
@@ -126,7 +112,7 @@ const CreateScreen = () => {
                   refreshing={refreshing}
                   onRefresh={onRefresh}
                   tintColor="#816B22"
-                  colors={["#816B22"]}
+                  colors={['#816B22']}
                   progressBackgroundColor="#FBF7EB"
                 />
               }
@@ -153,7 +139,7 @@ const CreateScreen = () => {
                   refreshing={refreshing}
                   onRefresh={onRefresh}
                   tintColor="#816B22"
-                  colors={["#816B22"]}
+                  colors={['#816B22']}
                   progressBackgroundColor="#FBF7EB"
                 />
               }
@@ -173,7 +159,7 @@ const CreateScreen = () => {
           <ReusableButton
             title="Create Content"
             onPress={() => {
-              navigation.navigate("SelectContentType");
+              navigation.navigate('SelectContentType');
             }}
             width="100%"
             variant="solid"
@@ -203,22 +189,22 @@ const styles = StyleSheet.create({
     marginBottom: 0,
   },
   sectionHeader: {
-    marginBottom: 12,
-    marginTop: 0,
+    marginBottom: 6,
+    marginTop: 6,
   },
   emptyContainer: {
     flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: 'center',
+    alignItems: 'center',
     paddingTop: 40,
   },
   emptyText: {
-    color: "#8C8C8C",
+    color: '#8C8C8C',
     fontSize: 16,
-    textAlign: "center",
+    textAlign: 'center',
   },
   fixedBottom: {
-    position: "absolute",
+    position: 'absolute',
     bottom: 0,
     left: 0,
     right: 0,
@@ -226,6 +212,6 @@ const styles = StyleSheet.create({
     paddingTop: 12,
     paddingBottom: 24,
     gap: 10,
-    backgroundColor: "#F8F1D7",
+    backgroundColor: '#F8F1D7',
   },
 });

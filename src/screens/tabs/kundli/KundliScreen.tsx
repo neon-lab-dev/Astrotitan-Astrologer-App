@@ -12,7 +12,6 @@ import AppBar from '../../../components/reusable/AppBar/AppBar';
 const KundliScreen = () => {
   const [refreshing, setRefreshing] = useState<boolean>(false);
   const { data, isLoading, refetch } = useGetMyKundliRequestsQuery({});
-  console.log(data, 'REQ');
 
   const requests = data?.data?.data || [];
 

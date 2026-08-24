@@ -27,13 +27,12 @@ import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { RootStackParamList } from '../../../navigation/types';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import RequestCard from '../../../components/tabs/home/home/RequestCard/RequestCard';
-import ReusableButton from '../../../components/reusable/ReusableButton/ReusableButton';
-import EditIcon from '@/assets/icons/actions/edit.svg';
 import AnimatedScreen from '../../../components/layout/AnimatedScreen';
 import { useGetMyConsultationBookingsQuery } from '../../../redux/features/consultation/consultationApi';
 import RequestCardSkeleton from '../../../components/tabs/home/home/RequestCard/RequestCardSkeleton';
 import { useGetMyNotificationsQuery } from '../../../redux/features/notification/notificationApi';
 import QuickActions from '../../../components/HomePage/QuickAction/QuickAction';
+import { ICONS } from '../../../assets/svg';
 const HomeScreen = () => {
   const user = useSelector(selectUser);
   const [refreshing, setRefreshing] = useState(false);
@@ -44,15 +43,6 @@ const HomeScreen = () => {
   type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
   const navigation = useNavigation<NavigationProp>();
-  const DAYS = [
-    { short: 'Mon', full: 'Monday' },
-    { short: 'Tue', full: 'Tuesday' },
-    { short: 'Wed', full: 'Wednesday' },
-    { short: 'Thu', full: 'Thursday' },
-    { short: 'Fri', full: 'Friday' },
-    { short: 'Sat', full: 'Saturday' },
-    { short: 'Sun', full: 'Sunday' },
-  ];
   const {
     data: consultationBookings,
     isLoading: isBookingLoading,
@@ -94,6 +84,8 @@ const HomeScreen = () => {
       fetchLatestUser();
     }, [fetchLatestUser]),
   );
+
+  const IconComponent = ICONS.EmptyFile;
 
   return (
     <AnimatedScreen>
@@ -171,9 +163,10 @@ const HomeScreen = () => {
             <QuickActions />
           </View>
 
+          {/* Recent Requests */}
           <View style={styles.section}>
             <ContentSection
-              title="Recent Requests"
+              title="Recent Consultation Requests"
               sectionStyle={{ paddingHorizontal: 16 }}
             >
               <SansText>
@@ -183,10 +176,9 @@ const HomeScreen = () => {
             </ContentSection>
 
             <ScrollView
-              horizontal
               showsHorizontalScrollIndicator={false}
               contentContainerStyle={{
-                gap: 14,
+                gap: 6,
                 paddingTop: 14,
                 paddingHorizontal: 16,
               }}
@@ -197,90 +189,34 @@ const HomeScreen = () => {
                   <RequestCardSkeleton />
                   <RequestCardSkeleton />
                 </>
-              ) : (
-                bookings?.map((item: any) => (
+              ) : bookings && bookings.length > 0 ? (
+                bookings.map((item: any) => (
                   <RequestCard
                     key={item._id}
                     item={item}
                     isVerified={user?.profile?.isIdentityVerified}
                   />
                 ))
+              ) : (
+                // --- Empty State Component ---
+                <View style={styles.emptyContainer}>
+                  <View style={styles.emptyIcon}>
+                    {/* Replace with your actual icon component */}
+                    <IconComponent width={50} height={50} />
+                  </View>
+
+                  <SatoshiText style={styles.emptyTitle}>
+                    No Recent Requests
+                  </SatoshiText>
+
+                  <SansText style={styles.emptySubtext}>
+                    You don't have any recent consultation requests. When new
+                    requests come in, they'll appear here.
+                  </SansText>
+                </View>
+                // --- End of Empty State Component ---
               )}
             </ScrollView>
-          </View>
-
-          {/* AVAILABILITY */}
-          <View style={styles.section}>
-            <View>
-              <ContentSection
-                title="Availability"
-                sectionStyle={{ paddingHorizontal: 16 }}
-              >
-                <SansText>
-                  Set your availability once your&apos;s ready to receive chat
-                  and call requests
-                </SansText>
-              </ContentSection>
-
-              <View style={styles.availabilityCard}>
-                {/* TIME */}
-
-                <View style={styles.timeRow}>
-                  <SatoshiText style={styles.timeText}>
-                    {profile?.availability?.availableTime?.startTime}
-                  </SatoshiText>
-
-                  <SansText style={styles.dash}>—</SansText>
-
-                  <SatoshiText style={styles.timeText}>
-                    {profile?.availability?.availableTime?.endTime}
-                  </SatoshiText>
-                </View>
-
-                <SansText>Same applies to all selected days.</SansText>
-                {/* DAYS */}
-
-                <View style={styles.daysContainer}>
-                  {DAYS.map(item => {
-                    const selected =
-                      profile?.availability?.availableDays?.includes(item.full);
-
-                    return (
-                      <View
-                        key={item.short}
-                        style={[
-                          styles.dayButton,
-                          selected && styles.selectedDayButton,
-                        ]}
-                      >
-                        <SansText
-                          style={[
-                            styles.dayText,
-                            selected && styles.selectedDayText,
-                          ]}
-                        >
-                          {item.short}
-                        </SansText>
-                      </View>
-                    );
-                  })}
-                </View>
-
-                {/* BUTTON */}
-                <ReusableButton
-                  title="Edit Availability"
-                  onPress={() => {
-                    navigation.getParent()?.navigate('AvailabilityTab');
-                  }}
-                  variant="outline"
-                  iconPosition="left"
-                  // disabled={!user?.profile?.isIdentityVerified}
-                  icon={<EditIcon width={24} height={24} />}
-                  iconSize={20}
-                  style={{ borderRadius: 999 }}
-                />
-              </View>
-            </View>
           </View>
         </ScrollView>
       </ScreenWrapper>
@@ -327,7 +263,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   notificationButton: {
-   width: 40,
+    width: 40,
     height: 40,
     borderRadius: 20,
     backgroundColor: '#F5F5F5',
@@ -518,5 +454,36 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#111',
     fontFamily: 'GeneralSans-Medium',
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 40,
+    paddingTop: 60,
+  },
+  emptyIcon: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: 'rgba(212, 175, 55, 0.08)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 16,
+  },
+  emptyIconText: {
+    fontSize: 32,
+  },
+  emptyTitle: {
+    fontSize: 18,
+    fontFamily: 'Satoshi-Bold',
+    color: '#1a1a2e',
+    marginBottom: 8,
+  },
+  emptySubtext: {
+    fontSize: 14,
+    color: '#8E8E93',
+    textAlign: 'center',
+    lineHeight: 20,
   },
 });

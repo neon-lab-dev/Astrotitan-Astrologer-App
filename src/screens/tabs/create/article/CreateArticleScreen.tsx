@@ -1,143 +1,156 @@
-import BookIcon from "@/assets/icons/visual/intent/book.svg";
-import BriefcaseIcon from "@/assets/icons/visual/intent/briefcase.svg";
-import HeartIcon from "@/assets/icons/visual/intent/favourite.svg";
-import MarriageIcon from "@/assets/icons/visual/intent/marriage.svg";
-import TieIcon from "@/assets/icons/visual/intent/tie.svg";
-import WellnessIcon from "@/assets/icons/visual/intent/wellness.svg";
-import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { useNavigation } from "@react-navigation/native";
+/* eslint-disable react-native/no-inline-styles */
+import BookIcon from '@/assets/icons/visual/intent/book.svg';
+import BriefcaseIcon from '@/assets/icons/visual/intent/briefcase.svg';
+import HeartIcon from '@/assets/icons/visual/intent/favourite.svg';
+import MarriageIcon from '@/assets/icons/visual/intent/marriage.svg';
+import TieIcon from '@/assets/icons/visual/intent/tie.svg';
+import WellnessIcon from '@/assets/icons/visual/intent/wellness.svg';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useNavigation } from '@react-navigation/native';
 
- import { useRoute } from "@react-navigation/native";
+import { useRoute } from '@react-navigation/native';
 import {
   RichEditor,
   RichToolbar,
   actions,
-} from "react-native-pell-rich-editor";
-import { useAddBlogMutation } from "../../../../redux/features/blog/blogApi";
-import { useRef, useState } from "react";
-import { Alert, Image, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, TouchableOpacity, View } from "react-native";
-import { RootStackParamList } from "../../../../navigation/types";
-import AnimatedScreen from "../../../../components/layout/AnimatedScreen";
-import ScreenWrapper from "../../../../components/layout/ScreenWrapper";
-import AppHeader from "../../../../components/reusable/AppHeader/AppHeader";
-import AuthTitle from "../../../../components/auth/AuthTitle";
-import { SansText } from "../../../../components/reusable/Text/SansText";
-import AppInput from "../../../../components/reusable/InputField/AppInput";
-import ReusableButton from "../../../../components/reusable/ReusableButton/ReusableButton";
-import { launchImageLibrary } from "react-native-image-picker";
+} from 'react-native-pell-rich-editor';
+import { useAddBlogMutation } from '../../../../redux/features/blog/blogApi';
+import { useRef, useState } from 'react';
+import {
+  Alert,
+  Image,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import { RootStackParamList } from '../../../../navigation/types';
+import AnimatedScreen from '../../../../components/layout/AnimatedScreen';
+import ScreenWrapper from '../../../../components/layout/ScreenWrapper';
+import AppHeader from '../../../../components/reusable/AppHeader/AppHeader';
+import AuthTitle from '../../../../components/auth/AuthTitle';
+import { SansText } from '../../../../components/reusable/Text/SansText';
+import AppInput from '../../../../components/reusable/InputField/AppInput';
+import ReusableButton from '../../../../components/reusable/ReusableButton/ReusableButton';
+import { launchImageLibrary } from 'react-native-image-picker';
 
 const categories = [
-  { label: "Wealth & Finance", value: "Wealth & Finance", icon: TieIcon },
-  { label: "Education", value: "Education", icon: BookIcon },
-  { label: "Marriage", value: "Marriage", icon: MarriageIcon },
-  { label: "Health & Wellness", value: "Health & Wellness", icon: WellnessIcon },
-  { label: "Career Growth", value: "Career Growth", icon: BriefcaseIcon },
-  { label: "Love & Relationship", value: "Love & Relationship", icon: HeartIcon },
+  { label: 'Wealth & Finance', value: 'Wealth & Finance', icon: TieIcon },
+  { label: 'Education', value: 'Education', icon: BookIcon },
+  { label: 'Marriage', value: 'Marriage', icon: MarriageIcon },
+  {
+    label: 'Health & Wellness',
+    value: 'Health & Wellness',
+    icon: WellnessIcon,
+  },
+  { label: 'Career Growth', value: 'Career Growth', icon: BriefcaseIcon },
+  {
+    label: 'Love & Relationship',
+    value: 'Love & Relationship',
+    icon: HeartIcon,
+  },
 ];
 
 // Zodiac signs for dropdown
 const zodiacSigns = [
-  { label: "Aries", value: "Aries" },
-  { label: "Taurus", value: "Taurus" },
-  { label: "Gemini", value: "Gemini" },
-  { label: "Cancer", value: "Cancer" },
-  { label: "Leo", value: "Leo" },
-  { label: "Virgo", value: "Virgo" },
-  { label: "Libra", value: "Libra" },
-  { label: "Scorpio", value: "Scorpio" },
-  { label: "Sagittarius", value: "Sagittarius" },
-  { label: "Capricorn", value: "Capricorn" },
-  { label: "Aquarius", value: "Aquarius" },
-  { label: "Pisces", value: "Pisces" },
+  { label: 'Aries', value: 'Aries' },
+  { label: 'Taurus', value: 'Taurus' },
+  { label: 'Gemini', value: 'Gemini' },
+  { label: 'Cancer', value: 'Cancer' },
+  { label: 'Leo', value: 'Leo' },
+  { label: 'Virgo', value: 'Virgo' },
+  { label: 'Libra', value: 'Libra' },
+  { label: 'Scorpio', value: 'Scorpio' },
+  { label: 'Sagittarius', value: 'Sagittarius' },
+  { label: 'Capricorn', value: 'Capricorn' },
+  { label: 'Aquarius', value: 'Aquarius' },
+  { label: 'Pisces', value: 'Pisces' },
 ];
 
 // Elements for dropdown
 const elements = [
-  { label: "Fire", value: "Fire" },
-  { label: "Earth", value: "Earth" },
-  { label: "Air", value: "Air" },
-  { label: "Water", value: "Water" },
+  { label: 'Fire', value: 'Fire' },
+  { label: 'Earth', value: 'Earth' },
+  { label: 'Air', value: 'Air' },
+  { label: 'Water', value: 'Water' },
 ];
 
 // Compatibility options
 const compatibilityOptions = [
-  { label: "Aries", value: "Aries" },
-  { label: "Taurus", value: "Taurus" },
-  { label: "Gemini", value: "Gemini" },
-  { label: "Cancer", value: "Cancer" },
-  { label: "Leo", value: "Leo" },
-  { label: "Virgo", value: "Virgo" },
-  { label: "Libra", value: "Libra" },
-  { label: "Scorpio", value: "Scorpio" },
-  { label: "Sagittarius", value: "Sagittarius" },
-  { label: "Capricorn", value: "Capricorn" },
-  { label: "Aquarius", value: "Aquarius" },
-  { label: "Pisces", value: "Pisces" },
+  { label: 'Aries', value: 'Aries' },
+  { label: 'Taurus', value: 'Taurus' },
+  { label: 'Gemini', value: 'Gemini' },
+  { label: 'Cancer', value: 'Cancer' },
+  { label: 'Leo', value: 'Leo' },
+  { label: 'Virgo', value: 'Virgo' },
+  { label: 'Libra', value: 'Libra' },
+  { label: 'Scorpio', value: 'Scorpio' },
+  { label: 'Sagittarius', value: 'Sagittarius' },
+  { label: 'Capricorn', value: 'Capricorn' },
+  { label: 'Aquarius', value: 'Aquarius' },
+  { label: 'Pisces', value: 'Pisces' },
 ];
 
 const CreateArticleScreen = () => {
+  const route = useRoute<any>();
 
-const route = useRoute<any>();
-
-const { contentType } = route.params || {};
+  const { contentType } = route.params || {};
   const [addBlog] = useAddBlogMutation();
   const richText = useRef<any>(null);
-  type NavigationProp =
-        NativeStackNavigationProp<RootStackParamList>;
-    
-      const navigation = useNavigation<NavigationProp>();
+  type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
+
+  const navigation = useNavigation<NavigationProp>();
   // Common fields
-  const [title, setTitle] = useState("");
-  const [category, setCategory] = useState("");
-  const [content, setContent] = useState("");
-  const [status, setStatus] = useState("draft");
+  const [title, setTitle] = useState('');
+  const [category, setCategory] = useState('');
+  const [content, setContent] = useState('');
+  const [status, setStatus] = useState('draft');
   const [coverImage, setCoverImage] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
 
   // Zodiac specific fields (only for zodiacTips)
-  const [zodiacSign, setZodiacSign] = useState("");
-  const [dateRange, setDateRange] = useState("");
-  const [element, setElement] = useState("");
-  const [luckyColor, setLuckyColor] = useState("");
-  const [luckyNumber, setLuckyNumber] = useState("");
+  const [zodiacSign, setZodiacSign] = useState('');
+  const [dateRange, setDateRange] = useState('');
+  const [element, setElement] = useState('');
+  const [luckyColor, setLuckyColor] = useState('');
+  const [luckyNumber, setLuckyNumber] = useState('');
   const [compatibility, setCompatibility] = useState<string[]>([]);
 
   const statusOptions = [
-    { label: "Draft", value: "draft" },
-    { label: "Live", value: "live" },
+    { label: 'Draft', value: 'draft' },
+    { label: 'Live', value: 'live' },
   ];
 
-  const isZodiacTips = contentType === "zodiacTips";
+  const isZodiacTips = contentType === 'zodiacTips';
 
-const pickImage = async () => {
-  try {
-    const result = await launchImageLibrary({
-      mediaType: "photo",
-      quality: 0.8,
-      selectionLimit: 1,
-    });
+  const pickImage = async () => {
+    try {
+      const result = await launchImageLibrary({
+        mediaType: 'photo',
+        quality: 0.8,
+        selectionLimit: 1,
+      });
 
-    if (result.didCancel) {
-      return;
+      if (result.didCancel) {
+        return;
+      }
+
+      if (result.errorCode) {
+        Alert.alert('Error', result.errorMessage || 'Failed to pick image');
+        return;
+      }
+
+      const asset = result.assets?.[0];
+
+      if (asset) {
+        setCoverImage(asset);
+      }
+    } catch (error) {
+      console.log('IMAGE PICK ERROR:', error);
     }
-
-    if (result.errorCode) {
-      Alert.alert(
-        "Error",
-        result.errorMessage || "Failed to pick image"
-      );
-      return;
-    }
-
-    const asset = result.assets?.[0];
-
-    if (asset) {
-      setCoverImage(asset);
-    }
-  } catch (error) {
-    console.log("IMAGE PICK ERROR:", error);
-  }
-};
+  };
 
   const handleAddCompatibility = (sign: string) => {
     if (!compatibility.includes(sign)) {
@@ -146,7 +159,7 @@ const pickImage = async () => {
   };
 
   const handleRemoveCompatibility = (sign: string) => {
-    setCompatibility(compatibility.filter((item) => item !== sign));
+    setCompatibility(compatibility.filter(item => item !== sign));
   };
 
   const handlePublish = async () => {
@@ -198,11 +211,11 @@ const pickImage = async () => {
       const formData = new FormData();
 
       // Add common fields
-      formData.append("title", title);
-      formData.append("category", category);
-      formData.append("content", content);
-      formData.append("blogType", contentType || "article");
-      formData.append("status", status);
+      formData.append('title', title);
+      formData.append('category', category);
+      formData.append('content', content);
+      formData.append('blogType', contentType || 'article');
+      formData.append('status', status);
 
       // Add zodiac specific fields if it's zodiacTips
       if (isZodiacTips) {
@@ -214,51 +227,51 @@ const pickImage = async () => {
           luckyNumber: parseInt(luckyNumber),
           compatibility,
         };
-        formData.append("zodiacSpecific", JSON.stringify(zodiacSpecific));
+        formData.append('zodiacSpecific', JSON.stringify(zodiacSpecific));
       }
 
       // Add image file
       const imageUri = coverImage.uri;
-      const filename = imageUri.split("/").pop();
+      const filename = imageUri.split('/').pop();
       const match = /\.(\w+)$/.exec(filename);
-      const imageType = match ? `image/${match[1]}` : "image/jpeg";
+      const imageType = match ? `image/${match[1]}` : 'image/jpeg';
 
-      formData.append("thumbnail", {
+      formData.append('thumbnail', {
         uri: imageUri,
         name: filename || `thumbnail_${Date.now()}.jpg`,
         type: imageType,
       } as any);
       const response = await addBlog(formData).unwrap();
       if (response?.success) {
-        navigation.replace("CreateScreen");
+        navigation.replace('CreateScreen');
       }
 
       Alert.alert(
-        "Success",
-        status === "live"
-          ? "Article published successfully!"
-          : "Article saved as draft",
+        'Success',
+        status === 'live'
+          ? 'Article published successfully!'
+          : 'Article saved as draft',
       );
 
       // Reset form
-      setTitle("");
-      setCategory("");
-      setContent("");
-      setStatus("draft");
+      setTitle('');
+      setCategory('');
+      setContent('');
+      setStatus('draft');
       setCoverImage(null);
       if (isZodiacTips) {
-        setZodiacSign("");
-        setDateRange("");
-        setElement("");
-        setLuckyColor("");
-        setLuckyNumber("");
+        setZodiacSign('');
+        setDateRange('');
+        setElement('');
+        setLuckyColor('');
+        setLuckyNumber('');
         setCompatibility([]);
       }
     } catch (error: any) {
-      console.log("PUBLISH ERROR:", error);
+      console.log('PUBLISH ERROR:', error);
       Alert.alert(
-        "Error",
-        error?.data?.message || "Failed to publish article. Please try again.",
+        'Error',
+        error?.data?.message || 'Failed to publish article. Please try again.',
       );
     } finally {
       setIsLoading(false);
@@ -270,15 +283,17 @@ const pickImage = async () => {
       <ScreenWrapper>
         <KeyboardAvoidingView
           style={{ flex: 1 }}
-          behavior={Platform.OS === "ios" ? "padding" : undefined}
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         >
           <View style={styles.container}>
             <AppHeader>
-              <AuthTitle title={isZodiacTips ? "Write Zodiac Tips" : "Write An Article"}>
+              <AuthTitle
+                title={isZodiacTips ? 'Write Zodiac Tips' : 'Write An Article'}
+              >
                 <SansText>
                   {isZodiacTips
-                    ? "Share zodiac insights, predictions, and tips for each sign"
-                    : "Share astrology insights to help users understand remedies, planets etc."}
+                    ? 'Share zodiac insights, predictions, and tips for each sign'
+                    : 'Share astrology insights to help users understand remedies, planets etc.'}
                 </SansText>
               </AuthTitle>
             </AppHeader>
@@ -294,7 +309,11 @@ const pickImage = async () => {
               {/* Common Fields */}
               <AppInput
                 label="Title"
-                placeholder={isZodiacTips ? "Daily Horoscope for Aries" : "How mars affects career growth in aries..."}
+                placeholder={
+                  isZodiacTips
+                    ? 'Daily Horoscope for Aries'
+                    : 'How mars affects career growth in aries...'
+                }
                 value={title}
                 onChangeText={setTitle}
               />
@@ -368,14 +387,14 @@ const pickImage = async () => {
                       placeholder="Add compatible signs"
                       dropdownData={compatibilityOptions}
                       value=""
-                      onChangeText={(value) => {
+                      onChangeText={value => {
                         if (value) handleAddCompatibility(value);
                       }}
                     />
-                    
+
                     {compatibility.length > 0 && (
                       <View style={styles.compatibilityContainer}>
-                        {compatibility.map((sign) => (
+                        {compatibility.map(sign => (
                           <TouchableOpacity
                             key={sign}
                             style={styles.compatibilityBadge}
@@ -417,9 +436,9 @@ const pickImage = async () => {
                   placeholder="Write your content here..."
                   initialHeight={320}
                   editorStyle={{
-                    backgroundColor: "#E9D8A6",
-                    color: "#0D0D0D",
-                    placeholderColor: "#575757",
+                    backgroundColor: '#E9D8A6',
+                    color: '#0D0D0D',
+                    placeholderColor: '#575757',
                     contentCSSText: `
                       font-size: 16px;
                       line-height: 26px;
@@ -428,7 +447,7 @@ const pickImage = async () => {
                     `,
                   }}
                   style={styles.editor}
-                  onChange={(html) => {
+                  onChange={html => {
                     setContent(html);
                   }}
                 />
@@ -447,8 +466,12 @@ const pickImage = async () => {
                   />
                 ) : (
                   <>
-                    <SansText style={styles.uploadTitle}>Add Cover Image</SansText>
-                    <SansText style={styles.uploadSubtitle}>Tap to upload image</SansText>
+                    <SansText style={styles.uploadTitle}>
+                      Add Cover Image
+                    </SansText>
+                    <SansText style={styles.uploadSubtitle}>
+                      Tap to upload image
+                    </SansText>
                   </>
                 )}
               </TouchableOpacity>
@@ -457,7 +480,7 @@ const pickImage = async () => {
             {/* Submit Button */}
             <View style={styles.bottomContainer}>
               <ReusableButton
-                title={isLoading ? "Publishing..." : "Publish"}
+                title={isLoading ? 'Publishing...' : 'Publish'}
                 width="100%"
                 disabled={isLoading}
                 onPress={handlePublish}
@@ -475,80 +498,80 @@ export default CreateArticleScreen;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#F8F1D7",
+    backgroundColor: '#F8F1D7',
   },
   label: {
     fontSize: 16,
-    color: "#0D0D0D",
+    color: '#0D0D0D',
     marginBottom: 10,
   },
   toolbar: {
-    backgroundColor: "#FBF7EB",
+    backgroundColor: '#FBF7EB',
     borderTopLeftRadius: 16,
     borderTopRightRadius: 16,
     borderWidth: 1.2,
     borderBottomWidth: 0,
-    borderColor: "#D4AF37",
+    borderColor: '#D4AF37',
     minHeight: 54,
   },
   editor: {
     minHeight: 320,
     borderWidth: 1.2,
-    borderColor: "#D4AF37",
+    borderColor: '#D4AF37',
     borderBottomLeftRadius: 16,
     borderBottomRightRadius: 16,
-    backgroundColor: "#E9D8A6",
-    overflow: "hidden",
+    backgroundColor: '#E9D8A6',
+    overflow: 'hidden',
   },
   imageUploadBox: {
     minHeight: 180,
     borderWidth: 1.4,
-    borderColor: "#D4AF37",
+    borderColor: '#D4AF37',
     borderRadius: 16,
-    backgroundColor: "#FBF7EB",
-    justifyContent: "center",
-    alignItems: "center",
-    overflow: "hidden",
+    backgroundColor: '#FBF7EB',
+    justifyContent: 'center',
+    alignItems: 'center',
+    overflow: 'hidden',
     gap: 8,
     padding: 16,
   },
   uploadTitle: {
     fontSize: 16,
-    color: "#0D0D0D",
-    fontFamily: "SatoshiBold",
+    color: '#0D0D0D',
+    fontFamily: 'SatoshiBold',
   },
   uploadSubtitle: {
     fontSize: 14,
-    color: "#575757",
+    color: '#575757',
   },
   coverImage: {
-    width: "100%",
+    width: '100%',
     height: 220,
   },
   bottomContainer: {
-    position: "absolute",
+    position: 'absolute',
     bottom: 0,
     left: 0,
     right: 0,
     paddingHorizontal: 16,
     paddingTop: 12,
     paddingBottom: 24,
-    backgroundColor: "#F8F1D7",
+    backgroundColor: '#F8F1D7',
   },
   compatibilityContainer: {
-    flexDirection: "row",
-    flexWrap: "wrap",
+    flexDirection: 'row',
+    flexWrap: 'wrap',
     gap: 8,
     marginTop: 12,
   },
   compatibilityBadge: {
-    backgroundColor: "#D4AF37",
+    backgroundColor: '#D4AF37',
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 20,
   },
   compatibilityText: {
-    color: "#0D0D0D",
+    color: '#0D0D0D',
     fontSize: 14,
   },
 });

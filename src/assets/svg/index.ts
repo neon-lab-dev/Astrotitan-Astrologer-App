@@ -63,6 +63,8 @@ import AnalyzeKundli from "@/assets/icons/visual/analyze-kundli.svg";
 import GenerateKundli from "@/assets/icons/visual/generate-kundli.svg";
 import RightArrow from "@/assets/icons/visual/right-arrow.svg";
 import UploadFile from "@/assets/icons/visual/upload-file.svg";
+import Kundli from "@/assets/icons/visual/kundli.svg";
+import KundliActive from "@/assets/icons/visual/kundli-active.svg";
 
 export const ICONS = {
   homeActive: HomeActive,
@@ -121,7 +123,9 @@ export const ICONS = {
   RightArrow: RightArrow,
   AnalyzeKundli: AnalyzeKundli,
   GenerateKundli: GenerateKundli,
-  UploadFile: UploadFile
+  UploadFile: UploadFile,
+  Kundli: Kundli,
+  KundliActive: KundliActive
 };
 
 export type IconName = keyof typeof ICONS;

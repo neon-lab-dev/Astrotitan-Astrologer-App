@@ -3,6 +3,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import SessionsScreen from "../screens/tabs/session/SessionScreen";
 import SessionHistoryDetailsScreen from "../screens/tabs/session/SessionHistoryDetailsScreen";
 import AstrologerChatScreen from "../screens/tabs/session/(chat)/AstrologerChatScreen";
+import ProvideNotes from "../screens/tabs/session/ProvideNotes";
 const Stack = createNativeStackNavigator();
 
 export default function SessionNavigator() {
@@ -29,6 +30,10 @@ export default function SessionNavigator() {
       <Stack.Screen
         name="AstrologerChatScreen"
         component={AstrologerChatScreen}
+      />
+      <Stack.Screen
+        name="ProvideNotes"
+        component={ProvideNotes}
       />
 
     </Stack.Navigator>

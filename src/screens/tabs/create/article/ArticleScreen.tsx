@@ -1,5 +1,5 @@
 /* eslint-disable react-native/no-inline-styles */
-import React from "react";
+import React from 'react';
 import {
   Dimensions,
   Image,
@@ -8,103 +8,100 @@ import {
   TouchableOpacity,
   useWindowDimensions,
   View,
-} from "react-native";
+} from 'react-native';
 
 import RenderHTML, {
   defaultSystemFonts,
   MixedStyleDeclaration,
-} from "react-native-render-html";
-import { useGetBlogByIdQuery } from "../../../../redux/features/blog/blogApi";
-import AnimatedScreen from "../../../../components/layout/AnimatedScreen";
-import ScreenWrapper from "../../../../components/layout/ScreenWrapper";
-import SkeletonLoader from "../../../../components/reusable/SkeletonLoader/SkeletonLoade";
-import { SansText } from "../../../../components/reusable/Text/SansText";
-import LinearGradient from "react-native-linear-gradient";
-import Ionicons from "@react-native-vector-icons/ionicons";
-import { SatoshiText } from "../../../../components/reusable/Text/SatoshiText";
-import ContentSection from "../../../../components/reusable/ContentSectoin/ContentSection";
-import { useNavigation, useRoute } from "@react-navigation/native";
-const SCREEN_WIDTH = Dimensions.get("window").width;
+} from 'react-native-render-html';
+import { useGetBlogByIdQuery } from '../../../../redux/features/blog/blogApi';
+import AnimatedScreen from '../../../../components/layout/AnimatedScreen';
+import ScreenWrapper from '../../../../components/layout/ScreenWrapper';
+import SkeletonLoader from '../../../../components/reusable/SkeletonLoader/SkeletonLoade';
+import { SansText } from '../../../../components/reusable/Text/SansText';
+import LinearGradient from 'react-native-linear-gradient';
+import Ionicons from '@react-native-vector-icons/ionicons';
+import { SatoshiText } from '../../../../components/reusable/Text/SatoshiText';
+import ContentSection from '../../../../components/reusable/ContentSectoin/ContentSection';
+import { useNavigation, useRoute } from '@react-navigation/native';
+const SCREEN_WIDTH = Dimensions.get('window').width;
 
 export default function ArticleScreen() {
-
   const route = useRoute<any>();
 
   const { id } = route.params || {};
   const { width } = useWindowDimensions();
-  const navigation = useNavigation<any>()
+  const navigation = useNavigation<any>();
   const { data, isLoading, isFetching, isError } = useGetBlogByIdQuery(id!, {
     skip: !id,
   });
 
   const blog = data?.data;
 
-
-
   const systemFonts = [
     ...defaultSystemFonts,
-    "Satoshi-Regular",
-    "Satoshi-Medium",
-    "Satoshi-Bold",
+    'Satoshi-Regular',
+    'Satoshi-Medium',
+    'Satoshi-Bold',
   ];
 
   const htmlStyles: Record<string, MixedStyleDeclaration> = {
     body: {
-      color: "#4A4A4A",
+      color: '#4A4A4A',
       fontSize: 16,
       lineHeight: 28,
-      fontFamily: "Satoshi-Regular",
+      fontFamily: 'Satoshi-Regular',
     },
 
     div: {
-      color: "#4A4A4A",
+      color: '#4A4A4A',
       fontSize: 16,
       lineHeight: 28,
-      fontFamily: "Satoshi-Regular",
+      fontFamily: 'Satoshi-Regular',
       marginBottom: 12,
     },
 
     p: {
-      color: "#4A4A4A",
+      color: '#4A4A4A',
       fontSize: 16,
       lineHeight: 28,
-      fontFamily: "Satoshi-Regular",
+      fontFamily: 'Satoshi-Regular',
       marginBottom: 12,
     },
 
     b: {
-      fontFamily: "Satoshi-Bold",
-      color: "#1A1A1A",
+      fontFamily: 'Satoshi-Bold',
+      color: '#1A1A1A',
     },
 
     strong: {
-      fontFamily: "Satoshi-Bold",
-      color: "#1A1A1A",
+      fontFamily: 'Satoshi-Bold',
+      color: '#1A1A1A',
     },
 
     i: {
-      fontStyle: "italic",
+      fontStyle: 'italic',
     },
 
     em: {
-      fontStyle: "italic",
+      fontStyle: 'italic',
     },
 
     ul: {
       marginVertical: 10,
-      fontFamily: "Satoshi-Regular",
+      fontFamily: 'Satoshi-Regular',
     },
 
     ol: {
       marginVertical: 10,
-      fontFamily: "Satoshi-Regular",
+      fontFamily: 'Satoshi-Regular',
     },
 
     li: {
-      color: "#4A4A4A",
+      color: '#4A4A4A',
       fontSize: 16,
       lineHeight: 28,
-      fontFamily: "Satoshi-Regular",
+      fontFamily: 'Satoshi-Regular',
       marginBottom: 6,
     },
   };
@@ -166,7 +163,7 @@ export default function ArticleScreen() {
                   (_, index) => (
                     <SkeletonLoader
                       key={index}
-                      width={index % 2 === 0 ? "100%" : "88%"}
+                      width={index % 2 === 0 ? '100%' : '88%'}
                       height={16}
                       borderRadius={8}
                     />
@@ -207,13 +204,13 @@ export default function ArticleScreen() {
             <View style={styles.heroContainer}>
               <Image
                 source={{
-                  uri: blog?.thumbnail || "https://via.placeholder.com/800x600",
+                  uri: blog?.thumbnail || 'https://via.placeholder.com/800x600',
                 }}
                 style={styles.heroImage}
               />
 
               <LinearGradient
-                colors={["rgba(0,0,0,0)", "rgba(0,0,0,0.85)"]}
+                colors={['rgba(0,0,0,0)', 'rgba(0,0,0,0.85)']}
                 style={styles.gradient}
               />
 
@@ -230,7 +227,7 @@ export default function ArticleScreen() {
               <View style={styles.overlayContent}>
                 <SatoshiText style={styles.title}>{blog?.title}</SatoshiText>
                 <SansText style={styles.meta}>
-                  {blog?.category} •{" "}
+                  {blog?.category} •{' '}
                   {new Date(blog?.createdAt).toLocaleDateString()}
                 </SansText>
               </View>
@@ -243,13 +240,13 @@ export default function ArticleScreen() {
                   <RenderHTML
                     contentWidth={width - 40}
                     source={{
-                      html: blog?.content || "",
+                      html: blog?.content || '',
                     }}
                     systemFonts={systemFonts}
                     tagsStyles={htmlStyles}
                     baseStyle={{
-                      fontFamily: "Satoshi",
-                      color: "#4A4A4A",
+                      fontFamily: 'Satoshi',
+                      color: '#4A4A4A',
                       fontSize: 16,
                       lineHeight: 28,
                     }}
@@ -270,44 +267,44 @@ const styles = StyleSheet.create({
   },
   centerContainer: {
     flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   errorText: {
-    color: "red",
+    color: 'red',
     fontSize: 16,
   },
   heroContainer: {
     marginTop: 12,
     borderBottomRightRadius: 20,
     borderBottomLeftRadius: 20,
-    overflow: "hidden",
-    position: "relative",
+    overflow: 'hidden',
+    position: 'relative',
   },
   heroImage: {
-    width: "100%",
+    width: '100%',
     height: SCREEN_WIDTH * 0.95,
   },
   gradient: {
-    position: "absolute",
+    position: 'absolute',
     left: 0,
     right: 0,
     bottom: 0,
-    height: "100%",
+    height: '100%',
   },
   backBtn: {
-    position: "absolute",
+    position: 'absolute',
     top: 20,
     left: 20,
     height: 42,
     width: 42,
     borderRadius: 999,
-    backgroundColor: "#EDDEAD",
-    justifyContent: "center",
-    alignItems: "center",
+    backgroundColor: '#EDDEAD',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   overlayContent: {
-    position: "absolute",
+    position: 'absolute',
     bottom: 24,
     left: 20,
     right: 20,
@@ -316,11 +313,11 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 21,
     lineHeight: 34,
-    color: "#F5F5F5",
-    fontFamily: "Satoshi-Bold",
+    color: '#F5F5F5',
+    fontFamily: 'Satoshi-Bold',
   },
   meta: {
-    color: "#E0E0E0",
+    color: '#E0E0E0',
     fontSize: 14,
   },
   contentContainer: {},
@@ -329,41 +326,41 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   fixedBottom: {
-    position: "absolute",
+    position: 'absolute',
     bottom: 0,
     left: 0,
     right: 0,
-    backgroundColor: "#FBF7EB",
+    backgroundColor: '#FBF7EB',
     paddingHorizontal: 16,
     paddingTop: 12,
     paddingBottom: 24,
     borderTopWidth: 1,
-    borderColor: "#E8DCB5",
+    borderColor: '#E8DCB5',
     gap: 10,
   },
   footerText: {
-    textAlign: "center",
+    textAlign: 'center',
     fontSize: 12,
-    color: "#8C8C8C",
+    color: '#8C8C8C',
   },
   skeletonHeroContainer: {
     marginTop: 12,
-    position: "relative",
+    position: 'relative',
     borderBottomWidth: 1,
     borderLeftWidth: 1,
     borderRightWidth: 1,
-    borderColor: "#D4AF37",
-    backgroundColor: "#FBF7EB",
+    borderColor: '#D4AF37',
+    backgroundColor: '#FBF7EB',
     borderBottomRightRadius: 24,
     borderBottomLeftRadius: 24,
   },
   skeletonBackWrapper: {
-    position: "absolute",
+    position: 'absolute',
     top: 20,
     left: 20,
   },
   skeletonOverlayContent: {
-    position: "absolute",
+    position: 'absolute',
     bottom: 24,
     left: 20,
     right: 20,

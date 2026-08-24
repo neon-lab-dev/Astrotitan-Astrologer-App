@@ -1,3 +1,4 @@
+/* eslint-disable react-native/no-inline-styles */
 import StarInactive from '@/assets/icons/navigation/star-inactive.svg';
 import ClockIcon from '@/assets/icons/visual/clock.svg';
 import StatusIcon from '@/assets/icons/visual/user-status.svg';
@@ -8,42 +9,45 @@ import {
   StyleSheet,
   View,
   TouchableOpacity,
+  useWindowDimensions,
 } from 'react-native';
 import ScreenWrapper from '../../../components/layout/ScreenWrapper';
-import AppHeader from '../../../components/reusable/AppHeader/AppHeader';
 import { SatoshiText } from '../../../components/reusable/Text/SatoshiText';
 import { SansText } from '../../../components/reusable/Text/SansText';
 import ContentSection from '../../../components/reusable/ContentSectoin/ContentSection';
-import AuthTitle from '../../../components/auth/AuthTitle';
 import { useRoute } from '@react-navigation/native';
 import ReusableButton from '../../../components/reusable/ReusableButton/ReusableButton';
 import BottomSheetService from '../../../redux/features/ui/GlobalSheet/BottomSheetService';
 import ConnectGoogleSection from '../../../components/reusable/BottomSheet/ConnectGoogleSection';
+import AppBar from '../../../components/reusable/AppBar/AppBar';
+import { useNavigation } from '@react-navigation/native';
+import RenderHTML, {
+  defaultSystemFonts,
+  MixedStyleDeclaration,
+} from 'react-native-render-html';
+import { formatDate } from '../../../utils/formatDate';
 
 const SessionHistoryDetailsScreen = () => {
+  const navigation = useNavigation<any>();
   const route = useRoute<any>();
   const params = route.params as any;
 
   const sessionType = params.sessionType || 'call';
   const consultationId = params.consultationId || '';
-  const userName = params.userName || 'Oliver Thompson';
-  const userLocation = params.userLocation || 'New York, US';
-  const date = params.date || '10:00 AM';
-  const startTime = params.startTime || '10:00 AM';
-  const endTime = params.endTime || '10:30 AM';
-  const duration = params.duration || '25 Mins';
+  const userName = params.userName || 'N/A';
+  const date = params.date || 'N/A';
+  const time = params.time || 'N/A';
+  const startTime = params.startTime || null;
+  const endTime = params.endTime || null;
+  const meetingDate = params.meetingDate || null;
   const status = params.status || 'pending';
   const rating = params.rating || null;
   const image = params.image || 'https://via.placeholder.com/84';
   const meetingLink = params.meetingLink || null;
   const bookedSlot = params.bookedSlot || null;
   const slotId = params.slotId || null;
-  const createdAt = params.createdAt || null;
-
-  /*
-    NOTES
-  */
-  const sessionNotes = params.sessionNotes || [];
+  const recommendations = params.recommendations || null;
+  const consultationFor = params.consultationFor || 'N/A';
 
   /*
     CONDITIONS
@@ -116,14 +120,80 @@ const SessionHistoryDetailsScreen = () => {
     console.log('Opening chat for:', userName);
   };
 
+  const { width } = useWindowDimensions();
+  const systemFonts = [
+    ...defaultSystemFonts,
+    'Satoshi-Regular',
+    'Satoshi-Medium',
+    'Satoshi-Bold',
+  ];
+  const htmlStyles: Record<string, MixedStyleDeclaration> = {
+    body: {
+      color: '#4A4A4A',
+      fontSize: 16,
+      lineHeight: 28,
+      fontFamily: 'Satoshi-Regular',
+    },
+
+    div: {
+      color: '#4A4A4A',
+      fontSize: 16,
+      lineHeight: 28,
+      fontFamily: 'Satoshi-Regular',
+      marginBottom: 12,
+    },
+
+    p: {
+      color: '#4A4A4A',
+      fontSize: 16,
+      lineHeight: 28,
+      fontFamily: 'Satoshi-Regular',
+      marginBottom: 12,
+    },
+
+    b: {
+      fontFamily: 'Satoshi-Bold',
+      color: '#1A1A1A',
+    },
+
+    strong: {
+      fontFamily: 'Satoshi-Bold',
+      color: '#1A1A1A',
+    },
+
+    i: {
+      fontStyle: 'italic',
+    },
+
+    em: {
+      fontStyle: 'italic',
+    },
+
+    ul: {
+      marginVertical: 10,
+      fontFamily: 'Satoshi-Regular',
+    },
+
+    ol: {
+      marginVertical: 10,
+      fontFamily: 'Satoshi-Regular',
+    },
+
+    li: {
+      color: '#4A4A4A',
+      fontSize: 16,
+      lineHeight: 28,
+      fontFamily: 'Satoshi-Regular',
+      marginBottom: 6,
+    },
+  };
+
   return (
     <ScreenWrapper>
       <View style={styles.container}>
-        <AppHeader showBack={true}>
-          <AuthTitle
-            title={sessionType === 'chat' ? 'Chat Details' : 'Call Details'}
-          />
-        </AppHeader>
+        <AppBar
+          title={sessionType === 'chat' ? 'Chat Details' : 'Call Details'}
+        />
 
         <ScrollView
           showsVerticalScrollIndicator={false}
@@ -138,7 +208,7 @@ const SessionHistoryDetailsScreen = () => {
                   {userName}
                 </SatoshiText>
                 <SansText style={styles.customerLocation}>
-                  {userLocation}
+                  Purpose : {consultationFor}
                 </SansText>
               </View>
             </View>
@@ -155,11 +225,11 @@ const SessionHistoryDetailsScreen = () => {
             </View>
 
             {/* Time */}
-            <View style={styles.timeRow}>
-              <SansText style={styles.timeText}>{startTime}</SansText>
-              <SansText style={styles.timeText}>—</SansText>
-              <SansText style={styles.timeText}>{endTime}</SansText>
-            </View>
+            {sessionType === 'call' && (
+              <View style={styles.timeRow}>
+                <SansText style={styles.timeText}>{time}</SansText>
+              </View>
+            )}
 
             {/* Action Buttons - Based on Status */}
             <View style={styles.actionRow}>
@@ -259,8 +329,10 @@ const SessionHistoryDetailsScreen = () => {
                   <View style={styles.statIconWrapper}>
                     <ClockIcon width={20} height={20} />
                   </View>
-                  <SansText style={styles.statLabel}>Duration</SansText>
-                  <SatoshiText style={styles.statValue}>{duration}</SatoshiText>
+                  <SansText style={styles.statLabel}>Meeting</SansText>
+                  <SatoshiText style={styles.statValue}>
+                    {formatDate(meetingDate)}
+                  </SatoshiText>
                 </View>
 
                 {/* Status */}
@@ -298,14 +370,22 @@ const SessionHistoryDetailsScreen = () => {
               titleFontSize={20}
             />
 
-            {sessionNotes && sessionNotes.length > 0 ? (
+            {recommendations ? (
               <View style={styles.notesContainer}>
-                {sessionNotes.map((note: string, index: number) => (
-                  <View key={index} style={styles.noteRow}>
-                    <View style={styles.bulletDot} />
-                    <SansText style={styles.noteText}>{note}</SansText>
-                  </View>
-                ))}
+                <RenderHTML
+                  contentWidth={width - 40}
+                  source={{
+                    html: recommendations || '',
+                  }}
+                  systemFonts={systemFonts}
+                  tagsStyles={htmlStyles}
+                  baseStyle={{
+                    fontFamily: 'Satoshi',
+                    color: '#4A4A4A',
+                    fontSize: 16,
+                    lineHeight: 28,
+                  }}
+                />
               </View>
             ) : (
               <View style={styles.emptyNotesContainer}>
@@ -314,7 +394,11 @@ const SessionHistoryDetailsScreen = () => {
                 </SansText>
                 <ReusableButton
                   title="Provide Note"
-                  onPress={() => {}}
+                  onPress={() => {
+                    navigation.navigate('ProvideNotes', {
+                      consultationId: consultationId,
+                    });
+                  }}
                   variant="outline"
                   borderColor="#D4AF37"
                   textColor="#D4AF37"
@@ -500,7 +584,7 @@ const styles = StyleSheet.create({
   },
 
   statValue: {
-    fontSize: 15,
+    fontSize: 13,
     color: '#0D0D0D',
     fontFamily: 'Satoshi-Bold',
     textAlign: 'center',

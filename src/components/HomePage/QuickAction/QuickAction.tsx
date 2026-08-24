@@ -6,13 +6,13 @@ import {
   StyleSheet,
   Dimensions,
 } from 'react-native';
-import Icon from 'react-native-vector-icons/Ionicons';
+import { ICONS } from '../../../assets/svg';
+import { useNavigation } from '@react-navigation/native';
 
 const { width } = Dimensions.get('window');
 const cardWidth = (width - 48) / 2;
 
 interface QuickActionItemProps {
-  icon: string;
   bgColor?: string;
   label: string;
   value: string | number;
@@ -22,36 +22,35 @@ interface QuickActionItemProps {
 }
 
 const QuickActionItem: React.FC<QuickActionItemProps> = ({
-  icon,
   bgColor = '#F8F4EC',
   label,
   value,
   buttonText,
   onPress,
-  iconColor = '#D4AF37',
-}) => (
-  <TouchableOpacity 
-    style={[styles.actionCard, { backgroundColor: bgColor }]} 
-    onPress={onPress} 
-    activeOpacity={0.7}
-  >
-    <View style={styles.cardContent}>
-      <View style={[styles.iconContainer, { backgroundColor: 'rgba(212, 175, 55, 0.12)' }]}>
-        <Icon name={icon} size={22} color={iconColor} />
+}) => {
+  const RightIcon = ICONS.RightArrow;
+  return (
+    <TouchableOpacity
+      style={[styles.actionCard, { backgroundColor: bgColor }]}
+      onPress={onPress}
+      activeOpacity={0.7}
+    >
+      <View style={styles.cardContent}>
+        <View style={styles.textContainer}>
+          <Text style={styles.valueText}>{value}</Text>
+          <Text style={styles.labelText}>{label}</Text>
+        </View>
       </View>
-      <View style={styles.textContainer}>
-        <Text style={styles.valueText}>{value}</Text>
-        <Text style={styles.labelText}>{label}</Text>
+      <View style={styles.actionRow}>
+        <Text style={styles.actionText}>{buttonText}</Text>
+        <RightIcon width={20} height={20} />
       </View>
-    </View>
-    <View style={styles.actionRow}>
-      <Text style={styles.actionText}>{buttonText}</Text>
-      <Icon name="chevron-forward" size={14} color="#D4AF37" />
-    </View>
-  </TouchableOpacity>
-);
+    </TouchableOpacity>
+  );
+};
 
 const QuickActions: React.FC = () => {
+  const navigation = useNavigation<any>();
   return (
     <View style={styles.container}>
       <View style={styles.headerContainer}>
@@ -60,39 +59,43 @@ const QuickActions: React.FC = () => {
 
       <View style={styles.gridContainer}>
         <QuickActionItem
-          icon="calendar-outline"
           bgColor="#F8F4EC"
           label="Today's Bookings"
           value="12"
           buttonText="View All"
-          onPress={() => {}}
+          onPress={() => {
+            navigation.navigate('SessionsScreen');
+          }}
         />
 
         <QuickActionItem
-          icon="moon-outline"
           bgColor="#F5F0E8"
           label="Kundli Requests"
           value="03"
           buttonText="View All"
-          onPress={() => {}}
+          onPress={() => {
+            navigation.navigate('KundliScreen');
+          }}
         />
 
         <QuickActionItem
-          icon="time-outline"
           bgColor="#F8F4EC"
-          label="Upcoming Appointments"
+          label="Total Bookings"
           value="03"
-          buttonText="Update"
-          onPress={() => {}}
+          buttonText="View All"
+          onPress={() => {
+            navigation.navigate('SessionsScreen');
+          }}
         />
 
         <QuickActionItem
-          icon="newspaper-outline"
           bgColor="#F5F0E8"
           label="Published Blogs"
           value="08"
           buttonText="View All"
-          onPress={() => {}}
+          onPress={() => {
+            navigation.navigate('CreateScreen');
+          }}
         />
       </View>
     </View>
@@ -135,13 +138,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 12,
     marginBottom: 12,
-  },
-  iconContainer: {
-    width: 44,
-    height: 44,
-    borderRadius: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   textContainer: {
     flex: 1,

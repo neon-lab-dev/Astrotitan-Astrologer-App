@@ -133,7 +133,7 @@ const AppBar = ({
 
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
           <IconButton
-            size={40}
+            size={35}
             Icon={NotificationIcon}
             iconColor="#0D0D0D"
             onPress={() => {

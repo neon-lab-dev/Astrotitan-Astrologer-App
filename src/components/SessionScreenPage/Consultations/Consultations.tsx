@@ -1,3 +1,4 @@
+/* eslint-disable react-native/no-inline-styles */
 import { StyleSheet, View } from 'react-native';
 import ContentSection from '../../reusable/ContentSectoin/ContentSection';
 import SessionCardSkeleton from '../../tabs/session/SessionCard/SessionCardSkeleton';
@@ -18,6 +19,7 @@ const Consultations = ({
   isLoading: boolean;
   bookings: TConsultation[];
 }) => {
+  console.log(bookings, 'iiii');
   const navigation = useNavigation<NavigationProp>();
   const dispatch = useDispatch();
 
@@ -67,12 +69,17 @@ const Consultations = ({
                     sessionType: item.method,
                     userName: item?.user?.fullName,
                     date: formatDate(item.createdAt),
-                    time: '10:30 AM',
-                    duration: item?.duration,
                     status: item?.status,
                     rating: item?.rating,
                     subscriptionType: item?.type,
                     image: item?.user?.profilePicture,
+                    consultationId: item?._id,
+                    recommendations: item?.recommendations || '',
+                    meetingDate: item?.slotId?.date,
+                    time: `${formatDate(item?.slotId?.date)} at ${item?.bookedSlot?.startTime} - ${item?.bookedSlot?.endTime}`,
+                    startTime: item?.bookedSlot?.startTime,
+                    endTime: item?.bookedSlot?.endTime,
+                    consultationFor: item?.consultationFor,
                   })
                 }
                 onChat={handleChatNow}
