@@ -2,7 +2,14 @@
 /* eslint-disable react-native/no-inline-styles */
 import NotificationIcon from '@/assets/icons/navigation/notifications.svg';
 import React, { useCallback, useState } from 'react';
-import { RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
+import {
+  Image,
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import {
   useGetMeQuery,
@@ -26,6 +33,7 @@ import AnimatedScreen from '../../../components/layout/AnimatedScreen';
 import { useGetMyConsultationBookingsQuery } from '../../../redux/features/consultation/consultationApi';
 import RequestCardSkeleton from '../../../components/tabs/home/home/RequestCard/RequestCardSkeleton';
 import { useGetMyNotificationsQuery } from '../../../redux/features/notification/notificationApi';
+import QuickActions from '../../../components/HomePage/QuickAction/QuickAction';
 const HomeScreen = () => {
   const user = useSelector(selectUser);
   const [refreshing, setRefreshing] = useState(false);
@@ -105,47 +113,72 @@ const HomeScreen = () => {
         >
           {/* HEADER */}
 
+          {/* HEADER */}
           <View style={styles.header}>
-            <View
-              style={{
-                flex: 1,
-              }}
-            >
-              <SansText style={styles.greeting}>
-                {getTimeBasedGreeting()},
-              </SansText>
-
-              <SatoshiText style={styles.userName}>
-                {profile?.displayName ??
-                  `${profile?.firstName ?? ''} ${
-                    profile?.lastName ?? ''
-                  }`.trim()}
-              </SatoshiText>
+            <View style={styles.headerLeft}>
+              <View style={styles.greetingContainer}>
+                <SansText style={styles.greeting}>
+                  {getTimeBasedGreeting()},
+                </SansText>
+                <View style={styles.nameContainer}>
+                  <SatoshiText style={styles.userName}>
+                    {profile?.displayName ??
+                      `${profile?.firstName ?? ''} ${
+                        profile?.lastName ?? ''
+                      }`.trim()}
+                  </SatoshiText>
+                </View>
+              </View>
             </View>
 
-            <View>
-              <IconButton
-                Icon={NotificationIcon}
-                iconColor="#0D0D0D"
-                onPress={() => {
-                  navigation.navigate('NotificationScreen');
-                }}
-                update={unreadCount > 0}
-                updateCount={unreadCount}
-              />
+            <View style={styles.headerRight}>
+              <TouchableOpacity
+                style={styles.notificationButton}
+                onPress={() => navigation.navigate('NotificationScreen')}
+              >
+                <IconButton
+                  Icon={NotificationIcon}
+                  size={20}
+                  iconColor="#0D0D0D"
+                  onPress={() => {
+                    navigation.navigate('NotificationScreen');
+                  }}
+                  update={unreadCount > 0}
+                  updateCount={unreadCount}
+                />
+                {unreadCount > 0 && (
+                  <View style={styles.notificationBadge}>
+                    <SansText style={styles.notificationCount}>
+                      {unreadCount > 9 ? '9+' : unreadCount}
+                    </SansText>
+                  </View>
+                )}
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.profileButton}
+                onPress={() => navigation.navigate('ProfileScreen')}
+              >
+                <Image
+                  source={{ uri: profile?.profilePicture }}
+                  style={styles.profileAvatar}
+                />
+              </TouchableOpacity>
             </View>
           </View>
 
           {/* CONTENT */}
+          <View style={styles.section}>
+            <QuickActions />
+          </View>
 
           <View style={styles.section}>
             <ContentSection
-              title="Chat Requests"
+              title="Recent Requests"
               sectionStyle={{ paddingHorizontal: 16 }}
             >
               <SansText>
-                Your chat requests will appear here. Sample requests shown for
-                preview.
+                Here are your latest consultation requests. Tap on any request
+                to view details and respond.
               </SansText>
             </ContentSection>
 
@@ -261,24 +294,78 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-
     justifyContent: 'space-between',
-
-    paddingHorizontal: 16,
+    paddingHorizontal: 20,
     paddingTop: 16,
-    marginBottom: 24,
+    paddingBottom: 26,
   },
-
+  headerLeft: {
+    flex: 1,
+  },
+  greetingContainer: {
+    gap: 2,
+  },
   greeting: {
-    fontSize: 16,
-    color: '#4A4A4A',
-    marginBottom: 4,
+    fontSize: 14,
+    color: '#8E8E93',
+    fontWeight: '400',
   },
-
+  nameContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
   userName: {
-    fontSize: 21,
-    color: '#111',
+    fontSize: 22,
+    fontWeight: '700',
+    color: '#1a1a2e',
     fontFamily: 'Satoshi-Bold',
+  },
+  headerRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  notificationButton: {
+   width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#F5F5F5',
+    alignItems: 'center',
+    justifyContent: 'center',
+    position: 'relative',
+  },
+  notificationBadge: {
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    backgroundColor: '#FF3B30',
+    borderRadius: 10,
+    minWidth: 18,
+    height: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 4,
+    borderWidth: 2,
+    borderColor: '#FFFFFF',
+  },
+  notificationCount: {
+    fontSize: 9,
+    color: '#FFFFFF',
+    fontWeight: '700',
+  },
+  profileButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    overflow: 'hidden',
+    borderWidth: 2,
+    borderColor: '#D4AF37',
+  },
+  profileAvatar: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 20,
   },
 
   profileCard: {

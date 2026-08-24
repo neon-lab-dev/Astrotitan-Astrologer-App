@@ -5,6 +5,7 @@ import ArticleScreen from "../screens/tabs/create/article/ArticleScreen";
 import NotificationScreen from "../screens/notification/notification";
 import AstrologerDetailsScreen from "../screens/tabs/astrologers/astrologer/AstrologerDetailsScreen";
 import AstrologerChatScreen from "../screens/tabs/session/(chat)/AstrologerChatScreen";
+import ProfileScreen from "../screens/tabs/profile/ProfileScreen";
 
 const Stack = createNativeStackNavigator();
 
@@ -40,6 +41,10 @@ export default function HomeNavigator() {
       <Stack.Screen
         name="AstrologerChatScreen"
         component={AstrologerChatScreen}
+      />
+      <Stack.Screen
+        name="ProfileScreen"
+        component={ProfileScreen}
       />
   
     </Stack.Navigator>

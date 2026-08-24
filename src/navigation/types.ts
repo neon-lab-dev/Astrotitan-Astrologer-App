@@ -71,4 +71,8 @@ export type RootStackParamList = {
     subscriptionType?: string;
     image?: string;
   };
+  KundliScreen: undefined;
+  KundliRequestDetails: {
+    id: string;
+  };
 };

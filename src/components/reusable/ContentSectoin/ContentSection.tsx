@@ -42,7 +42,7 @@ const styles = StyleSheet.create({
 
   subtitle: {
     fontSize: 14,
-    marginTop: 8,
+    marginTop: 3,
     lineHeight: 20,
   },
 });

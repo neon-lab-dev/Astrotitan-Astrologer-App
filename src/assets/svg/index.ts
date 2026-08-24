@@ -56,8 +56,12 @@ import StatusIcon from "@/assets/icons/visual/user-status.svg";
 import ClockIcon from "@/assets/icons/visual/clock.svg";
 import ValidationIcon from "@/assets/icons/visual/validation.svg";
 import CalendarIcon from "@/assets/icons/visual/calendar.svg";
+import EmptyFile from "@/assets/icons/visual/empty-file.svg";
 import SentIcon from "@/assets/icons/actions/sent.svg";
 import EditIcon from "@/assets/icons/actions/edit.svg";
+import AnalyzeKundli from "@/assets/icons/visual/analyze-kundli.svg";
+import GenerateKundli from "@/assets/icons/visual/generate-kundli.svg";
+import RightArrow from "@/assets/icons/visual/right-arrow.svg";
 
 export const ICONS = {
   homeActive: HomeActive,
@@ -111,7 +115,11 @@ export const ICONS = {
   EditIcon: EditIcon,
   ClockIcon: ClockIcon,
   StatusIcon: StatusIcon,
-  CalendarIcon: CalendarIcon
+  CalendarIcon: CalendarIcon,
+  EmptyFile: EmptyFile,
+  RightArrow: RightArrow,
+  AnalyzeKundli: AnalyzeKundli,
+  GenerateKundli: GenerateKundli
 };
 
 export type IconName = keyof typeof ICONS;

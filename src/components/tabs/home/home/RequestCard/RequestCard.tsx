@@ -1,306 +1,230 @@
 import React from "react";
-
 import {
   Image,
   StyleSheet,
-  View
+  View,
+  TouchableOpacity,
 } from "react-native";
 import { SatoshiText } from "../../../../reusable/Text/SatoshiText";
 import { SansText } from "../../../../reusable/Text/SansText";
-import ReusableButton from "../../../../reusable/ReusableButton/ReusableButton";
-import { useChangeBookingStatusMutation } from "../../../../../redux/features/consultation/consultationApi";
-import { setSelectedConsultation } from "../../../../../redux/features/consultation/consultationChatSlice";
+import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../../../../../navigation/types";
-import { useNavigation } from "@react-navigation/native";
-import { useDispatch } from "react-redux";
 
 type Props = {
-  item: {
-    id: string;
-    name: string;
-    image: string;
-  };
+  item: any;
   isVerified?: boolean;
 };
 
-const RequestCard = ({
-  item,
-  isVerified = false,
-}: Props) => {
-  const isDisabled =
-    !isVerified;
-  type NavigationProp =
-    NativeStackNavigationProp<RootStackParamList>;
-  const dispatch = useDispatch()
+const formatDate = (date: string) => {
+  const d = new Date(date);
+  return d.toLocaleDateString('en-US', { 
+    month: 'short', 
+    day: 'numeric', 
+    year: 'numeric' 
+  });
+};
+
+const RequestCard = ({ item }: Props) => {
+  type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
   const navigation = useNavigation<NavigationProp>();
-  const [changeBookingStatus, { isLoading }] = useChangeBookingStatusMutation();
-  const handleAccept = async () => {
-    try {
-      const payload = { status: "accepted" };
-      const response = await changeBookingStatus({
-        id: item?._id,
-        data: payload,
-      }).unwrap();
 
-      if (response?.success) {
-      }
-    } catch (err: any) {
-      console.error("Error accepting booking:", err);
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "pending": return "#D4AF37";
+      case "accepted": return "#4CAF50";
+      case "ended": return "#8E8E93";
+      default: return "#8E8E93";
     }
   };
 
-  const handleReject = async () => {
-    try {
-      const payload = { status: "rejected" };
-      const response = await changeBookingStatus({
-        id: item?._id,
-        data: payload,
-      }).unwrap();
-
-      if (response?.success) {
-      }
-    } catch (err: any) {
-      console.error("Error rejecting booking:", err);
+  const getStatusLabel = (status: string) => {
+    switch (status) {
+      case "pending": return "Pending";
+      case "accepted": return "Accepted";
+      case "ended": return "Ended";
+      default: return status || "Unknown";
     }
   };
-  const handleChatNow = (booking: any) => {
-    // Astrologer is the current user, participant is always the User
-    const participant = booking.user;
 
-    // ✅ Astrologer's Object ID (from booking.astrologer._id)
-    const currentParticipantId = booking.astrologer;
+  const getMethodLabel = (method: string) => {
+    switch (method) {
+      case "call": return "📞 Call";
+      case "chat": return "💬 Chat";
+      default: return method || "Unknown";
+    }
+  };
 
-    // Store selected consultation in Redux
-    dispatch(
-      setSelectedConsultation({
-        consultationId: booking._id,
-        currentParticipantId: currentParticipantId,
-        participant: {
-          _id: participant?._id,
-          name: participant?.fullName || participant?.displayName || "User",
-          firstName: participant?.firstName,
-          lastName: participant?.lastName,
-          profilePicture: participant?.profilePicture,
-          accountId: participant?.accountId,
-          role: "user", // Participant is always the user in astrologer panel
-        },
-      })
-    );
-
-    // Navigate to chat page
-    navigation.navigate("AstrologerChatScreen", { id: booking?._id, profilePicture: booking?.user?.profilePicture, name: booking?.user?.fullName, consultationFor: booking.consultationFor, })
+  const handlePress = () => {
+    navigation.navigate('SessionHistoryDetailsScreen', {
+      sessionType: item.method,
+      userName: item?.user?.fullName,
+      date: formatDate(item.createdAt),
+      time: '10:30 AM',
+      duration: item?.duration,
+      status: item?.status,
+      rating: item?.rating,
+      subscriptionType: item?.type,
+      image: item?.user?.profilePicture,
+    });
   };
 
   return (
-    <View
-      style={[
-        styles.requestCard,
-        isDisabled && { opacity: 0.65, },
-      ]}
+    <TouchableOpacity 
+      style={styles.requestCard} 
+      onPress={handlePress}
+      activeOpacity={0.7}
     >
-      {/* DISABLED OVERLAY */}
-
-      {/* {isDisabled && (
-        <View
-          style={
-            styles.disabledOverlay
-          }
-        >
-          <LockIcon
-            width={18}
-            height={18}
-          />
-
-          <SansText
-            style={
-              styles.disabledText
-            }
-          >
-            Verify account
-            to accept
-            requests
-          </SansText>
-        </View>
-      )} */}
-
-      {/* IMAGE */}
-
       <Image
-        source={{ uri: item?.user?.profilePicture, }}
-        style={styles.requestImage}
+        source={{ uri: item?.user?.profilePicture }}
+        style={styles.avatar}
       />
-      {/* NAME */}
-
-      <SatoshiText style={styles.requestName}>{item?.user?.fullName}</SatoshiText>
-
-      {/* TYPE */}
-
-      <SansText style={styles.requestType}>Request Type : {item?.method}
-      </SansText>
-      {/* ACTIONS */}
-
-
-
-
-      {item?.status === "pending" ? (
-        <View style={styles.requestActions}>
-          {/* ACCEPT */}
-          <View style={{ flex: 1 }}><ReusableButton variant="solid" style={{ borderRadius: 12 }} onPress={() => { handleAccept }} title="Accept" /></View>
-          <View style={{ flex: 1 }}><ReusableButton variant="outline" style={{ borderRadius: 12 }} onPress={() => { handleReject }} title="Decline" /></View>
+      
+      <View style={styles.content}>
+        <View style={styles.topRow}>
+          <SatoshiText style={styles.name} numberOfLines={1}>
+            {item?.user?.fullName}
+          </SatoshiText>
+          <View style={[styles.statusBadge, { backgroundColor: getStatusColor(item.status) + '15' }]}>
+            <View style={[styles.statusDot, { backgroundColor: getStatusColor(item.status) }]} />
+            <SansText style={[styles.statusText, { color: getStatusColor(item.status) }]}>
+              {getStatusLabel(item.status)}
+            </SansText>
+          </View>
         </View>
-      ) : item?.status === "accepted" ? (
-        <View style={styles.chatButtonContainer}>
-          <ReusableButton
-            variant="solid"
-            title={`${item.method} Now`}
-            height={32}
-            textSize={12}
-            style={styles.button}
-            onPress={() =>{ handleChatNow(item)}}
-          />
-        </View>
-      ) : (
-        <View style={styles.chatButtonContainer}>
-          <View
 
-            style={{
-              paddingVertical: 6,
-              paddingHorizontal: 12,
-              borderRadius: 12,
-              borderWidth: 1,
-              borderColor: "#D4AF37",
-              backgroundColor: item.status === "ended" ? "#E8CC7254" : "#F51E1E8F",
-            }}
-          > <SansText>{item.status === "ended" ? "Session Ended" : "Declined"}</SansText></View>
+        <View style={styles.detailsRow}>
+          <View style={styles.detailItem}>
+            <SansText style={styles.detailLabel}>📅 Date</SansText>
+            <SansText style={styles.detailValue}>{formatDate(item.createdAt)}</SansText>
+          </View>
+          <View style={styles.detailDivider} />
+          <View style={styles.detailItem}>
+            <SansText style={styles.detailLabel}>Type</SansText>
+            <SansText style={styles.detailValue}>{getMethodLabel(item.method)}</SansText>
+          </View>
         </View>
-      )}
-    </View>
+
+        {item.consultationFor && (
+          <View style={styles.purposeContainer}>
+            <SansText style={styles.purposeLabel}>Purpose</SansText>
+            <SansText style={styles.purpose} numberOfLines={1}>
+              {item.consultationFor}
+            </SansText>
+          </View>
+        )}
+      </View>
+
+      <SansText style={styles.arrow}>›</SansText>
+    </TouchableOpacity>
   );
 };
 
 export default RequestCard;
 
-const styles =
-  StyleSheet.create({
-    requestCard: {
-      width: 244,
-      backgroundColor: "#FBF7EB",
-      borderRadius: 12,
-      borderWidth: 1,
-      borderColor: "#E3C55A",
-      padding: 20,
-      position: "relative",
-      overflow: "hidden",
-      justifyContent: "center",
-      alignItems: "center",
-    },
-    disabledOverlay: {
-      position: "absolute",
-      top: 0,
-      left: 0,
-      right: 0,
-      zIndex: 10,
-      backgroundColor: "rgba(255,255,255,0.92)",
-      flexDirection: "row",
-      alignItems: "center",
-      gap: 6,
-      paddingVertical: 8,
-      paddingHorizontal: 10,
-    },
-
-    requestImage: {
-      width: 84,
-      height: 84,
-      borderRadius: 999,
-      marginBottom: 10,
-      backgroundColor: "#FBF7EB",
-    },
-
-    requestName: {
-      fontSize: 18,
-      color: "#4A4A4A",
-      fontFamily: "Satoshi-Bold",
-      marginBottom: 4,
-    },
-
-    requestType: {
-      fontSize: 13,
-      color: "#7A7A7A",
-      marginBottom: 14,
-      textTransform: "capitalize"
-    },
-
-    requestActions: {
-      flexDirection: "row",
-      justifyContent: "space-between",
-      gap: 8,
-    },
-
-    acceptButton: {
-      flex: 1,
-
-      height: 34,
-
-      borderRadius: 999,
-
-      backgroundColor:
-        "#D4AF37",
-
-      justifyContent:
-        "center",
-
-      alignItems:
-        "center",
-    },
-
-    acceptText: {
-      fontSize: 13,
-
-      color: "#111",
-
-      fontFamily:
-        "GeneralSans-Medium",
-    },
-
-    cancelButton: {
-      flex: 1,
-
-      height: 34,
-
-      borderRadius: 999,
-
-      borderWidth: 1,
-
-      borderColor:
-        "#D96C6C",
-
-      justifyContent:
-        "center",
-
-      alignItems:
-        "center",
-    },
-
-    cancelText: {
-      fontSize: 13,
-
-      color: "#D96C6C",
-    },
-    buttonContainer: {
-      justifyContent: "center",
-      gap: 8,
-      marginLeft: 12,
-    },
-
-    chatButtonContainer: {
-      justifyContent: "center",
-      marginLeft: 12,
-    },
-
-    button: {
-      borderRadius: 10,
-      minWidth: 90,
-      textTransform: "capitalize"
-    },
-  });
+const styles = StyleSheet.create({
+  requestCard: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#FFFFFF",
+    borderRadius: 14,
+    padding: 16,
+    marginVertical: 6,
+    minHeight: 90,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
+    elevation: 2,
+    borderWidth: 1,
+    borderColor: "rgba(212, 175, 55, 0.08)",
+  },
+  avatar: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: "#F5F0E8",
+  },
+  content: {
+    flex: 1,
+    marginLeft: 14,
+    gap: 6,
+  },
+  topRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  name: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#1a1a2e",
+    flex: 1,
+    marginRight: 8,
+  },
+  statusBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+    gap: 4,
+  },
+  statusDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+  },
+  statusText: {
+    fontSize: 10,
+    fontWeight: "500",
+  },
+  detailsRow: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  detailItem: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+  },
+  detailLabel: {
+    fontSize: 11,
+    color: "#8E8E93",
+    fontWeight: "500",
+  },
+  detailValue: {
+    fontSize: 12,
+    color: "#1a1a2e",
+    fontWeight: "500",
+  },
+  detailDivider: {
+    width: 1,
+    height: 16,
+    backgroundColor: "#E5E5E5",
+    marginHorizontal: 8,
+  },
+  purposeContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    marginTop: 2,
+  },
+  purposeLabel: {
+    fontSize: 11,
+    color: "#8E8E93",
+    fontWeight: "500",
+  },
+  purpose: {
+    fontSize: 12,
+    color: "#6B6B70",
+    flex: 1,
+  },
+  arrow: {
+    fontSize: 22,
+    color: "#D4AF37",
+    marginLeft: 8,
+    fontWeight: "300",
+  },
+});
