@@ -23,11 +23,11 @@ const Consultations = ({
   const dispatch = useDispatch();
 
   const handleChatNow = (booking: any) => {
-    const participant = booking.user;
-    const currentParticipantId = booking.astrologer;
+    const participant = booking?.user;
+    const currentParticipantId = booking?.astrologer;
     dispatch(
       setSelectedConsultation({
-        consultationId: booking._id,
+        consultationId: booking?._id,
         currentParticipantId: currentParticipantId,
         participant: {
           _id: participant?.accountId,
@@ -46,7 +46,7 @@ const Consultations = ({
       id: booking?._id,
       profilePicture: booking?.user?.profilePicture,
       name: booking?.user?.fullName,
-      consultationFor: booking.consultationFor,
+      consultationFor: booking?.consultationFor,
     });
   };
   return (

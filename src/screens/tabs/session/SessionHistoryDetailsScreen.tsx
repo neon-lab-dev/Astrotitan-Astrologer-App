@@ -26,9 +26,13 @@ import RenderHTML, {
   MixedStyleDeclaration,
 } from 'react-native-render-html';
 import { formatDate } from '../../../utils/formatDate';
+import { useDispatch } from 'react-redux';
+import { setSelectedConsultation } from '../../../redux/features/consultation/consultationChatSlice';
+import { useGetSingleConsultationBookingByIdQuery } from '../../../redux/features/consultation/consultationApi';
 
 const SessionHistoryDetailsScreen = () => {
   const navigation = useNavigation<any>();
+  const dispatch = useDispatch();
   const route = useRoute<any>();
   const params = route.params as any;
 
@@ -48,6 +52,8 @@ const SessionHistoryDetailsScreen = () => {
   const slotId = params.slotId || null;
   const recommendations = params.recommendations || null;
   const consultationFor = params.consultationFor || 'N/A';
+
+  const {data} = useGetSingleConsultationBookingByIdQuery(consultationId);
 
   /*
     CONDITIONS
@@ -116,8 +122,32 @@ const SessionHistoryDetailsScreen = () => {
   };
 
   // Handle Chat
-  const handleChat = () => {
-    console.log('Opening chat for:', userName);
+  const handleChatNow = (booking: any) => {
+    const participant = booking?.user;
+    const currentParticipantId = booking?.astrologer;
+    dispatch(
+      setSelectedConsultation({
+        consultationId: booking?._id,
+        currentParticipantId: currentParticipantId,
+        participant: {
+          _id: participant?.accountId,
+          name: participant?.fullName,
+          firstName: participant?.firstName,
+          lastName: participant?.lastName,
+          profilePicture: participant?.profilePicture || '',
+          accountId: participant?.accountId,
+          role: 'user',
+        },
+      }),
+    );
+
+    // Navigate to chat page
+    navigation.navigate('AstrologerChatScreen', {
+      id: booking?._id,
+      profilePicture: booking?.user?.profilePicture,
+      name: booking?.user?.fullName,
+      consultationFor: booking.consultationFor,
+    });
   };
 
   const { width } = useWindowDimensions();
@@ -282,7 +312,7 @@ const SessionHistoryDetailsScreen = () => {
                   {(isPending || isScheduled) && (
                     <TouchableOpacity
                       style={[styles.actionButton, styles.primaryButton]}
-                      onPress={handleChat}
+                      onPress={() => handleChatNow(data?.data)}
                     >
                       <SansText style={styles.primaryButtonText}>
                         Chat Now

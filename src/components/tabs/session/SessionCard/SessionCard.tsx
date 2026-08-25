@@ -57,7 +57,7 @@ const SessionCard = ({ item, onPress, onChat }: Props) => {
 
   // Determine status color
   const getStatusColor = () => {
-    if (item?.status === 'ended') return '#E0E0E0';
+    if (item?.status === 'ended') return '#10b404';
     if (item?.status === 'scheduled') return '#D4AF37';
     if (item?.status === 'pending') return '#FFB74D';
     return '#E0E0E0';

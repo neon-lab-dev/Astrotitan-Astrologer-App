@@ -33,6 +33,7 @@ import RequestCardSkeleton from '../../../components/tabs/home/home/RequestCard/
 import { useGetMyNotificationsQuery } from '../../../redux/features/notification/notificationApi';
 import QuickActions from '../../../components/HomePage/QuickAction/QuickAction';
 import { ICONS } from '../../../assets/svg';
+import { useGetStatsQuery } from '../../../redux/features/astrologer/astrologerApi';
 const HomeScreen = () => {
   const user = useSelector(selectUser);
   const [refreshing, setRefreshing] = useState(false);
@@ -65,6 +66,9 @@ const HomeScreen = () => {
       console.log('GET ME ERROR:', error);
     }
   }, [getMe, dispatch]);
+
+  const { data, isLoading, refetch } = useGetStatsQuery({});
+
   const onRefresh = useCallback(async () => {
     if (refreshing) return;
 
@@ -72,6 +76,7 @@ const HomeScreen = () => {
       setRefreshing(true);
       refetchBooking();
       fetchLatestUser();
+      refetch();
       await Promise.all([]);
     } catch (error) {
       console.log('REFRESH ERROR:', error);
@@ -79,6 +84,7 @@ const HomeScreen = () => {
       setRefreshing(false);
     }
   }, []);
+
   useFocusEffect(
     useCallback(() => {
       fetchLatestUser();
@@ -160,7 +166,7 @@ const HomeScreen = () => {
 
           {/* CONTENT */}
           <View style={styles.section}>
-            <QuickActions />
+            <QuickActions stats={data?.data || {}} isLoading={isLoading} />
           </View>
 
           {/* Recent Requests */}

@@ -30,7 +30,7 @@ export const astrologerApi = baseApi.injectEndpoints({
       query: (id) => `/astrologer/${id}`,
     }),
 
-     updateAvailability: builder.mutation<any, any>({
+    updateAvailability: builder.mutation<any, any>({
       query: (data) => ({
         url: `/astrologer/availability/update`,
         method: "PUT",
@@ -39,8 +39,17 @@ export const astrologerApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["astrologers"],
     }),
+
+    getStats: builder.query({
+      query: () => ({
+        url: `/astrologer/stats/my`,
+        method: "GET",
+        credentials: "include",
+      }),
+      providesTags: ["astrologers"],
+    }),
   }),
 });
 
-export const { useGetAstrologersQuery, useGetAstrologerByIdQuery, useUpdateAvailabilityMutation } =
+export const { useGetAstrologersQuery, useGetAstrologerByIdQuery, useUpdateAvailabilityMutation, useGetStatsQuery } =
   astrologerApi;

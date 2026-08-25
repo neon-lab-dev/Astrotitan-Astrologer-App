@@ -19,6 +19,7 @@ interface QuickActionItemProps {
   buttonText: string;
   onPress: () => void;
   iconColor?: string;
+  isLoading?: boolean;
 }
 
 const QuickActionItem: React.FC<QuickActionItemProps> = ({
@@ -27,30 +28,60 @@ const QuickActionItem: React.FC<QuickActionItemProps> = ({
   value,
   buttonText,
   onPress,
+  isLoading = false,
 }) => {
   const RightIcon = ICONS.RightArrow;
+  
+  // Format the value to show with leading zero for single digits, but keep 0 as 0
+  const formatValue = (val: string | number) => {
+    const num = typeof val === 'string' ? parseInt(val, 10) : val;
+    // If it's 0, return '0'
+    if (num === 0) return '0';
+    // If it's a single digit (1-9), add leading zero
+    if (num >= 1 && num < 10) return `0${num}`;
+    // Otherwise return as is
+    return String(num);
+  };
+
   return (
     <TouchableOpacity
       style={[styles.actionCard, { backgroundColor: bgColor }]}
       onPress={onPress}
       activeOpacity={0.7}
+      disabled={isLoading}
     >
       <View style={styles.cardContent}>
         <View style={styles.textContainer}>
-          <Text style={styles.valueText}>{value}</Text>
-          <Text style={styles.labelText}>{label}</Text>
+          {isLoading ? (
+            <>
+              <View style={styles.skeletonValue} />
+              <View style={styles.skeletonLabel} />
+            </>
+          ) : (
+            <>
+              <Text style={styles.valueText}>{formatValue(value)}</Text>
+              <Text style={styles.labelText}>{label}</Text>
+            </>
+          )}
         </View>
       </View>
       <View style={styles.actionRow}>
-        <Text style={styles.actionText}>{buttonText}</Text>
-        <RightIcon width={20} height={20} />
+        {isLoading ? (
+          <View style={styles.skeletonAction} />
+        ) : (
+          <>
+            <Text style={styles.actionText}>{buttonText}</Text>
+            <RightIcon width={20} height={20} />
+          </>
+        )}
       </View>
     </TouchableOpacity>
   );
 };
 
-const QuickActions: React.FC = () => {
+const QuickActions = ({ stats, isLoading }: any) => {
   const navigation = useNavigation<any>();
+  
   return (
     <View style={styles.container}>
       <View style={styles.headerContainer}>
@@ -61,41 +92,45 @@ const QuickActions: React.FC = () => {
         <QuickActionItem
           bgColor="#F8F4EC"
           label="Today's Bookings"
-          value="12"
+          value={stats?.todayBookings || 0}
           buttonText="View All"
           onPress={() => {
             navigation.navigate('SessionsScreen');
           }}
+          isLoading={isLoading}
         />
 
         <QuickActionItem
           bgColor="#F5F0E8"
           label="Kundli Requests"
-          value="03"
+          value={stats?.kundliRequests || 0}
           buttonText="View All"
           onPress={() => {
             navigation.navigate('KundliScreen');
           }}
+          isLoading={isLoading}
         />
 
         <QuickActionItem
           bgColor="#F8F4EC"
           label="Total Bookings"
-          value="03"
+          value={stats?.totalBookings || 0}
           buttonText="View All"
           onPress={() => {
             navigation.navigate('SessionsScreen');
           }}
+          isLoading={isLoading}
         />
 
         <QuickActionItem
           bgColor="#F5F0E8"
           label="Published Blogs"
-          value="08"
+          value={stats?.publishedBlogs || 0}
           buttonText="View All"
           onPress={() => {
             navigation.navigate('CreateScreen');
           }}
+          isLoading={isLoading}
         />
       </View>
     </View>
@@ -167,6 +202,27 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#D4AF37',
     fontWeight: '500',
+  },
+  // Skeleton Loader Styles
+  skeletonValue: {
+    width: 60,
+    height: 24,
+    backgroundColor: '#E8E0D0',
+    borderRadius: 4,
+    marginBottom: 4,
+  },
+  skeletonLabel: {
+    width: 80,
+    height: 14,
+    backgroundColor: '#E8E0D0',
+    borderRadius: 4,
+    marginTop: 4,
+  },
+  skeletonAction: {
+    width: 50,
+    height: 16,
+    backgroundColor: '#E8E0D0',
+    borderRadius: 4,
   },
 });
 

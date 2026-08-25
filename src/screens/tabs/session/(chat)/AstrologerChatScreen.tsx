@@ -1,44 +1,58 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   StyleSheet,
   TextInput,
   View,
   FlatList,
   Image,
-} from "react-native";
-import { SansText } from "../../../../components/reusable/Text/SansText";
-import IconButton from "../../../../components/reusable/IconButton/IconButton";
+  RefreshControl,
+} from 'react-native';
+import { SansText } from '../../../../components/reusable/Text/SansText';
+import IconButton from '../../../../components/reusable/IconButton/IconButton';
 import SentIcon from '@/assets/icons/actions/sent.svg';
-import AnimatedScreen from "../../../../components/layout/AnimatedScreen";
-import AppHeader from "../../../../components/reusable/AppHeader/AppHeader";
-import { SatoshiText } from "../../../../components/reusable/Text/SatoshiText";
-import ReusableButton from "../../../../components/reusable/ReusableButton/ReusableButton";
-import { useRoute } from "@react-navigation/native";
-import { useDispatch, useSelector } from "react-redux";
-import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { RootStackParamList } from "../../../../navigation/types";
-import { useNavigation } from "@react-navigation/native";
-import { addConsultationMessage, clearSelectedConsultation, selectCurrentParticipantId, selectSelectedConsultationMessages, selectSelectedParticipant, setSelectedConsultationMessages, updateConsultationMessageId } from "../../../../redux/features/consultation/consultationChatSlice";
-import { useConsultationSocket } from "../../../../socket/useConsultationSocket";
-import { selectUser } from "../../../../redux/features/auth/authSlice";
-import { useGetConsultationMessagesQuery, useMarkConsultationMessagesReadMutation } from "../../../../redux/features/consultation/consultationChatApi";
-import { formatMessageDate } from "../../../../utils/validators/dateValidators";
-import { useEndConsultationSessionMutation } from "../../../../redux/features/consultation/consultationApi";
-
+import AnimatedScreen from '../../../../components/layout/AnimatedScreen';
+import AppHeader from '../../../../components/reusable/AppHeader/AppHeader';
+import { SatoshiText } from '../../../../components/reusable/Text/SatoshiText';
+import ReusableButton from '../../../../components/reusable/ReusableButton/ReusableButton';
+import { useRoute } from '@react-navigation/native';
+import { useDispatch, useSelector } from 'react-redux';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RootStackParamList } from '../../../../navigation/types';
+import { useNavigation } from '@react-navigation/native';
+import {
+  addConsultationMessage,
+  clearSelectedConsultation,
+  selectCurrentParticipantId,
+  selectSelectedConsultationMessages,
+  selectSelectedParticipant,
+  setSelectedConsultationMessages,
+  updateConsultationMessageId,
+} from '../../../../redux/features/consultation/consultationChatSlice';
+import { useConsultationSocket } from '../../../../socket/useConsultationSocket';
+import { selectUser } from '../../../../redux/features/auth/authSlice';
+import {
+  useGetConsultationMessagesQuery,
+  useMarkConsultationMessagesReadMutation,
+} from '../../../../redux/features/consultation/consultationChatApi';
+import { formatMessageDate } from '../../../../utils/validators/dateValidators';
+import { useEndConsultationSessionMutation } from '../../../../redux/features/consultation/consultationApi';
+import { ScrollView } from 'react-native-gesture-handler';
 
 const AstrologerChatScreen = () => {
   const route = useRoute<any>();
-  const { id: consultationId, profilePicture, name, consultationFor } = route.params || {};
+  const {
+    id: consultationId,
+    profilePicture,
+    name,
+    consultationFor,
+  } = route.params || {};
   const [endConsultationSession] = useEndConsultationSessionMutation();
 
   const renderMessage = ({ item }: { item: any }) => {
     const senderId =
-      typeof item.sender === "string"
-        ? item.sender
-        : item.sender?._id;
+      typeof item.sender === 'string' ? item.sender : item.sender?._id;
 
-    const isOwn =
-      senderId === currentUser?.account?._id;
+    const isOwn = senderId === currentUser?.account?._id;
 
     return (
       <View
@@ -53,38 +67,40 @@ const AstrologerChatScreen = () => {
             isOwn ? styles.userBubble : styles.receiverBubble,
           ]}
         >
-          <SansText style={styles.messageText}>
-            {item.content}
-          </SansText>
+          <SansText style={styles.messageText}>{item.content}</SansText>
 
           <View
             style={[
               styles.timeRow,
               isOwn
-                ? { justifyContent: "flex-end" }
-                : { justifyContent: "flex-start" },
+                ? { justifyContent: 'flex-end' }
+                : { justifyContent: 'flex-start' },
             ]}
           >
             <SansText style={styles.time}>
-              {formatMessageDate(item.createdAt)} {" "}
+              {formatMessageDate(item.createdAt)}{' '}
             </SansText>
 
-
-
-            {item?.isTemp && <SansText style={styles.sendingText}>⌛ Sending...</SansText>}
-            {isOwn && !item?.isTemp && item?.status === "read" && <SansText style={styles.readText}>✓✓ Read</SansText>}
-            {isOwn && !item?.isTemp && item?.status === "sent" && <SansText style={styles.sentText}>✓ Sent</SansText>}
+            {item?.isTemp && (
+              <SansText style={styles.sendingText}>⌛ Sending...</SansText>
+            )}
+            {isOwn && !item?.isTemp && item?.status === 'read' && (
+              <SansText style={styles.readText}>✓✓ Read</SansText>
+            )}
+            {isOwn && !item?.isTemp && item?.status === 'sent' && (
+              <SansText style={styles.sentText}>✓ Sent</SansText>
+            )}
           </View>
         </View>
       </View>
     );
   };
   const dispatch = useDispatch();
-  type NavigationProp =
-    NativeStackNavigationProp<RootStackParamList>;
+  const [refreshing, setRefreshing] = useState<boolean>(false);
+  type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
   const navigation = useNavigation<NavigationProp>();
-  const [message, setMessage] = useState("");
+  const [message, setMessage] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<TextInput>(null);
   const hasInitializedRef = useRef(false);
@@ -94,7 +110,6 @@ const AstrologerChatScreen = () => {
   const participant = useSelector(selectSelectedParticipant);
   const messages = useSelector(selectSelectedConsultationMessages);
   const currentParticipantId = useSelector(selectCurrentParticipantId);
-
 
   const messagesRef = useRef(messages);
 
@@ -114,9 +129,23 @@ const AstrologerChatScreen = () => {
   const currentUser = useSelector(selectUser) as any;
 
   // API hooks
-  const { data } = useGetConsultationMessagesQuery(consultationId, {
+  const { data, refetch } = useGetConsultationMessagesQuery(consultationId, {
     skip: !consultationId,
   });
+
+  const onRefresh = useCallback(async () => {
+    if (refreshing) return;
+
+    try {
+      setRefreshing(true);
+
+      await Promise.all([refetch().unwrap()]);
+    } catch (error) {
+      console.log('REFRESH ERROR:', error);
+    } finally {
+      setRefreshing(false);
+    }
+  }, [refreshing, refetch]);
 
   const [markMessagesAsRead] = useMarkConsultationMessagesReadMutation();
 
@@ -177,49 +206,50 @@ const AstrologerChatScreen = () => {
       }
     };
 
-    socket.on("receiveConsultationMessage", handleReceiveMessage);
-    socket.on("consultationMessageSent", handleMessageSent);
+    socket.on('receiveConsultationMessage', handleReceiveMessage);
+    socket.on('consultationMessageSent', handleMessageSent);
 
     return () => {
-      socket.off("receiveConsultationMessage", handleReceiveMessage);
-      socket.off("consultationMessageSent", handleMessageSent);
+      socket.off('receiveConsultationMessage', handleReceiveMessage);
+      socket.off('consultationMessageSent', handleMessageSent);
     };
   }, [socket, consultationId, dispatch]);
 
   // Handle send message
   const handleSendMessage = () => {
-
     if (!message.trim()) {
-      console.warn("⚠️ Message is empty");
+      console.warn('⚠️ Message is empty');
       return;
     }
 
     if (!consultationId) {
-      console.warn("⚠️ No consultation ID");
+      console.warn('⚠️ No consultation ID');
       return;
     }
 
     if (!participant) {
-      console.warn("⚠️ No participant found");
+      console.warn('⚠️ No participant found');
       return;
     }
 
     if (!currentParticipantId) {
-      console.warn("⚠️ No current participant ID found");
+      console.warn('⚠️ No current participant ID found');
       return;
     }
 
     if (!currentUser) {
-      console.warn("⚠️ No user found");
+      console.warn('⚠️ No user found');
       return;
     }
 
     if (!isConnected) {
-      console.warn("⚠️ Socket not connected");
+      console.warn('⚠️ Socket not connected');
       return;
     }
 
-    const tempId = `temp-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
+    const tempId = `temp-${Date.now()}-${Math.random()
+      .toString(36)
+      .substring(2, 6)}`;
 
     const messageData = {
       _id: tempId,
@@ -230,7 +260,7 @@ const AstrologerChatScreen = () => {
       tempId,
     };
 
-    console.log("📤 Sending message:", messageData);
+    console.log('📤 Sending message:', messageData);
 
     // Optimistically add to UI
     dispatch(
@@ -239,7 +269,7 @@ const AstrologerChatScreen = () => {
         _id: tempId,
         isTemp: true,
         isRead: false,
-        status: "sent",
+        status: 'sent',
         createdAt: new Date().toISOString(),
       }),
     );
@@ -247,13 +277,13 @@ const AstrologerChatScreen = () => {
     // Send via socket
     const sent = sendConsultationMessage(messageData);
 
-    console.log("Message sent:", sent);
+    console.log('Message sent:', sent);
 
     if (sent) {
-      setMessage("");
+      setMessage('');
       inputRef.current?.focus();
     } else {
-      console.error("❌ Failed to send message");
+      console.error('❌ Failed to send message');
     }
   };
 
@@ -262,13 +292,12 @@ const AstrologerChatScreen = () => {
       const response = await endConsultationSession(consultationId).unwrap();
       if (response?.success) {
         dispatch(clearSelectedConsultation());
-        navigation.navigate("SessionsScreen")
+        navigation.navigate('SessionsScreen');
       }
     } catch (err: any) {
       console.log(err);
     }
   };
-
 
   return (
     <AnimatedScreen>
@@ -281,29 +310,43 @@ const AstrologerChatScreen = () => {
 
               <View>
                 <SatoshiText style={styles.name}> {name}</SatoshiText>
-                <SansText style={styles.subtitle}>
-                  {consultationFor}
-                </SansText>
+                <SansText style={styles.subtitle}>{consultationFor}</SansText>
               </View>
             </View>
 
-            <ReusableButton width={84} height={56} title="End" onPress={() => { handleEndSession() }} />
+            <ReusableButton
+              width={84}
+              height={56}
+              title="End"
+              onPress={() => {
+                handleEndSession();
+              }}
+            />
           </View>
-
-
         </AppHeader>
 
-
-
-        {/* CHAT */}
-
-        <FlatList
-          data={messages}
-          keyExtractor={(item) => item?._id}
-          renderItem={renderMessage}
-          contentContainerStyle={styles.chatContainer}
+        <ScrollView
+          style={styles.container}
           showsVerticalScrollIndicator={false}
-        />
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              tintColor="#816B22"
+              colors={['#816B22']}
+              progressBackgroundColor="#FBF7EB"
+            />
+          }
+        >
+          {/* CHAT */}
+          <FlatList
+            data={messages}
+            keyExtractor={item => item?._id}
+            renderItem={renderMessage}
+            contentContainerStyle={styles.chatContainer}
+            showsVerticalScrollIndicator={false}
+          />
+        </ScrollView>
 
         {/* INPUT */}
 
@@ -330,15 +373,12 @@ const AstrologerChatScreen = () => {
             size={72}
             iconColor="#0D0D0D"
             onPress={() => {
-              handleSendMessage()
+              handleSendMessage();
             }}
           />
         </View>
-
-        <SatoshiText style={styles.footerText}>
-          You can ask 2 more questions.
-        </SatoshiText>
-      </View></AnimatedScreen>
+      </View>
+    </AnimatedScreen>
   );
 };
 
@@ -347,51 +387,51 @@ export default AstrologerChatScreen;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#F7F2E3",
+    backgroundColor: '#F7F2E3',
   },
 
   header: {
     paddingVertical: 14,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
 
   profileSection: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
   },
 
   avatar: {
     width: 48,
     height: 48,
     borderRadius: 28,
-    backgroundColor: "#C37B3D",
+    backgroundColor: '#C37B3D',
     marginRight: 10,
   },
 
   name: {
     fontSize: 16,
-    fontFamily: "Satoshi-Medium",
-    color: "#222",
+    fontFamily: 'Satoshi-Medium',
+    color: '#222',
   },
 
   subtitle: {
     fontSize: 16,
-    color: "#555",
+    color: '#555',
     marginTop: 2,
   },
 
   endButton: {
-    backgroundColor: "#D2AF2C",
+    backgroundColor: '#D2AF2C',
     paddingHorizontal: 18,
     paddingVertical: 8,
     borderRadius: 20,
   },
 
   endText: {
-    color: "#222",
-    fontWeight: "600",
+    color: '#222',
+    fontWeight: '600',
     fontSize: 12,
   },
 
@@ -404,98 +444,98 @@ const styles = StyleSheet.create({
   },
 
   receiverContainer: {
-    alignItems: "flex-start",
+    alignItems: 'flex-start',
   },
 
   userContainer: {
-    alignItems: "flex-end",
+    alignItems: 'flex-end',
   },
 
   messageBubble: {
-    maxWidth: "75%",
+    maxWidth: '75%',
     borderRadius: 10,
     paddingHorizontal: 24,
     paddingVertical: 10,
   },
 
   receiverBubble: {
-    backgroundColor: "#E6D18B",
-    borderColor: "#DBBD59",
-    borderWidth: 1
+    backgroundColor: '#E6D18B',
+    borderColor: '#DBBD59',
+    borderWidth: 1,
   },
 
   userBubble: {
-    backgroundColor: "#FBF7EB",
+    backgroundColor: '#FBF7EB',
     borderWidth: 1,
-    borderColor: "#D4AF37",
+    borderColor: '#D4AF37',
   },
 
   messageText: {
     fontSize: 14,
-    color: "#333",
+    color: '#333',
     lineHeight: 24,
   },
 
   timeRow: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     marginTop: 8,
   },
 
   tick: {
-    color: "#6AA84F",
+    color: '#6AA84F',
     marginRight: 4,
     fontSize: 10,
   },
 
   time: {
     fontSize: 10,
-    color: "#777",
+    color: '#777',
   },
 
   inputWrapper: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     paddingHorizontal: 14,
     paddingBottom: 10,
-    gap: 12
+    gap: 12,
   },
 
   inputContainer: {
     flex: 1,
-    backgroundColor: "#EDDEAD",
+    backgroundColor: '#EDDEAD',
     borderWidth: 1,
-    borderColor: "#D4AF37",
+    borderColor: '#D4AF37',
     borderRadius: 10,
-    justifyContent: "center",
+    justifyContent: 'center',
     padding: 14,
   },
 
   input: {
     fontSize: 14,
-    color: "#333",
-    fontFamily: "GeneralSans-Regular"
+    color: '#333',
+    fontFamily: 'GeneralSans-Regular',
   },
 
   sendButton: {
     width: 42,
     height: 42,
     borderRadius: 21,
-    backgroundColor: "#F2ECD8",
-    justifyContent: "center",
-    alignItems: "center",
+    backgroundColor: '#F2ECD8',
+    justifyContent: 'center',
+    alignItems: 'center',
     marginLeft: 10,
   },
 
   sendIcon: {
     fontSize: 14,
-    color: "#7C6A1D",
+    color: '#7C6A1D',
   },
 
   footerText: {
-    textAlign: "center",
+    textAlign: 'center',
     fontSize: 10,
-    color: "#8A8A8A",
+    color: '#8A8A8A',
     marginBottom: 12,
   },
   sendingText: {
