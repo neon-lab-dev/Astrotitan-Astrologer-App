@@ -1,3 +1,4 @@
+/* eslint-disable react-native/no-inline-styles */
 
 
 import React, {
@@ -34,7 +35,6 @@ import AuthTitle from "../../../components/auth/AuthTitle";
 import { SansText } from "../../../components/reusable/Text/SansText";
 import UserIcon from '@/assets/icons/visual/user-circle.svg';
 import FormInput from "../../../components/reusable/InputField/FormInput";
-import { isValidDate } from "../../../utils/validators/dateValidators";
 import ReusableButton from "../../../components/reusable/ReusableButton/ReusableButton";
 
 type FormValues = {

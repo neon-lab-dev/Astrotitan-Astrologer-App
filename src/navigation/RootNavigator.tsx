@@ -16,6 +16,8 @@ import MultiStepForm from "../screens/userDetailsForm/UserDetailsForm";
 import TabNavigator from "./TabNavigator";
 import NotificationScreen from "../screens/notification/notification";
 import OnboardingScreen from "../screens/onboarding/OnboardingScreen";
+import ProfileScreen from "../screens/tabs/profile/ProfileScreen";
+import PersonalInformation from "../screens/tabs/profile/PersonalInformation";
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -83,6 +85,14 @@ export default function RootNavigator() {
       <Stack.Screen
         name="NotificationScreen"
         component={NotificationScreen}
+      />
+      <Stack.Screen
+        name="ProfileScreen"
+        component={ProfileScreen}
+      />
+      <Stack.Screen
+        name="PersonalInformation"
+        component={PersonalInformation}
       />
     </Stack.Navigator>
   );

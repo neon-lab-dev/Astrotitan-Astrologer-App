@@ -154,7 +154,7 @@ const HomeScreen = () => {
               </TouchableOpacity>
               <TouchableOpacity
                 style={styles.profileButton}
-                onPress={() => navigation.navigate('ProfileScreen')}
+                onPress={() => navigation.getParent()?.navigate('ProfileScreen')}
               >
                 <Image
                   source={{ uri: profile?.profilePicture }}

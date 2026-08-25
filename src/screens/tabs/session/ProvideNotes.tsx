@@ -36,7 +36,9 @@ const ProvideNotes = () => {
       };
       const response = await provideNotes({ id: id, data: payload }).unwrap();
       if (response?.success) {
-        navigation.navigate.goBack();
+        navigation.navigate('SessionHistoryDetailsScreen', {
+          consultationId: id,
+        });
       }
 
       setContent('');
