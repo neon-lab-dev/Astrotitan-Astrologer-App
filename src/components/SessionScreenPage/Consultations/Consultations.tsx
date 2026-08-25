@@ -6,7 +6,6 @@ import SessionCard from '../../tabs/session/SessionCard/SessionCard';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../../navigation/types';
-import { formatDate } from '../../../utils/formatDate';
 import { useDispatch } from 'react-redux';
 import { setSelectedConsultation } from '../../../redux/features/consultation/consultationChatSlice';
 import { TConsultation } from '../../../types/consultation.type';
@@ -53,7 +52,10 @@ const Consultations = ({
     <View>
       {/* TODAY */}
       <View style={styles.section}>
-        <ContentSection title="All Consultations" sectionStyle={{ marginBottom: 12 }} />
+        <ContentSection
+          title="All Consultations"
+          sectionStyle={{ marginBottom: 12 }}
+        />
 
         <View>
           {isLoading ? (
@@ -61,24 +63,11 @@ const Consultations = ({
           ) : (
             bookings?.map((item: any) => (
               <SessionCard
-                key={item._id}
+                key={item?._id}
                 item={item}
                 onPress={() =>
                   navigation.navigate('SessionHistoryDetailsScreen', {
-                    sessionType: item.method,
-                    userName: item?.user?.fullName,
-                    date: formatDate(item.createdAt),
-                    status: item?.status,
-                    rating: item?.rating,
-                    subscriptionType: item?.type,
-                    image: item?.user?.profilePicture,
                     consultationId: item?._id,
-                    recommendations: item?.recommendations || '',
-                    meetingDate: item?.slotId?.date,
-                    time: `${formatDate(item?.slotId?.date)} at ${item?.bookedSlot?.startTime} - ${item?.bookedSlot?.endTime}`,
-                    startTime: item?.bookedSlot?.startTime,
-                    endTime: item?.bookedSlot?.endTime,
-                    consultationFor: item?.consultationFor,
                   })
                 }
                 onChat={handleChatNow}

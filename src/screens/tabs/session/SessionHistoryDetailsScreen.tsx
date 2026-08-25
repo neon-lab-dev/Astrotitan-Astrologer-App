@@ -2,7 +2,7 @@
 import StarInactive from '@/assets/icons/navigation/star-inactive.svg';
 import ClockIcon from '@/assets/icons/visual/clock.svg';
 import StatusIcon from '@/assets/icons/visual/user-status.svg';
-import React, { useMemo } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import {
   Image,
   ScrollView,
@@ -10,6 +10,7 @@ import {
   View,
   TouchableOpacity,
   useWindowDimensions,
+  RefreshControl,
 } from 'react-native';
 import ScreenWrapper from '../../../components/layout/ScreenWrapper';
 import { SatoshiText } from '../../../components/reusable/Text/SatoshiText';
@@ -29,6 +30,7 @@ import { formatDate } from '../../../utils/formatDate';
 import { useDispatch } from 'react-redux';
 import { setSelectedConsultation } from '../../../redux/features/consultation/consultationChatSlice';
 import { useGetSingleConsultationBookingByIdQuery } from '../../../redux/features/consultation/consultationApi';
+import AnimatedScreen from '../../../components/layout/AnimatedScreen';
 
 const SessionHistoryDetailsScreen = () => {
   const navigation = useNavigation<any>();
@@ -36,24 +38,38 @@ const SessionHistoryDetailsScreen = () => {
   const route = useRoute<any>();
   const params = route.params as any;
 
-  const sessionType = params.sessionType || 'call';
-  const consultationId = params.consultationId || '';
-  const userName = params.userName || 'N/A';
-  const date = params.date || 'N/A';
-  const time = params.time || 'N/A';
-  const startTime = params.startTime || null;
-  const endTime = params.endTime || null;
-  const meetingDate = params.meetingDate || null;
-  const status = params.status || 'pending';
-  const rating = params.rating || null;
-  const image = params.image || 'https://via.placeholder.com/84';
-  const meetingLink = params.meetingLink || null;
-  const bookedSlot = params.bookedSlot || null;
-  const slotId = params.slotId || null;
-  const recommendations = params.recommendations || null;
-  const consultationFor = params.consultationFor || 'N/A';
+  const consultationId = params?.consultationId || params?.id || '';
 
-  const {data} = useGetSingleConsultationBookingByIdQuery(consultationId);
+  const [refreshing, setRefreshing] = useState<boolean>(false);
+
+  const { data, isLoading, isFetching, refetch } =
+    useGetSingleConsultationBookingByIdQuery(consultationId, {
+      skip: !consultationId,
+    });
+
+  const {
+    user,
+    method,
+    bookedSlot,
+    slotId,
+    meetingLink,
+    recommendations,
+    consultationFor,
+    status,
+    rating,
+    createdAt,
+  } = data?.data || {};
+  
+  const startTime = bookedSlot?.startTime || null;
+  const endTime = bookedSlot?.endTime || null;
+  const meetingDate = slotId?.meetingDate || null;
+  const userName = `${user?.firstName} ${user?.lastName}` || 'N/A';
+  const image = user?.profilePicture || 'https://via.placeholder.com/84';
+  const time =
+    `${formatDate(slotId?.date)} at ${bookedSlot?.startTime} - ${
+      bookedSlot?.endTime
+    }` || 'N/A';
+  const bookedDate = formatDate(createdAt);
 
   /*
     CONDITIONS
@@ -101,7 +117,7 @@ const SessionHistoryDetailsScreen = () => {
         consultationId: consultationId,
         userName: userName,
         userImage: image,
-        date: slotId?.date || date,
+        date: slotId?.date,
         time: `${bookedSlot?.startTime || startTime} - ${
           bookedSlot?.endTime || endTime
         }`,
@@ -218,15 +234,48 @@ const SessionHistoryDetailsScreen = () => {
     },
   };
 
+  const onRefresh = useCallback(async () => {
+    if (refreshing) return;
+
+    try {
+      setRefreshing(true);
+
+      await Promise.all([refetch().unwrap()]);
+    } catch (error) {
+      console.log('REFRESH ERROR:', error);
+    } finally {
+      setRefreshing(false);
+    }
+  }, [refreshing, refetch]);
+
+  if (isLoading || isFetching) {
+    return (
+      <AnimatedScreen>
+        <ScreenWrapper>
+          <View style={styles.loaderContainer}>
+            <SansText style={styles.loadingText}>Loading...</SansText>
+          </View>
+        </ScreenWrapper>
+      </AnimatedScreen>
+    );
+  }
+
   return (
     <ScreenWrapper>
       <View style={styles.container}>
-        <AppBar
-          title={sessionType === 'chat' ? 'Chat Details' : 'Call Details'}
-        />
+        <AppBar title={method === 'chat' ? 'Chat Details' : 'Call Details'} />
 
         <ScrollView
           showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              tintColor="#816B22"
+              colors={['#816B22']}
+              progressBackgroundColor="#FBF7EB"
+            />
+          }
           contentContainerStyle={styles.scrollContent}
         >
           {/* Customer Card */}
@@ -255,7 +304,7 @@ const SessionHistoryDetailsScreen = () => {
             </View>
 
             {/* Time */}
-            {sessionType === 'call' && (
+            {method === 'call' && (
               <View style={styles.timeRow}>
                 <SansText style={styles.timeText}>{time}</SansText>
               </View>
@@ -263,7 +312,7 @@ const SessionHistoryDetailsScreen = () => {
 
             {/* Action Buttons - Based on Status */}
             <View style={styles.actionRow}>
-              {sessionType === 'call' ? (
+              {method === 'call' ? (
                 <>
                   {isPending && (
                     <TouchableOpacity
@@ -359,9 +408,11 @@ const SessionHistoryDetailsScreen = () => {
                   <View style={styles.statIconWrapper}>
                     <ClockIcon width={20} height={20} />
                   </View>
-                  <SansText style={styles.statLabel}>Meeting</SansText>
+                  <SansText style={styles.statLabel}>
+                    {method === 'call' ? 'Meeting' : 'Booked At'}
+                  </SansText>
                   <SatoshiText style={styles.statValue}>
-                    {formatDate(meetingDate)}
+                    {method === 'call' ? formatDate(meetingDate) : bookedDate}
                   </SatoshiText>
                 </View>
 
@@ -686,5 +737,14 @@ const styles = StyleSheet.create({
 
   provideNoteButton: {
     borderRadius: 10,
+  },
+  loaderContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    fontSize: 16,
+    color: '#8E8E93',
   },
 });

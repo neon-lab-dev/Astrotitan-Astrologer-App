@@ -37,6 +37,7 @@ import {
 import { formatMessageDate } from '../../../../utils/validators/dateValidators';
 import { useEndConsultationSessionMutation } from '../../../../redux/features/consultation/consultationApi';
 import { ScrollView } from 'react-native-gesture-handler';
+import ScreenWrapper from '../../../../components/layout/ScreenWrapper';
 
 const AstrologerChatScreen = () => {
   const route = useRoute<any>();
@@ -46,7 +47,8 @@ const AstrologerChatScreen = () => {
     name,
     consultationFor,
   } = route.params || {};
-  const [endConsultationSession] = useEndConsultationSessionMutation();
+  const [endConsultationSession, { isLoading: isEnding }] =
+    useEndConsultationSessionMutation();
 
   const renderMessage = ({ item }: { item: any }) => {
     const senderId =
@@ -95,13 +97,13 @@ const AstrologerChatScreen = () => {
       </View>
     );
   };
+
   const dispatch = useDispatch();
   const [refreshing, setRefreshing] = useState<boolean>(false);
   type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
   const navigation = useNavigation<NavigationProp>();
   const [message, setMessage] = useState('');
-  const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<TextInput>(null);
   const hasInitializedRef = useRef(false);
   const hasMarkedReadRef = useRef(false);
@@ -117,6 +119,7 @@ const AstrologerChatScreen = () => {
   useEffect(() => {
     messagesRef.current = messages;
   }, [messages]);
+
   // Socket hook
   const {
     sendConsultationMessage,
@@ -129,9 +132,10 @@ const AstrologerChatScreen = () => {
   const currentUser = useSelector(selectUser) as any;
 
   // API hooks
-  const { data, refetch } = useGetConsultationMessagesQuery(consultationId, {
-    skip: !consultationId,
-  });
+  const { data, refetch, isLoading, isFetching } =
+    useGetConsultationMessagesQuery(consultationId, {
+      skip: !consultationId,
+    });
 
   const onRefresh = useCallback(async () => {
     if (refreshing) return;
@@ -292,12 +296,26 @@ const AstrologerChatScreen = () => {
       const response = await endConsultationSession(consultationId).unwrap();
       if (response?.success) {
         dispatch(clearSelectedConsultation());
-        navigation.navigate('SessionsScreen');
+        navigation.navigate('ProvideNotes', {
+          consultationId: consultationId,
+        });
       }
     } catch (err: any) {
       console.log(err);
     }
   };
+
+  if (isLoading || isFetching) {
+    return (
+      <AnimatedScreen>
+        <ScreenWrapper>
+          <View style={styles.loaderContainer}>
+            <SansText style={styles.loadingText}>Loading...</SansText>
+          </View>
+        </ScreenWrapper>
+      </AnimatedScreen>
+    );
+  }
 
   return (
     <AnimatedScreen>
@@ -317,7 +335,7 @@ const AstrologerChatScreen = () => {
             <ReusableButton
               width={84}
               height={56}
-              title="End"
+              title={isEnding ? 'Ending...' : 'End'}
               onPress={() => {
                 handleEndSession();
               }}
@@ -338,14 +356,19 @@ const AstrologerChatScreen = () => {
             />
           }
         >
-          {/* CHAT */}
-          <FlatList
-            data={messages}
-            keyExtractor={item => item?._id}
-            renderItem={renderMessage}
-            contentContainerStyle={styles.chatContainer}
-            showsVerticalScrollIndicator={false}
-          />
+          {messages.length === 0 ? (
+            <View style={styles.emptyContainer}>
+              <SansText style={styles.emptyText}>No messages yet</SansText>
+            </View>
+          ) : (
+            <FlatList
+              data={messages}
+              keyExtractor={item => item?._id}
+              renderItem={renderMessage}
+              contentContainerStyle={styles.chatContainer}
+              showsVerticalScrollIndicator={false}
+            />
+          )}
         </ScrollView>
 
         {/* INPUT */}
@@ -454,8 +477,8 @@ const styles = StyleSheet.create({
   messageBubble: {
     maxWidth: '75%',
     borderRadius: 10,
-    paddingHorizontal: 24,
-    paddingVertical: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 4,
   },
 
   receiverBubble: {
@@ -479,7 +502,7 @@ const styles = StyleSheet.create({
   timeRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 8,
+    marginTop: 3,
   },
 
   tick: {
@@ -551,5 +574,25 @@ const styles = StyleSheet.create({
   sentText: {
     fontSize: 10,
     color: '#A3A3A3', // Neutral gray
+  },
+
+  loaderContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    fontSize: 16,
+    color: '#8E8E93',
+  },
+  emptyText: {
+    fontSize: 16,
+    color: '#272727',
+    marginTop: 50,
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });

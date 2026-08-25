@@ -20,6 +20,9 @@ import { RootStackParamList } from '../../../navigation/types';
 import { useNavigation } from '@react-navigation/native';
 import BlogCard from '../../../components/BlogPage/BlogCard';
 
+export type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
+
+
 const CreateScreen = () => {
   const [refreshing, setRefreshing] = useState(false);
   const {
@@ -38,7 +41,6 @@ const CreateScreen = () => {
     },
   );
 
-  type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
   const navigation = useNavigation<NavigationProp>();
   const blogs = blogsResponse?.data?.data || [];
