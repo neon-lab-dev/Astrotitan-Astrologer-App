@@ -33,6 +33,7 @@ type Props = {
   rightIconSize?: number;
   onPressRightIcon?: () => void;
   children?: React.ReactNode;
+  isNotificationIconVisible?: boolean;
 };
 
 const AppBar = ({
@@ -44,6 +45,7 @@ const AppBar = ({
   backgroundColor = '#715700',
   showBorder = true,
   borderColor = '#E6D18B',
+  isNotificationIconVisible = true,
   children,
 }: Props) => {
   const navigation = useNavigation<any>();
@@ -131,7 +133,9 @@ const AppBar = ({
           </View>
         ) : null}
 
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+        {
+          isNotificationIconVisible && 
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
           <IconButton
             size={35}
             Icon={NotificationIcon}
@@ -144,6 +148,7 @@ const AppBar = ({
           />
           {children && <View>{children}</View>}
         </View>
+        }
       </View>
     </SafeAreaView>
   );
