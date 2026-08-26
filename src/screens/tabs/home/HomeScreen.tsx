@@ -154,10 +154,18 @@ const HomeScreen = () => {
               </TouchableOpacity>
               <TouchableOpacity
                 style={styles.profileButton}
-                onPress={() => navigation.getParent()?.navigate('ProfileScreen')}
+                onPress={() =>
+                  navigation.getParent()?.navigate('ProfileScreen')
+                }
               >
                 <Image
-                  source={{ uri: profile?.profilePicture }}
+                  source={
+                    profile?.profilePicture
+                      ? {
+                          uri: profile?.profilePicture,
+                        }
+                      : require('@/assets/images/user-profile-placeholder.png')
+                  }
                   style={styles.profileAvatar}
                 />
               </TouchableOpacity>
@@ -248,7 +256,7 @@ const styles = StyleSheet.create({
     gap: 2,
   },
   greeting: {
-    fontSize: 14,
+    fontSize: 12,
     color: '#8E8E93',
     fontWeight: '400',
   },
@@ -258,7 +266,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   userName: {
-    fontSize: 22,
+    fontSize: 18,
     fontWeight: '700',
     color: '#1a1a2e',
     fontFamily: 'Satoshi-Bold',

@@ -128,7 +128,7 @@ const ProfileScreen = () => {
                   ? {
                       uri: user.profile.profilePicture,
                     }
-                  : require('@/assets/images/dummy/experts/expert1.png')
+                  : require('@/assets/images/user-profile-placeholder.png')
               }
               style={styles.avatar}
             />

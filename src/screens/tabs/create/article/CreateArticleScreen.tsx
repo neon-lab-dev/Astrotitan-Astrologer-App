@@ -126,7 +126,6 @@ const CreateArticleScreen = () => {
   const [title, setTitle] = useState('');
   const [category, setCategory] = useState('');
   const [content, setContent] = useState('');
-  const [status, setStatus] = useState('draft');
   const [coverImage, setCoverImage] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -137,11 +136,6 @@ const CreateArticleScreen = () => {
   const [luckyColor, setLuckyColor] = useState('');
   const [luckyNumber, setLuckyNumber] = useState('');
   const [compatibility, setCompatibility] = useState<string[]>([]);
-
-  const statusOptions = [
-    { label: 'Draft', value: 'draft' },
-    { label: 'Live', value: 'live' },
-  ];
 
   const isZodiacTips = contentType === 'zodiacTips';
 
@@ -235,7 +229,6 @@ const CreateArticleScreen = () => {
       formData.append('category', category);
       formData.append('content', content);
       formData.append('blogType', contentType || 'article');
-      formData.append('status', status);
 
       // Add zodiac specific fields if it's zodiacTips
       if (isZodiacTips) {
@@ -270,7 +263,6 @@ const CreateArticleScreen = () => {
       setTitle('');
       setCategory('');
       setContent('');
-      setStatus('draft');
       setCoverImage(null);
       if (isZodiacTips) {
         setZodiacSign('');
@@ -329,15 +321,6 @@ const CreateArticleScreen = () => {
                 dropdownData={categories}
                 value={category}
                 onChangeText={setCategory}
-              />
-
-              <AppInput
-                label="Status"
-                variant="dropdown"
-                placeholder="Select status"
-                dropdownData={statusOptions}
-                value={status}
-                onChangeText={setStatus}
               />
 
               {/* Zodiac Specific Fields */}
