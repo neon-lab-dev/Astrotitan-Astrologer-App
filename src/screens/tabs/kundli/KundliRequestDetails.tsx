@@ -163,7 +163,6 @@ const KundliRequestDetails = () => {
         {/* --- SECTION: CONTACT --- */}
         <SatoshiText style={styles.sectionHeading}>Contact Details</SatoshiText>
         <View style={styles.grid}>
-          <GridItem label="Email Address" value={request.userEmail} />
           <GridItem label="Phone Number" value={request.userPhoneNumber} />
         </View>
 
