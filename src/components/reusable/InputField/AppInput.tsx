@@ -1,3 +1,4 @@
+/* eslint-disable react-native/no-inline-styles */
 import React, { useEffect, useState } from "react";
 import {
   StyleSheet,
@@ -443,7 +444,7 @@ const DropdownSheetContent = ({
           fontFamily: "Satoshi-Bold",
         }}
       >
-        Select Option
+        Select an Option
       </SansText>
       <ScrollView style={{ paddingBottom: 42 }}><SelectableOptions
         options={options}

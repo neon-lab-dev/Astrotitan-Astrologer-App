@@ -16,12 +16,12 @@ import {
 import { SansText } from '../../../components/reusable/Text/SansText';
 import ScreenWrapper from '../../../components/layout/ScreenWrapper';
 import AppHeader from '../../../components/reusable/AppHeader/AppHeader';
-import AuthTitle from '../../../components/auth/AuthTitle';
 import ReusableButton from '../../../components/reusable/ReusableButton/ReusableButton';
 import { useGetMyConsultationBookingsQuery } from '../../../redux/features/consultation/consultationApi';
 import Consultations from '../../../components/SessionScreenPage/Consultations/Consultations';
 import CustomCalendar from '../../../components/reusable/CustomCalendar/CustomCalendar';
 import AnimatedScreen from '../../../components/layout/AnimatedScreen';
+import AppBar from '../../../components/reusable/AppBar/AppBar';
 // import ConnectGoogleCalendar from '../../../components/ConnectGoogleCalendar';
 
 const SessionsScreen = () => {
@@ -250,16 +250,14 @@ const SessionsScreen = () => {
   return (
     <AnimatedScreen>
       <ScreenWrapper>
+            <AppBar title="Session Logs" />
         <View style={styles.container}>
           {/* HEADER */}
 
           <AppHeader showBack={false}>
-            <AuthTitle title="Session Logs">
-              <SansText>Manage your sessions</SansText>
-            </AuthTitle>
+
 
             {/* TABS */}
-
             <View
               style={styles.tabsContainer}
               onLayout={e => setContainerWidth(e.nativeEvent.layout.width)}
@@ -308,53 +306,58 @@ const SessionsScreen = () => {
 
           {/* BODY */}
           {/* Filter Row */}
-          <View style={styles.filterRow}>
-            {/* Active Filters Display */}
-            <View style={styles.activeFilters}>
-              {selectedStatus !== 'all' && (
-                <View style={styles.activeFilterChip}>
-                  <SansText style={styles.activeFilterText}>
-                    {selectedStatus}
-                  </SansText>
-                  <TouchableOpacity
-                    onPress={() => {
-                      setSelectedStatus('all');
-                    }}
-                    style={styles.activeFilterRemove}
-                  >
-                    <SansText style={styles.activeFilterRemoveText}>✕</SansText>
-                  </TouchableOpacity>
-                </View>
-              )}
-              {selectedDate && (
-                <View style={styles.activeFilterChip}>
-                  <SansText style={styles.activeFilterText}>
-                    {selectedDate}
-                  </SansText>
-                  <TouchableOpacity
-                    onPress={() => {
-                      setSelectedDate('');
-                    }}
-                    style={styles.activeFilterRemove}
-                  >
-                    <SansText style={styles.activeFilterRemoveText}>✕</SansText>
-                  </TouchableOpacity>
-                </View>
-              )}
-            </View>
+          {bookings?.length !== 0 && (
+            <View style={styles.filterRow}>
+              {/* Active Filters Display */}
+              <View style={styles.activeFilters}>
+                {selectedStatus !== 'all' && (
+                  <View style={styles.activeFilterChip}>
+                    <SansText style={styles.activeFilterText}>
+                      {selectedStatus}
+                    </SansText>
+                    <TouchableOpacity
+                      onPress={() => {
+                        setSelectedStatus('all');
+                      }}
+                      style={styles.activeFilterRemove}
+                    >
+                      <SansText style={styles.activeFilterRemoveText}>
+                        ✕
+                      </SansText>
+                    </TouchableOpacity>
+                  </View>
+                )}
+                {selectedDate && (
+                  <View style={styles.activeFilterChip}>
+                    <SansText style={styles.activeFilterText}>
+                      {selectedDate}
+                    </SansText>
+                    <TouchableOpacity
+                      onPress={() => {
+                        setSelectedDate('');
+                      }}
+                      style={styles.activeFilterRemove}
+                    >
+                      <SansText style={styles.activeFilterRemoveText}>
+                        ✕
+                      </SansText>
+                    </TouchableOpacity>
+                  </View>
+                )}
+              </View>
 
-            {/* Filter Button */}
-            <TouchableOpacity
-              style={styles.filterButton}
-              onPress={openFilterModal}
-            >
-              <CalenderIcon width={18} height={18} />
-              <SansText style={styles.filterButtonText}>Filter</SansText>
-            </TouchableOpacity>
-          </View>
+              {/* Filter Button */}
+              <TouchableOpacity
+                style={styles.filterButton}
+                onPress={openFilterModal}
+              >
+                <CalenderIcon width={18} height={18} />
+                <SansText style={styles.filterButtonText}>Filter</SansText>
+              </TouchableOpacity>
+            </View>
+          )}
 
           <ScrollView
-          
             showsVerticalScrollIndicator={false}
             refreshControl={
               <RefreshControl

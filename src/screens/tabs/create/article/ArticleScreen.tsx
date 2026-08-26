@@ -22,7 +22,6 @@ import { SansText } from '../../../../components/reusable/Text/SansText';
 import LinearGradient from 'react-native-linear-gradient';
 import Ionicons from '@react-native-vector-icons/ionicons';
 import { SatoshiText } from '../../../../components/reusable/Text/SatoshiText';
-import ContentSection from '../../../../components/reusable/ContentSectoin/ContentSection';
 import { useNavigation, useRoute } from '@react-navigation/native';
 const SCREEN_WIDTH = Dimensions.get('window').width;
 
@@ -236,7 +235,6 @@ export default function ArticleScreen() {
             {/* CONTENT */}
             <View style={styles.contentContainer}>
               <View style={styles.card}>
-                <ContentSection title="Article">
                   <RenderHTML
                     contentWidth={width - 40}
                     source={{
@@ -251,7 +249,6 @@ export default function ArticleScreen() {
                       lineHeight: 28,
                     }}
                   />
-                </ContentSection>
               </View>
             </View>
           </ScrollView>

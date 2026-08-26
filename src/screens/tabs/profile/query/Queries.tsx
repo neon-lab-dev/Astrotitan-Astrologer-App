@@ -1,47 +1,38 @@
+/* eslint-disable react-native/no-inline-styles */
 
-import React, {
-  useCallback,
-  useState,
-} from "react";
-import {
-  RefreshControl,
-  ScrollView,
-  View,
-} from "react-native";
-import { useGetMyQueriesQuery } from "../../../../redux/features/quary/quaryApi";
-import AnimatedScreen from "../../../../components/layout/AnimatedScreen";
-import ScreenWrapper from "../../../../components/layout/ScreenWrapper";
-import AppHeader from "../../../../components/reusable/AppHeader/AppHeader";
-import AuthTitle from "../../../../components/auth/AuthTitle";
-import { SansText } from "../../../../components/reusable/Text/SansText";
-import ReusableButton from "../../../../components/reusable/ReusableButton/ReusableButton";
-import SkeletonLoader from "../../../../components/reusable/SkeletonLoader/SkeletonLoade";
-import DocumentSearchIcon  from '@/assets/icons/visual/document-search.svg';
-import QueryCard from "../../../../components/tabs/profile/queries/QueryCard";
-import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { RootStackParamList } from "../../../../navigation/types";
-import { useNavigation } from "@react-navigation/native";
+import React, { useCallback, useState } from 'react';
+import { RefreshControl, ScrollView, View } from 'react-native';
+import { useGetMyQueriesQuery } from '../../../../redux/features/quary/quaryApi';
+import AnimatedScreen from '../../../../components/layout/AnimatedScreen';
+import ScreenWrapper from '../../../../components/layout/ScreenWrapper';
+import AppHeader from '../../../../components/reusable/AppHeader/AppHeader';
+import AuthTitle from '../../../../components/auth/AuthTitle';
+import { SansText } from '../../../../components/reusable/Text/SansText';
+import ReusableButton from '../../../../components/reusable/ReusableButton/ReusableButton';
+import SkeletonLoader from '../../../../components/reusable/SkeletonLoader/SkeletonLoade';
+import DocumentSearchIcon from '@/assets/icons/visual/document-search.svg';
+import QueryCard from '../../../../components/tabs/profile/queries/QueryCard';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RootStackParamList } from '../../../../navigation/types';
+import { useNavigation } from '@react-navigation/native';
 
 const Queries = () => {
-  const [refreshing, setRefreshing] =
-    useState(false);
+  const [refreshing, setRefreshing] = useState(false);
 
   const {
     data: queryResponse,
     isLoading,
     refetch,
-    isFetching
+    isFetching,
   } = useGetMyQueriesQuery({
     page: 1,
     limit: 10,
     status: [],
   });
-type NavigationProp =
-    NativeStackNavigationProp<RootStackParamList>;
+  type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
   const navigation = useNavigation<NavigationProp>();
-  const queries =
-    queryResponse?.data?.data || [];
+  const queries = queryResponse?.data?.data || [];
 
   const onRefresh = useCallback(async () => {
     try {
@@ -61,15 +52,10 @@ type NavigationProp =
         <AppHeader>
           <AuthTitle
             title={
-              queries.length < 1
-                ? "No queries raised yet"
-                : "Your queries"
+              queries.length < 1 ? 'No queries raised yet' : 'Your queries'
             }
           >
-            <SansText>
-              Track and manage your submitted
-              queries.
-            </SansText>
+            <SansText>Track and manage your submitted queries.</SansText>
           </AuthTitle>
         </AppHeader>
 
@@ -81,7 +67,7 @@ type NavigationProp =
           }}
         >
           {/* LOADING */}
-          {isLoading ||isFetching ? (
+          {isLoading || isFetching ? (
             <ScrollView
               style={{ flex: 1 }}
               showsVerticalScrollIndicator={false}
@@ -92,22 +78,21 @@ type NavigationProp =
                   paddingVertical: 24,
                 }}
               >
-                {[1, 2, 3].map((item) => (
+                {[1, 2, 3].map(item => (
                   <View
                     key={item}
                     style={{
                       borderWidth: 1,
-                      borderColor: "#D4AF37",
+                      borderColor: '#D4AF37',
                       borderRadius: 24,
                       padding: 24,
-                      backgroundColor: "#FBF7EB",
+                      backgroundColor: '#FBF7EB',
                     }}
                   >
                     <View
                       style={{
-                        flexDirection: "row",
-                        justifyContent:
-                          "space-between",
+                        flexDirection: 'row',
+                        justifyContent: 'space-between',
                         gap: 16,
                       }}
                     >
@@ -119,14 +104,14 @@ type NavigationProp =
                         }}
                       >
                         <SkeletonLoader
-                          width={"70%"}
+                          width={'70%'}
                           height={24}
                           array={[1]}
                           borderRadius={8}
                         />
 
                         <SkeletonLoader
-                          width={"40%"}
+                          width={'40%'}
                           height={16}
                           array={[1]}
                           borderRadius={8}
@@ -143,16 +128,13 @@ type NavigationProp =
                       {/* RIGHT */}
                       <View
                         style={{
-                          justifyContent:
-                            "space-between",
-                          alignItems:
-                            "flex-end",
+                          justifyContent: 'space-between',
+                          alignItems: 'flex-end',
                         }}
                       >
                         <View
                           style={{
-                            alignItems:
-                              "flex-end",
+                            alignItems: 'flex-end',
                             gap: 8,
                           }}
                         >
@@ -188,10 +170,7 @@ type NavigationProp =
             <ScrollView
               style={{ flex: 1 }}
               refreshControl={
-                <RefreshControl
-                  refreshing={refreshing}
-                  onRefresh={onRefresh}
-                />
+                <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
               }
               contentContainerStyle={{
                 flexGrow: 1,
@@ -200,8 +179,8 @@ type NavigationProp =
               <View
                 style={{
                   flexGrow: 1,
-                  justifyContent: "center",
-                  alignItems: "center",
+                  justifyContent: 'center',
+                  alignItems: 'center',
                   paddingHorizontal: 16,
                 }}
               >
@@ -212,10 +191,7 @@ type NavigationProp =
                     paddingVertical: 24,
                   }}
                 >
-                  <DocumentSearchIcon
-                    height={124}
-                    width={124}
-                  />
+                  <DocumentSearchIcon height={124} width={124} />
                 </View>
               </View>
             </ScrollView>
@@ -225,10 +201,7 @@ type NavigationProp =
               style={{ flex: 1 }}
               showsVerticalScrollIndicator={false}
               refreshControl={
-                <RefreshControl
-                  refreshing={refreshing}
-                  onRefresh={onRefresh}
-                />
+                <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
               }
             >
               <View
@@ -243,28 +216,19 @@ type NavigationProp =
                     title={item.subject}
                     category={item.issueType}
                     status={item.status}
-                    date={new Date(
-                      item.createdAt
-                    ).toLocaleDateString(
-                      "en-GB",
-                      {
-                        day: "numeric",
-                        month: "short",
-                        year: "numeric",
-                      }
-                    )}
-                    time={new Date(
-                      item.createdAt
-                    ).toLocaleTimeString(
-                      "en-IN",
-                      {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      }
-                    )}
+                    date={new Date(item.createdAt).toLocaleDateString('en-GB', {
+                      day: 'numeric',
+                      month: 'short',
+                      year: 'numeric',
+                    })}
+                    time={new Date(item.createdAt).toLocaleTimeString('en-IN', {
+                      hour: '2-digit',
+                      minute: '2-digit',
+                    })}
                     onPress={() => {
-                      navigation.navigate("QueryDetails",{ query:
-                            JSON.stringify(item),})
+                      navigation.navigate('QueryDetails', {
+                        query: JSON.stringify(item),
+                      });
                     }}
                   />
                 ))}
@@ -274,7 +238,7 @@ type NavigationProp =
 
           <ReusableButton
             onPress={() => {
-              navigation.navigate("RaiseQuery")
+              navigation.navigate('RaiseQuery');
             }}
             title="Raise a new query"
           />

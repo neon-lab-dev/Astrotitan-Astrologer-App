@@ -87,14 +87,12 @@ const AvailabilityScreen = () => {
     isLoading: isSlotsLoading,
     isFetching: isSlotsFetching,
     refetch,
-    error,
   } = useGetAllSlotsByAstrologerIdQuery(formattedDate);
 
   const [addSlot, { isLoading: isAddingSlot }] = useAddSlotMutation();
 
   // Get available slots from API
   const availableSlots = data?.data?.slots || [];
-  console.log(error, 'availableSlots');
 
   // Format date for API
   const formatDateForApi = (date: Date) => {
@@ -201,7 +199,6 @@ const AvailabilityScreen = () => {
       };
 
       await addSlot(payload).unwrap();
-      Alert.alert('Success', 'Slots added successfully!');
       setSelectedSlots([]);
       setIsAddSlotModalVisible(false);
       refetch(); // Refresh the slots list
@@ -722,6 +719,7 @@ const styles = StyleSheet.create({
 
   modalTimeGroup: {
     marginBottom: 16,
+    marginTop : 12
   },
 
   modalTimeGroupTitle: {

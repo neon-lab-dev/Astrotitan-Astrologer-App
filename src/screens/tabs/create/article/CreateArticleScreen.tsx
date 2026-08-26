@@ -1,10 +1,4 @@
 /* eslint-disable react-native/no-inline-styles */
-import BookIcon from '@/assets/icons/visual/intent/book.svg';
-import BriefcaseIcon from '@/assets/icons/visual/intent/briefcase.svg';
-import HeartIcon from '@/assets/icons/visual/intent/favourite.svg';
-import MarriageIcon from '@/assets/icons/visual/intent/marriage.svg';
-import TieIcon from '@/assets/icons/visual/intent/tie.svg';
-import WellnessIcon from '@/assets/icons/visual/intent/wellness.svg';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useNavigation } from '@react-navigation/native';
 
@@ -29,28 +23,54 @@ import {
 import { RootStackParamList } from '../../../../navigation/types';
 import AnimatedScreen from '../../../../components/layout/AnimatedScreen';
 import ScreenWrapper from '../../../../components/layout/ScreenWrapper';
-import AppHeader from '../../../../components/reusable/AppHeader/AppHeader';
-import AuthTitle from '../../../../components/auth/AuthTitle';
 import { SansText } from '../../../../components/reusable/Text/SansText';
 import AppInput from '../../../../components/reusable/InputField/AppInput';
 import ReusableButton from '../../../../components/reusable/ReusableButton/ReusableButton';
 import { launchImageLibrary } from 'react-native-image-picker';
+import AppBar from '../../../../components/reusable/AppBar/AppBar';
 
 const categories = [
-  { label: 'Wealth & Finance', value: 'Wealth & Finance', icon: TieIcon },
-  { label: 'Education', value: 'Education', icon: BookIcon },
-  { label: 'Marriage', value: 'Marriage', icon: MarriageIcon },
+  // Existing ones
+  { label: 'Wealth & Finance', value: 'Wealth & Finance' },
+  { label: 'Education', value: 'Education' },
+  { label: 'Marriage', value: 'Marriage' },
+  { label: 'Health & Wellness', value: 'Health & Wellness' },
+  { label: 'Career Growth', value: 'Career Growth' },
+  { label: 'Love & Relationship', value: 'Love & Relationship' },
+
+  // Astrology Categories
+  { label: 'Vedic Astrology', value: 'Vedic Astrology' },
+  { label: 'Birth Chart Analysis', value: 'Birth Chart Analysis' },
+  { label: 'Kundli Matching', value: 'Kundli Matching' },
+  { label: 'Remedies & Rituals', value: 'Remedies & Rituals' },
+  { label: 'Gemstone Recommendations', value: 'Gemstone Recommendations' },
   {
-    label: 'Health & Wellness',
-    value: 'Health & Wellness',
-    icon: WellnessIcon,
+    label: 'Muhurat & Auspicious Timing',
+    value: 'Muhurat & Auspicious Timing',
   },
-  { label: 'Career Growth', value: 'Career Growth', icon: BriefcaseIcon },
+  { label: 'Planetary Transits', value: 'Planetary Transits' },
+  { label: 'Dosha Analysis', value: 'Dosha Analysis' },
+  { label: 'Karma & Past Life', value: 'Karma & Past Life' },
+  { label: 'Spiritual Growth', value: 'Spiritual Growth' },
+  { label: 'Meditation & Mindfulness', value: 'Meditation & Mindfulness' },
+  { label: 'Feng Shui & Vastu', value: 'Feng Shui & Vastu' },
+  { label: 'Dream Interpretation', value: 'Dream Interpretation' },
+  { label: 'Tarot Reading', value: 'Tarot Reading' },
+  { label: 'Numerology', value: 'Numerology' },
+  { label: 'Palmistry', value: 'Palmistry' },
+  { label: 'Gemology', value: 'Gemology' },
+  { label: 'Children & Parenting', value: 'Children & Parenting' },
+  { label: 'Property & Real Estate', value: 'Property & Real Estate' },
   {
-    label: 'Love & Relationship',
-    value: 'Love & Relationship',
-    icon: HeartIcon,
+    label: 'Business & Entrepreneurship',
+    value: 'Business & Entrepreneurship',
   },
+  {
+    label: 'Travel & Foreign Settlements',
+    value: 'Travel & Foreign Settlements',
+  },
+  { label: 'Legal Astrology', value: 'Legal Astrology' },
+  { label: 'Astro Psychology', value: 'Astro Psychology' },
 ];
 
 // Zodiac signs for dropdown
@@ -246,13 +266,6 @@ const CreateArticleScreen = () => {
         navigation.replace('CreateScreen');
       }
 
-      Alert.alert(
-        'Success',
-        status === 'live'
-          ? 'Article published successfully!'
-          : 'Article saved as draft',
-      );
-
       // Reset form
       setTitle('');
       setCategory('');
@@ -268,7 +281,6 @@ const CreateArticleScreen = () => {
         setCompatibility([]);
       }
     } catch (error: any) {
-      console.log('PUBLISH ERROR:', error);
       Alert.alert(
         'Error',
         error?.data?.message || 'Failed to publish article. Please try again.',
@@ -286,17 +298,9 @@ const CreateArticleScreen = () => {
           behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         >
           <View style={styles.container}>
-            <AppHeader>
-              <AuthTitle
-                title={isZodiacTips ? 'Write Zodiac Tips' : 'Write An Article'}
-              >
-                <SansText>
-                  {isZodiacTips
-                    ? 'Share zodiac insights, predictions, and tips for each sign'
-                    : 'Share astrology insights to help users understand remedies, planets etc.'}
-                </SansText>
-              </AuthTitle>
-            </AppHeader>
+            <AppBar
+              title={isZodiacTips ? 'Write Zodiac Tips' : 'Write an Article'}
+            />
 
             <ScrollView
               showsVerticalScrollIndicator={false}

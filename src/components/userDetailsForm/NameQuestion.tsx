@@ -1,9 +1,9 @@
-import React, { useMemo, useState } from "react";
-import { View } from "react-native";
-import Animated, { FadeInDown } from "react-native-reanimated";
-import KeyboardSafeSection from "../layout/KeyboardSafeSection";
-import AppInput from "../reusable/InputField/AppInput";
-import SelectableOptions from "../reusable/SelectableOptions/SelectableOptions";
+import React, { useMemo, useState } from 'react';
+import { View } from 'react-native';
+import Animated, { FadeInDown } from 'react-native-reanimated';
+import KeyboardSafeSection from '../layout/KeyboardSafeSection';
+import AppInput from '../reusable/InputField/AppInput';
+import SelectableOptions from '../reusable/SelectableOptions/SelectableOptions';
 
 const isValidName = (name: string) => {
   const trimmed = name?.trim();
@@ -30,9 +30,9 @@ const NameQuestion = ({ value, setValue }: Props) => {
     displayName: false,
   });
 
-  const firstName = value?.firstName || "";
-  const lastName = value?.lastName || "";
-  const displayName = value?.displayName || "";
+  const firstName = value?.firstName || '';
+  const lastName = value?.lastName || '';
+  const displayName = value?.displayName || '';
   const languages = value?.languages || [];
 
   const isFirstNameValid = isValidName(firstName);
@@ -43,31 +43,24 @@ const NameQuestion = ({ value, setValue }: Props) => {
     () => ({
       firstName:
         touched.firstName && !isFirstNameValid
-          ? "Please enter a valid first name."
-          : "",
+          ? 'Please enter a valid first name.'
+          : '',
 
       lastName:
         touched.lastName && !isLastNameValid
-          ? "Please enter a valid last name."
-          : "",
+          ? 'Please enter a valid last name.'
+          : '',
 
       displayName:
         touched.displayName && !isDisplayNameValid
-          ? "Please enter a valid display name."
-          : "",
+          ? 'Please enter a valid display name.'
+          : '',
     }),
-    [
-      touched,
-      isFirstNameValid,
-      isLastNameValid,
-      isDisplayNameValid,
-    ]
+    [touched, isFirstNameValid, isLastNameValid, isDisplayNameValid],
   );
 
   const showLanguages =
-    isFirstNameValid &&
-    isLastNameValid &&
-    isDisplayNameValid;
+    isFirstNameValid && isLastNameValid && isDisplayNameValid;
 
   return (
     <KeyboardSafeSection>
@@ -77,8 +70,8 @@ const NameQuestion = ({ value, setValue }: Props) => {
           label="First Name"
           value={firstName}
           placeholder="Enter your first name"
-          onChangeText={(text) => {
-            setTouched((prev) => ({
+          onChangeText={text => {
+            setTouched(prev => ({
               ...prev,
               firstName: true,
             }));
@@ -89,7 +82,7 @@ const NameQuestion = ({ value, setValue }: Props) => {
             });
           }}
           onBlur={() =>
-            setTouched((prev) => ({
+            setTouched(prev => ({
               ...prev,
               firstName: true,
             }))
@@ -102,8 +95,8 @@ const NameQuestion = ({ value, setValue }: Props) => {
           label="Last Name"
           value={lastName}
           placeholder="Enter your last name"
-          onChangeText={(text) => {
-            setTouched((prev) => ({
+          onChangeText={text => {
+            setTouched(prev => ({
               ...prev,
               lastName: true,
             }));
@@ -114,7 +107,7 @@ const NameQuestion = ({ value, setValue }: Props) => {
             });
           }}
           onBlur={() =>
-            setTouched((prev) => ({
+            setTouched(prev => ({
               ...prev,
               lastName: true,
             }))
@@ -127,8 +120,8 @@ const NameQuestion = ({ value, setValue }: Props) => {
           label="Display Name"
           value={displayName}
           placeholder="Enter your display name"
-          onChangeText={(text) => {
-            setTouched((prev) => ({
+          onChangeText={text => {
+            setTouched(prev => ({
               ...prev,
               displayName: true,
             }));
@@ -139,7 +132,7 @@ const NameQuestion = ({ value, setValue }: Props) => {
             });
           }}
           onBlur={() =>
-            setTouched((prev) => ({
+            setTouched(prev => ({
               ...prev,
               displayName: true,
             }))
@@ -154,11 +147,48 @@ const NameQuestion = ({ value, setValue }: Props) => {
               label="Languages you consult in"
               description="Select at least one language."
               options={[
-                { label: "English", value: "english" },
-                { label: "Hindi", value: "hindi" },
-                { label: "Marathi", value: "marathi" },
-                { label: "Telugu", value: "telugu" },
-                { label: "Malayalam", value: "malayalam" },
+                { label: 'English', value: 'english' },
+                { label: 'Hindi', value: 'hindi' },
+                { label: 'Marathi', value: 'marathi' },
+                { label: 'Telugu', value: 'telugu' },
+                { label: 'Malayalam', value: 'malayalam' },
+                { label: 'Tamil', value: 'tamil' },
+                { label: 'Kannada', value: 'kannada' },
+                { label: 'Bengali', value: 'bengali' },
+                { label: 'Urdu', value: 'urdu' },
+                { label: 'Gujarati', value: 'gujarati' },
+                { label: 'Odia', value: 'odia' },
+                { label: 'Punjabi', value: 'punjabi' },
+                { label: 'Assamese', value: 'assamese' },
+                { label: 'Maithili', value: 'maithili' },
+                { label: 'Sanskrit', value: 'sanskrit' },
+                { label: 'Kashmiri', value: 'kashmiri' },
+                { label: 'Sindhi', value: 'sindhi' },
+                { label: 'Konkani', value: 'konkani' },
+                { label: 'Dogri', value: 'dogri' },
+                { label: 'Bodo', value: 'bodo' },
+                { label: 'Santali', value: 'santali' },
+                { label: 'Nepali', value: 'nepali' },
+                { label: 'Tulu', value: 'tulu' },
+                { label: 'Kokborok', value: 'kokborok' },
+                { label: 'Mizo', value: 'mizo' },
+                { label: 'Manipuri', value: 'manipuri' },
+                { label: 'Nagamese', value: 'nagamese' },
+                { label: 'Sikkimese', value: 'sikkimese' },
+                { label: 'Ladakhi', value: 'ladakhi' },
+                { label: 'Garo', value: 'garo' },
+                { label: 'Khasi', value: 'khasi' },
+                { label: 'Bhili', value: 'bhili' },
+                { label: 'Gondi', value: 'gondi' },
+                { label: 'Kurukh', value: 'kurukh' },
+                { label: 'Kui', value: 'kui' },
+                { label: 'Mundari', value: 'mundari' },
+                { label: 'Ho', value: 'ho' },
+                { label: 'Koya', value: 'koya' },
+                { label: 'Korku', value: 'korku' },
+                { label: 'Toda', value: 'toda' },
+                { label: 'Kota', value: 'kota' },
+                { label: 'Kodava', value: 'kodava' },
               ]}
               value={languages}
               onChange={(selected: string[]) =>
@@ -172,7 +202,8 @@ const NameQuestion = ({ value, setValue }: Props) => {
             />
           </Animated.View>
         )}
-      </View></KeyboardSafeSection>
+      </View>
+    </KeyboardSafeSection>
   );
 };
 

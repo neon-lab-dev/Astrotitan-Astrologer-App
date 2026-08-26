@@ -2,7 +2,6 @@ import React, { useCallback, useState } from 'react';
 import {
   FlatList,
   RefreshControl,
-  ScrollView,
   StyleSheet,
   View,
 } from 'react-native';
@@ -10,8 +9,7 @@ import { useGetMyBlogsQuery } from '../../../redux/features/blog/blogApi';
 import FeatureCardSkeleton from '../../../components/tabs/home/home/FeatureCard/FeatureCardSkeleton';
 import AnimatedScreen from '../../../components/layout/AnimatedScreen';
 import ScreenWrapper from '../../../components/layout/ScreenWrapper';
-import AppHeader from '../../../components/reusable/AppHeader/AppHeader';
-import AuthTitle from '../../../components/auth/AuthTitle';
+import AppBar from '../../../components/reusable/AppBar/AppBar';
 import { SansText } from '../../../components/reusable/Text/SansText';
 import ContentSection from '../../../components/reusable/ContentSectoin/ContentSection';
 import ReusableButton from '../../../components/reusable/ReusableButton/ReusableButton';
@@ -21,7 +19,6 @@ import { useNavigation } from '@react-navigation/native';
 import BlogCard from '../../../components/BlogPage/BlogCard';
 
 export type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
-
 
 const CreateScreen = () => {
   const [refreshing, setRefreshing] = useState(false);
@@ -41,9 +38,9 @@ const CreateScreen = () => {
     },
   );
 
-
   const navigation = useNavigation<NavigationProp>();
   const blogs = blogsResponse?.data?.data || [];
+
   const onRefresh = useCallback(async () => {
     if (refreshing) return;
     try {
@@ -73,19 +70,13 @@ const CreateScreen = () => {
     </View>
   );
 
-  return (
-    <AnimatedScreen>
-      <ScreenWrapper>
-        <AppHeader showBack={false}>
-          <AuthTitle title="Create & share content">
-            <SansText>
-              Share your knowledge to help more users and grow your visibility.
-            </SansText>
-          </AuthTitle>
-        </AppHeader>
-
-        <View style={styles.contentContainer}>
-          {blogsLoading || blogFetching ? (
+  // Show loading state
+  if (blogsLoading || blogFetching) {
+    return (
+      <AnimatedScreen>
+        <ScreenWrapper>
+          <AppBar title="Blogs & Articles" />
+          <View style={styles.contentContainer}>
             <FlatList
               data={[1, 2]}
               keyExtractor={(item, index) => `skeleton-${index}`}
@@ -102,61 +93,83 @@ const CreateScreen = () => {
                 />
               }
             />
-          ) : blogs?.length > 0 ? (
-            <FlatList
-              data={blogs}
-              keyExtractor={item => item._id}
-              renderItem={renderBlogItem}
-              showsVerticalScrollIndicator={false}
-              contentContainerStyle={styles.flatListContent}
-              refreshControl={
-                <RefreshControl
-                  refreshing={refreshing}
-                  onRefresh={onRefresh}
-                  tintColor="#816B22"
-                  colors={['#816B22']}
-                  progressBackgroundColor="#FBF7EB"
-                />
-              }
-              ListHeaderComponent={
-                <ContentSection
-                  title="Articles Posted"
-                  sectionStyle={styles.sectionHeader}
-                />
-              }
-              ListEmptyComponent={
-                <View style={styles.emptyContainer}>
-                  <SansText style={styles.emptyText}>
-                    No blogs available
-                  </SansText>
-                </View>
-              }
+          </View>
+          <View style={styles.fixedBottom}>
+            <ReusableButton
+              title="Create Content"
+              onPress={() => {
+                navigation.navigate('SelectContentType');
+              }}
+              width="100%"
+              variant="solid"
             />
-          ) : (
-            <ScrollView
-              contentContainerStyle={styles.scrollContent}
-              showsVerticalScrollIndicator={false}
-              refreshControl={
-                <RefreshControl
-                  refreshing={refreshing}
-                  onRefresh={onRefresh}
-                  tintColor="#816B22"
-                  colors={['#816B22']}
-                  progressBackgroundColor="#FBF7EB"
-                />
-              }
-            >
+          </View>
+        </ScreenWrapper>
+      </AnimatedScreen>
+    );
+  }
+
+  // Show empty state with centered message
+  if (blogs.length === 0) {
+    return (
+      <AnimatedScreen>
+        <ScreenWrapper>
+          <AppBar title="Blogs & Articles" />
+          <View style={styles.contentContainer}>
+            <View style={styles.emptyContainer}>
+              <View style={styles.emptyIconContainer}>
+                <SansText style={styles.emptyIcon}>📝</SansText>
+              </View>
+              <SansText style={styles.emptyTitle}>No Blogs Available</SansText>
+              <SansText style={styles.emptySubText}>
+                You haven't created any blog posts yet.
+              </SansText>
+            </View>
+          </View>
+          <View style={styles.fixedBottom}>
+            <ReusableButton
+              title="Create Content"
+              onPress={() => {
+                navigation.navigate('SelectContentType');
+              }}
+              width="100%"
+              variant="solid"
+            />
+          </View>
+        </ScreenWrapper>
+      </AnimatedScreen>
+    );
+  }
+
+  // Show blogs list
+  return (
+    <AnimatedScreen>
+      <ScreenWrapper>
+        <AppBar title="Blogs & Articles" />
+        <View style={styles.contentContainer}>
+          <FlatList
+            data={blogs}
+            keyExtractor={item => item._id}
+            renderItem={renderBlogItem}
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={styles.flatListContent}
+            refreshControl={
+              <RefreshControl
+                refreshing={refreshing}
+                onRefresh={onRefresh}
+                tintColor="#816B22"
+                colors={['#816B22']}
+                progressBackgroundColor="#FBF7EB"
+              />
+            }
+            ListHeaderComponent={
               <ContentSection
                 title="Articles Posted"
                 sectionStyle={styles.sectionHeader}
               />
-              <View style={styles.emptyContainer}>
-                <SansText style={styles.emptyText}>No blogs available</SansText>
-              </View>
-            </ScrollView>
-          )}
+            }
+          />
         </View>
-
         <View style={styles.fixedBottom}>
           <ReusableButton
             title="Create Content"
@@ -183,10 +196,6 @@ const styles = StyleSheet.create({
     paddingBottom: 100,
     gap: 16,
   },
-  scrollContent: {
-    paddingBottom: 100,
-    gap: 16,
-  },
   cardWrapper: {
     marginBottom: 0,
   },
@@ -194,16 +203,39 @@ const styles = StyleSheet.create({
     marginBottom: 6,
     marginTop: 6,
   },
+  // Empty State Styles
   emptyContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingTop: 40,
+    paddingHorizontal: 24,
   },
-  emptyText: {
-    color: '#8C8C8C',
-    fontSize: 16,
+  emptyIconContainer: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: '#F8F4EC',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: '#D4AF37',
+  },
+  emptyIcon: {
+    fontSize: 32,
+  },
+  emptyTitle: {
+    fontSize: 18,
+    fontFamily: 'Satoshi-Bold',
+    color: '#1A1A1A',
+    marginBottom: 6,
+  },
+  emptySubText: {
+    fontSize: 14,
+    fontFamily: 'GeneralSans-Regular',
+    color: '#8E8E93',
     textAlign: 'center',
+    lineHeight: 20,
   },
   fixedBottom: {
     position: 'absolute',

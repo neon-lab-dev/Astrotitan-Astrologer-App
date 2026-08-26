@@ -13,7 +13,6 @@ import { useDispatch, useSelector } from 'react-redux';
 import { IconName, ICONS } from '../../../assets/svg';
 import { SansText } from '../../../components/reusable/Text/SansText';
 import {
-  useDeleteAccountMutation,
   useLazyGetMeQuery,
 } from '../../../redux/features/auth/authApi';
 import { Storage } from '../../../services/storage/storage';
@@ -29,19 +28,16 @@ import BottomSheetService from '../../../redux/features/ui/GlobalSheet/BottomShe
 import LogoutSection from '../../../components/reusable/BottomSheet/LogoutSection';
 import DeleteAccountSection from '../../../components/reusable/BottomSheet/DeleteAccountSection';
 import ScreenWrapper from '../../../components/layout/ScreenWrapper';
-import AppHeader from '../../../components/reusable/AppHeader/AppHeader';
-import AuthTitle from '../../../components/auth/AuthTitle';
 import { SatoshiText } from '../../../components/reusable/Text/SatoshiText';
 import SectionTitle from '../../../components/reusable/SectionTitle/SectionTitle';
-import ReusableButton from '../../../components/reusable/ReusableButton/ReusableButton';
+import AppBar from '../../../components/reusable/AppBar/AppBar';
 
 const ProfileScreen = () => {
   const dispatch = useDispatch();
   const [getMe] = useLazyGetMeQuery();
   type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
   const navigation = useNavigation<NavigationProp>();
-  const [deleteAccount, { isLoading: isDeleteAccountLoading }] =
-    useDeleteAccountMutation({});
+  
   const user = useSelector(selectUser);
   const [refreshing, setRefreshing] = useState(false);
   const resetAuth = async () => {
@@ -71,10 +67,6 @@ const ProfileScreen = () => {
     BottomSheetService.open(
       <DeleteAccountSection
         onCancel={BottomSheetService.close}
-        onDelete={() => {
-          deleteAccount;
-        }}
-        isLoading={isDeleteAccountLoading}
       />,
       {
         height: 400,
@@ -113,13 +105,8 @@ const ProfileScreen = () => {
   return (
     // <AnimatedScreen>
     <ScreenWrapper>
-      <AppHeader showBack={false}>
-        <AuthTitle title="Profile">
-          <SansText style={{ fontSize: 16 }}>
-            Manage your personal details & preferences.
-          </SansText>
-        </AuthTitle>
-      </AppHeader>
+
+      <AppBar title="My Profile" />
       <ScrollView
         refreshControl={
           <RefreshControl
@@ -210,14 +197,13 @@ const ProfileScreen = () => {
                 icon="LogoutIcon"
                 onPress={onPressLogout}
               />
+              <ProfileItem
+                title="Delete Account"
+                icon="DeleteIcon"
+                onPress={onPressDelete}
+              />
             </View>
           </View>
-          {/* GENERAL */}
-          <ReusableButton
-            onPress={onPressDelete}
-            variant="error"
-            title="Delete"
-          />
         </View>
 
         {/* DELETE */}

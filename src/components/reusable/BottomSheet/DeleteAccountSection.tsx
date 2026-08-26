@@ -1,19 +1,29 @@
+/* eslint-disable react-native/no-inline-styles */
 import { StyleSheet, View } from 'react-native';
 import ReusableButton from '../ReusableButton/ReusableButton';
 import { SatoshiText } from '../Text/SatoshiText';
 import { SansText } from '../Text/SansText';
+import { useDeleteAccountMutation } from '../../../redux/features/auth/authApi';
+import { useNavigation } from '@react-navigation/native';
 
 type Props = {
   onCancel: () => void;
-  onDelete: () => void;
-  isLoading: boolean;
 };
 
-const DeleteAccountSection = ({
-  onCancel,
-  onDelete,
-  isLoading = false,
-}: Props) => {
+const DeleteAccountSection = ({ onCancel }: Props) => {
+  const navigation = useNavigation<any>();
+  const [deleteAccount, { isLoading }] = useDeleteAccountMutation({});
+
+  const handleDeleteAccount = async () => {
+    try {
+      const response = await deleteAccount({}).unwrap();
+      if (response?.success) {
+        navigation.replace('EmailRegister');
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
   return (
     <View style={styles.container}>
       <View style={{ gap: 8 }}>
@@ -37,7 +47,7 @@ const DeleteAccountSection = ({
         <View style={{ flex: 1 }}>
           <ReusableButton
             title="Delete Account"
-            onPress={onDelete}
+            onPress={handleDeleteAccount}
             variant="outline"
             borderColor="#C2371E"
             textColor="#C2371E"

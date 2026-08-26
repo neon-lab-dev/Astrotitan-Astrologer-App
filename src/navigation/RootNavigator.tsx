@@ -18,6 +18,8 @@ import NotificationScreen from "../screens/notification/notification";
 import OnboardingScreen from "../screens/onboarding/OnboardingScreen";
 import ProfileScreen from "../screens/tabs/profile/ProfileScreen";
 import PersonalInformation from "../screens/tabs/profile/PersonalInformation";
+import Queries from "../screens/tabs/profile/query/Queries";
+import RaiseQuery from "../screens/tabs/profile/query/RaiseQuery";
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -93,6 +95,14 @@ export default function RootNavigator() {
       <Stack.Screen
         name="PersonalInformation"
         component={PersonalInformation}
+      />
+      <Stack.Screen
+        name="Queries"
+        component={Queries}
+      />
+      <Stack.Screen
+        name="RaiseQuery"
+        component={RaiseQuery}
       />
     </Stack.Navigator>
   );
