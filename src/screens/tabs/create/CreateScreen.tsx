@@ -1,10 +1,5 @@
 import React, { useCallback, useState } from 'react';
-import {
-  FlatList,
-  RefreshControl,
-  StyleSheet,
-  View,
-} from 'react-native';
+import { FlatList, RefreshControl, StyleSheet, View } from 'react-native';
 import { useGetMyBlogsQuery } from '../../../redux/features/blog/blogApi';
 import FeatureCardSkeleton from '../../../components/tabs/home/home/FeatureCard/FeatureCardSkeleton';
 import AnimatedScreen from '../../../components/layout/AnimatedScreen';
@@ -147,6 +142,10 @@ const CreateScreen = () => {
       <ScreenWrapper>
         <AppBar title="Blogs & Articles" />
         <View style={styles.contentContainer}>
+          <ContentSection
+            title="Articles Posted"
+            sectionStyle={styles.sectionHeader}
+          />
           <FlatList
             data={blogs}
             keyExtractor={item => item._id}
@@ -160,12 +159,6 @@ const CreateScreen = () => {
                 tintColor="#816B22"
                 colors={['#816B22']}
                 progressBackgroundColor="#FBF7EB"
-              />
-            }
-            ListHeaderComponent={
-              <ContentSection
-                title="Articles Posted"
-                sectionStyle={styles.sectionHeader}
               />
             }
           />
