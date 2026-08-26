@@ -1,5 +1,5 @@
 /* eslint-disable react-native/no-inline-styles */
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useLoginMutation } from '../../redux/features/auth/authApi';
@@ -14,6 +14,8 @@ import AuthSecondaryNavigation from '../../components/auth/AuthSecondaryNavigati
 import TermsAndConditions from '../../components/auth/TermsAndConditions';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import AuthLayout from '../../components/layout/layouts/AuthLayout';
+import BottomSheetService from '../../redux/features/ui/GlobalSheet/BottomSheetService';
+import CountryBottomSheet from '../../components/auth/CountryBottomSheet';
 
 type LoginForm = {
   phone: string;
@@ -24,13 +26,13 @@ export default function PhoneLogin() {
     control,
     handleSubmit,
     watch,
-    formState: { isValid },
   } = useForm<LoginForm>({
     defaultValues: {
       phone: '',
     },
     mode: 'onBlur',
   });
+
   const [country, setCountry] = useState({
     name: 'India',
     code: 'IN',
@@ -42,7 +44,9 @@ export default function PhoneLogin() {
   const route = useRoute<any>();
   const params = route.params || {};
   const phone = watch('phone');
-  const isFormFilled = phone.length >= 10;
+  const isFormFilled = phone.length >= 4;
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (params.countryName) {
@@ -55,10 +59,30 @@ export default function PhoneLogin() {
     }
   }, [params]);
 
-  const [login, { isLoading, error }] = useLoginMutation();
+  const [login] = useLoginMutation();
 
   const onSubmit = async (data: LoginForm) => {
+    // Check if country is India
+    if (country.code !== 'IN') {
+      // Show dummy loader for 2 seconds
+      setIsLoading(true);
+      setError(null);
+      
+      setTimeout(() => {
+        setIsLoading(false);
+        setError(
+          'There is an error sending OTP to your mobile number. Please try with your email address.'
+        );
+      }, 2000);
+      
+      return;
+    }
+
+    // For India - proceed with actual API call
     try {
+      setIsLoading(true);
+      setError(null);
+      
       const payload = {
         email: '',
         phoneNumber: data.phone,
@@ -76,23 +100,54 @@ export default function PhoneLogin() {
       });
     } catch (err: any) {
       console.log('LOGIN ERROR:', err);
+      setError(err?.data?.message || 'Something went wrong. Please try again.');
+    } finally {
+      setIsLoading(false);
     }
   };
+
+  const openCountryBottomSheet = () => {
+    BottomSheetService.open(
+      React.createElement(CountryBottomSheet, {
+        selectedCountry: country,
+        onSelectCountry: (selected: any) => {
+          setCountry({
+            name: selected.name,
+            code: selected.code,
+            callingCode: selected.callingCode,
+            flag: selected.flag,
+          });
+          // Clear error when country changes
+          setError(null);
+          BottomSheetService.close();
+        },
+      }),
+      {
+        height: '85%',
+        hasGradient: false,
+      },
+    );
+  };
+
   return (
     <AuthLayout>
       <AnimatedScreen>
         <View style={styles.container}>
           <View>
-            <AuthTitle title="Welcome Back" children="Enter your phone number to continue"/>
+            <AuthTitle
+              title="Welcome Back"
+              children="Enter your phone number to continue"
+            />
 
             <View style={{ marginTop: 26, marginBottom: 24, gap: 16 }}>
               <CountrySelector
                 label="Country"
                 value={country.name}
                 flag={country.flag}
+                onPress={openCountryBottomSheet}
               />
 
-              {/* PASSWORD */}
+              {/* PHONE INPUT */}
               <FormInput
                 key={country.callingCode}
                 control={control}
@@ -110,11 +165,11 @@ export default function PhoneLogin() {
                 }}
               />
 
-              {/* API ERROR */}
+              {/* ERROR MESSAGE */}
               {error && (
-                <SansText style={styles.apiError}>
-                  {(error as any)?.data?.message || 'Login failed'}
-                </SansText>
+                <View style={styles.errorContainer}>
+                  <SansText style={styles.apiError}>{error}</SansText>
+                </View>
               )}
             </View>
 
@@ -123,7 +178,7 @@ export default function PhoneLogin() {
               variant="solid"
               loading={isLoading}
               onPress={handleSubmit(onSubmit)}
-              disabled={!isValid || !isFormFilled}
+              disabled={!isFormFilled}
             />
 
             <OrDivider />
@@ -144,6 +199,7 @@ export default function PhoneLogin() {
               </Text>
             </TouchableOpacity>
           </View>
+          
           <View style={{ gap: 24 }}>
             <AuthSecondaryNavigation
               question="New User?"
@@ -166,11 +222,21 @@ const styles = StyleSheet.create({
     paddingVertical: 32,
     paddingHorizontal: 16,
   },
+  errorContainer: {
+    marginTop: 4,
+  },
   apiError: {
     color: '#C2371E',
     fontFamily: 'GeneralSans-Medium',
     textAlign: 'left',
     fontSize: 14,
-    marginTop: 12,
+    lineHeight: 20,
+  },
+  countryNote: {
+    fontSize: 12,
+    color: '#D4AF37',
+    fontFamily: 'GeneralSans-Medium',
+    marginTop: -14,
+    marginBottom: 4,
   },
 });

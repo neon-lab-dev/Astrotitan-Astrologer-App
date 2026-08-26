@@ -12,8 +12,6 @@ import {
 } from '../../redux/features/auth/authApi';
 import { setAuth } from '../../redux/features/auth/authSlice';
 import { Storage } from '../../services/storage/storage';
-import globalModalService from '../../redux/features/ui/GlobalModal/globalModalService';
-import VerifiedPopup from '../../components/reusable/Popups/VerifiedPopup';
 import AppHeader from '../../components/reusable/AppHeader/AppHeader';
 import AuthTitle from '../../components/auth/AuthTitle';
 import { SansText } from '../../components/reusable/Text/SansText';
@@ -21,11 +19,14 @@ import { SatoshiText } from '../../components/reusable/Text/SatoshiText';
 import ReusableButton from '../../components/reusable/ReusableButton/ReusableButton';
 import { useRoute } from '@react-navigation/native';
 import AuthLayout from '../../components/layout/layouts/AuthLayout';
+import { useNavigation } from '@react-navigation/native';
+
 type FormType = {
   otp: string;
 };
 
 export default function OtpScreen() {
+  const navigation = useNavigation<any>();
   const [status, setStatus] = useState<
     'default' | 'error' | 'success' | 'expired' | 'not_received'
   >('default');
@@ -47,13 +48,30 @@ export default function OtpScreen() {
 
   const otp = watch('otp');
 
-  // 🔥 API hooks
+  // API hooks
   const [verifyLoginOtp] = useVerifyLoginOtpMutation();
   const [verifySignupOtp] = useVerifySignupOtpMutation();
   const [resendLoginOtp] = useResendLoginOtpMutation();
   const [resendSignupOtp] = useResendSignupOtpMutation();
 
-  // ✅ VERIFY OTP
+  // Navigate based on profile completion
+  const navigateBasedOnProfile = (isProfileCompleted: boolean) => {
+    if (isProfileCompleted) {
+      // Navigate to HomeTabs
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'HomeTabs' }],
+      });
+    } else {
+      // Navigate to MultiStepForm
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'MultiStepForm' }],
+      });
+    }
+  };
+
+  // VERIFY OTP
   const onSubmit = async (otpValue: string) => {
     if (loading) return;
 
@@ -65,7 +83,7 @@ export default function OtpScreen() {
         emailOrPhone: params.phone || params.email,
         otp: otpValue,
       };
-      // 🔥 IMPORTANT: capture response
+      
       let response;
 
       if (params.source === 'login') {
@@ -73,33 +91,36 @@ export default function OtpScreen() {
       } else {
         response = await verifySignupOtp(payload).unwrap();
       }
+      
       const data = response?.data;
       const accessToken = data?.accessToken;
       const refreshToken = data?.refreshToken;
       const user = data?.user;
+      
       dispatch(setAuth({ token: accessToken, user: user }));
-      let isProfileCompleted =
+      
+      let isProfileCompleted = 
         user?.profile?.isProfileCompleted || user?.isProfileComplete || false;
+      
       await Storage.setAccessToken(accessToken);
       await Storage.setRefreshToken(refreshToken);
       await Storage.setUser(user);
+      
       setStatus('success');
+      
       let finalUser = user;
       try {
         const meRes = await getMe({}).unwrap();
         finalUser = meRes.data;
         await Storage.setUser(finalUser);
-        isProfileCompleted = finalUser?.profile?.isProfileCompleted;
-        false;
+        isProfileCompleted = finalUser?.profile?.isProfileCompleted || false;
       } catch {
         console.log('Using fallback user');
       }
-      globalModalService.open(
-        <VerifiedPopup isProfileCompleted={isProfileCompleted} />,
-        {
-          dismissible: false,
-        },
-      );
+      
+      // Direct navigation without popup
+      navigateBasedOnProfile(isProfileCompleted);
+      
     } catch (err: any) {
       const message = err?.data?.message || 'Invalid OTP. Please try again.';
 
@@ -116,7 +137,7 @@ export default function OtpScreen() {
     }
   };
 
-  // ✅ TIMER
+  // TIMER
   useEffect(() => {
     if (timer === 0) {
       setCanResend(true);
@@ -134,7 +155,7 @@ export default function OtpScreen() {
     return () => clearInterval(interval);
   }, [timer, otpArray]);
 
-  // ✅ RESEND OTP
+  // RESEND OTP
   const handleResend = async () => {
     try {
       setLoading(true);
@@ -162,7 +183,7 @@ export default function OtpScreen() {
     }
   };
 
-  // ✅ INPUT HANDLING
+  // INPUT HANDLING
   const handleBackspace = (key: string, index: number) => {
     if (key === 'Backspace' && !otpArray[index] && index > 0) {
       inputs.current[index - 1]?.focus();

@@ -6,21 +6,29 @@ type Props = {
   label?: string;
   value: string;
   flag?: string;
+  onPress?: () => void;
+  disabled?: boolean;
 };
 
 export default function CountrySelector({
   label,
   value,
   flag,
+  onPress,
+  disabled = false,
 }: Props) {
   return (
     <View>
       {label && <SansText style={styles.label}>{label}</SansText>}
 
-      <TouchableOpacity style={styles.container} >
+      <TouchableOpacity 
+        style={styles.container} 
+        onPress={onPress}
+        disabled={disabled}
+        activeOpacity={0.7}
+      >
         <View style={styles.left}>
-          {/* You can later replace with flag dynamically */}
-          <SansText style={styles.flag}>{flag}</SansText>
+          <SansText style={styles.flag}>{flag || '🌍'}</SansText>
           <SansText style={styles.text}>{value}</SansText>
         </View>
 
@@ -58,14 +66,14 @@ const styles = StyleSheet.create({
 
   flag: {
     fontSize: 18,
-    includeFontPadding: false, // 🔥 same as text
+    includeFontPadding: false,
     textAlignVertical: "center",
   },
 
   text: {
     fontSize: 16,
     color: "#1C1C1C",
-    includeFontPadding: false, // 🔥 ANDROID FIX
+    includeFontPadding: false,
     textAlignVertical: "center",
   },
 });

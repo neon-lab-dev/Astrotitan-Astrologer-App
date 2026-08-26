@@ -68,7 +68,7 @@ export default function EmailRegister() {
       <AnimatedScreen>
         <View style={styles.container}>
           <View>
-            <AuthTitle title="Create Account" children="Enter your email address to continue" />
+            <AuthTitle title="Create Your Account" children="Enter your email address to continue" />
 
             <View style={{ marginTop: 26, marginBottom: 24, gap: 26 }}>
               {/* PASSWORD */}

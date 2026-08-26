@@ -1,5 +1,5 @@
 /* eslint-disable react-native/no-inline-styles */
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useSignupMutation } from '../../redux/features/auth/authApi';
@@ -14,6 +14,8 @@ import AuthSecondaryNavigation from '../../components/auth/AuthSecondaryNavigati
 import TermsAndConditions from '../../components/auth/TermsAndConditions';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import AuthLayout from '../../components/layout/layouts/AuthLayout';
+import BottomSheetService from '../../redux/features/ui/GlobalSheet/BottomSheetService';
+import CountryBottomSheet from '../../components/auth/CountryBottomSheet';
 
 type RegisterForm = {
   phone: string;
@@ -24,26 +26,28 @@ export default function PhoneRegister() {
     control,
     handleSubmit,
     watch,
-    formState: { isValid },
   } = useForm<RegisterForm>({
     defaultValues: {
       phone: '',
     },
-    mode: 'onBlur', // 🔥 IMPORTANT
+    mode: 'onBlur',
   });
 
-  // COUNTRY STATE (FIXED)
+  // COUNTRY STATE
   const [country, setCountry] = useState({
     name: 'India',
     code: 'IN',
     callingCode: '91',
     flag: '🇮🇳',
   });
+
   const navigation = useNavigation<any>();
   const route = useRoute<any>();
   const params = route.params || {};
   const phone = watch('phone');
-  const isFormFilled = phone.length >= 10;
+  const isFormFilled = phone.length >= 4;
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (params.countryName) {
@@ -56,10 +60,30 @@ export default function PhoneRegister() {
     }
   }, [params]);
 
-  const [signup, { isLoading, error }] = useSignupMutation();
+  const [signup] = useSignupMutation();
 
   const onSubmit = async (data: RegisterForm) => {
+    // Check if country is India
+    if (country.code !== 'IN') {
+      // Show dummy loader for 2 seconds
+      setIsLoading(true);
+      setError(null);
+      
+      setTimeout(() => {
+        setIsLoading(false);
+        setError(
+          'There is an error sending OTP to your mobile number. Please try with your email address.'
+        );
+      }, 2000);
+      
+      return;
+    }
+
+    // For India - proceed with actual API call
     try {
+      setIsLoading(true);
+      setError(null);
+      
       const payload = {
         phoneNumber: data.phone,
         email: '',
@@ -77,7 +101,33 @@ export default function PhoneRegister() {
       });
     } catch (err: any) {
       console.log('SIGNUP ERROR:', err);
+      setError(err?.data?.message || 'Something went wrong. Please try again.');
+    } finally {
+      setIsLoading(false);
     }
+  };
+
+  const openCountryBottomSheet = () => {
+    BottomSheetService.open(
+      React.createElement(CountryBottomSheet, {
+        selectedCountry: country,
+        onSelectCountry: (selected: any) => {
+          setCountry({
+            name: selected.name,
+            code: selected.code,
+            callingCode: selected.callingCode,
+            flag: selected.flag,
+          });
+          // Clear error when country changes
+          setError(null);
+          BottomSheetService.close();
+        },
+      }),
+      {
+        height: '85%',
+        hasGradient: false,
+      },
+    );
   };
 
   return (
@@ -85,16 +135,20 @@ export default function PhoneRegister() {
       <AnimatedScreen>
         <View style={styles.container}>
           <View>
-            <AuthTitle title="Create Account" children="Enter your phone number to continue" />
+            <AuthTitle
+              title="Create Your Account"
+              children="Enter your phone number to continue"
+            />
 
             <View style={{ marginTop: 26, marginBottom: 24, gap: 26 }}>
               <CountrySelector
                 label="Country"
                 value={country.name}
                 flag={country.flag}
+                onPress={openCountryBottomSheet}
               />
 
-              {/* PASSWORD */}
+              {/* PHONE INPUT */}
               <FormInput
                 key={country.callingCode}
                 control={control}
@@ -112,11 +166,11 @@ export default function PhoneRegister() {
                 }}
               />
 
-              {/* API ERROR */}
+              {/* ERROR MESSAGE */}
               {error && (
-                <SansText style={styles.apiError}>
-                  {(error as any)?.data?.message || 'Login failed'}
-                </SansText>
+                <View style={styles.errorContainer}>
+                  <SansText style={styles.apiError}>{error}</SansText>
+                </View>
               )}
             </View>
 
@@ -125,7 +179,7 @@ export default function PhoneRegister() {
               variant="solid"
               loading={isLoading}
               onPress={handleSubmit(onSubmit)}
-              disabled={!isValid || !isFormFilled}
+              disabled={!isFormFilled}
             />
 
             <OrDivider />
@@ -146,6 +200,7 @@ export default function PhoneRegister() {
               </Text>
             </TouchableOpacity>
           </View>
+
           <View style={{ gap: 24 }}>
             <AuthSecondaryNavigation
               question="Old User?"
@@ -167,11 +222,14 @@ const styles = StyleSheet.create({
     paddingVertical: 32,
     paddingHorizontal: 16,
   },
+  errorContainer: {
+    marginTop: 4,
+  },
   apiError: {
     color: '#C2371E',
     fontFamily: 'GeneralSans-Medium',
     textAlign: 'left',
     fontSize: 14,
-    marginTop: 12,
+    lineHeight: 20,
   },
 });
