@@ -333,8 +333,8 @@ const AstrologerChatScreen = () => {
             </View>
 
             <ReusableButton
-              width={84}
-              height={56}
+              width={100}
+              height={43}
               title={isEnding ? 'Ending...' : 'End'}
               onPress={() => {
                 handleEndSession();

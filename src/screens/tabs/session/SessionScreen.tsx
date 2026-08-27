@@ -250,13 +250,11 @@ const SessionsScreen = () => {
   return (
     <AnimatedScreen>
       <ScreenWrapper>
-            <AppBar title="Session Logs" />
+        <AppBar title="Session Logs" />
         <View style={styles.container}>
           {/* HEADER */}
 
           <AppHeader showBack={false}>
-
-
             {/* TABS */}
             <View
               style={styles.tabsContainer}
@@ -306,56 +304,50 @@ const SessionsScreen = () => {
 
           {/* BODY */}
           {/* Filter Row */}
-          {bookings?.length !== 0 && (
-            <View style={styles.filterRow}>
-              {/* Active Filters Display */}
-              <View style={styles.activeFilters}>
-                {selectedStatus !== 'all' && (
-                  <View style={styles.activeFilterChip}>
-                    <SansText style={styles.activeFilterText}>
-                      {selectedStatus}
-                    </SansText>
-                    <TouchableOpacity
-                      onPress={() => {
-                        setSelectedStatus('all');
-                      }}
-                      style={styles.activeFilterRemove}
-                    >
-                      <SansText style={styles.activeFilterRemoveText}>
-                        ✕
-                      </SansText>
-                    </TouchableOpacity>
-                  </View>
-                )}
-                {selectedDate && (
-                  <View style={styles.activeFilterChip}>
-                    <SansText style={styles.activeFilterText}>
-                      {selectedDate}
-                    </SansText>
-                    <TouchableOpacity
-                      onPress={() => {
-                        setSelectedDate('');
-                      }}
-                      style={styles.activeFilterRemove}
-                    >
-                      <SansText style={styles.activeFilterRemoveText}>
-                        ✕
-                      </SansText>
-                    </TouchableOpacity>
-                  </View>
-                )}
-              </View>
-
-              {/* Filter Button */}
-              <TouchableOpacity
-                style={styles.filterButton}
-                onPress={openFilterModal}
-              >
-                <CalenderIcon width={18} height={18} />
-                <SansText style={styles.filterButtonText}>Filter</SansText>
-              </TouchableOpacity>
+          <View style={styles.filterRow}>
+            {/* Active Filters Display */}
+            <View style={styles.activeFilters}>
+              {selectedStatus !== 'all' && (
+                <View style={styles.activeFilterChip}>
+                  <SansText style={styles.activeFilterText}>
+                    {selectedStatus}
+                  </SansText>
+                  <TouchableOpacity
+                    onPress={() => {
+                      setSelectedStatus('all');
+                    }}
+                    style={styles.activeFilterRemove}
+                  >
+                    <SansText style={styles.activeFilterRemoveText}>✕</SansText>
+                  </TouchableOpacity>
+                </View>
+              )}
+              {selectedDate && (
+                <View style={styles.activeFilterChip}>
+                  <SansText style={styles.activeFilterText}>
+                    {selectedDate}
+                  </SansText>
+                  <TouchableOpacity
+                    onPress={() => {
+                      setSelectedDate('');
+                    }}
+                    style={styles.activeFilterRemove}
+                  >
+                    <SansText style={styles.activeFilterRemoveText}>✕</SansText>
+                  </TouchableOpacity>
+                </View>
+              )}
             </View>
-          )}
+
+            {/* Filter Button */}
+            <TouchableOpacity
+              style={styles.filterButton}
+              onPress={openFilterModal}
+            >
+              <CalenderIcon width={18} height={18} />
+              <SansText style={styles.filterButtonText}>Filter</SansText>
+            </TouchableOpacity>
+          </View>
 
           <ScrollView
             showsVerticalScrollIndicator={false}

@@ -176,20 +176,11 @@ const AvailabilityScreen = () => {
       // Parse the selected slots to get start and end times
       const slots = selectedSlots.map(slot => {
         const [start, end] = slot.split(' - ');
-        // Convert 12-hour format to 24-hour format for API
-        const convertTo24Hour = (timeStr: string) => {
-          const [time, ampm] = timeStr.split(' ');
-          let [hour, minute] = time.split(':').map(Number);
-          if (ampm === 'PM' && hour !== 12) hour += 12;
-          if (ampm === 'AM' && hour === 12) hour = 0;
-          return `${hour.toString().padStart(2, '0')}:${minute
-            .toString()
-            .padStart(2, '0')}`;
-        };
 
+        // Keep the 12-hour format with AM/PM
         return {
-          startTime: convertTo24Hour(start),
-          endTime: convertTo24Hour(end),
+          startTime: start.trim(), // e.g., "9:00 AM"
+          endTime: end.trim(), // e.g., "9:30 AM"
         };
       });
 
@@ -201,7 +192,7 @@ const AvailabilityScreen = () => {
       await addSlot(payload).unwrap();
       setSelectedSlots([]);
       setIsAddSlotModalVisible(false);
-      refetch(); // Refresh the slots list
+      refetch();
     } catch (error: any) {
       Alert.alert(
         'Error',
@@ -719,7 +710,7 @@ const styles = StyleSheet.create({
 
   modalTimeGroup: {
     marginBottom: 16,
-    marginTop : 12
+    marginTop: 12,
   },
 
   modalTimeGroupTitle: {
