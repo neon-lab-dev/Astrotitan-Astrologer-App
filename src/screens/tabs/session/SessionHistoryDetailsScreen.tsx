@@ -59,7 +59,7 @@ const SessionHistoryDetailsScreen = () => {
     rating,
     createdAt,
   } = data?.data || {};
-  
+
   const startTime = bookedSlot?.startTime || null;
   const endTime = bookedSlot?.endTime || null;
   const meetingDate = slotId?.meetingDate || null;
@@ -163,6 +163,14 @@ const SessionHistoryDetailsScreen = () => {
       profilePicture: booking?.user?.profilePicture,
       name: booking?.user?.fullName,
       consultationFor: booking.consultationFor,
+    });
+  };
+
+  // Handle Join Consultation
+  const handleJoinConsultation = () => {
+    navigation.navigate('ConsultationCallScreen', {
+      consultationId: consultationId,
+      otherParticipantName: userName,
     });
   };
 
@@ -391,6 +399,13 @@ const SessionHistoryDetailsScreen = () => {
               )}
             </View>
           </View>
+
+          <TouchableOpacity
+            onPress={handleJoinConsultation}
+            style={styles.chatButton}
+          >
+            <SansText>join</SansText>
+          </TouchableOpacity>
 
           {/* Session Summary */}
           <View style={styles.section}>
@@ -746,5 +761,15 @@ const styles = StyleSheet.create({
   loadingText: {
     fontSize: 16,
     color: '#8E8E93',
+  },
+
+    chatButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#D4AF37',
+    paddingVertical: 14,
+    borderRadius: 12,
+    gap: 10,
   },
 });

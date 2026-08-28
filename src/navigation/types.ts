@@ -23,6 +23,10 @@ export type RootStackParamList = {
   CreateArticleScreen: {
     contentType: string;
   };
+  ConsultationCallScreen: {
+    consultationId: String;
+    otherParticipantName: String;
+  };
   ArticleScreen: {
     id: string;
   };
@@ -52,7 +56,7 @@ export type RootStackParamList = {
   SessionHistoryDetailsScreen: {
     consultationId: string;
   };
-  ProvideNotes : {
+  ProvideNotes: {
     consultationId: string
   };
   KundliScreen: undefined;

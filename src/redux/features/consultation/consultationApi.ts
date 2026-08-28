@@ -1,5 +1,16 @@
 import { baseApi } from "../../api/baseApi";
 
+type JoinConsultationResponse = {
+  provider: "zoom_video_sdk";
+  sessionName: string;
+  sessionPassword?: string;
+  token: string;
+  userName: string;
+  consultationId: string;
+  scheduledAt?: string;
+  role: "user" | "astrologer";
+};
+
 const consultationApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     getMyConsultationBookings: builder.query({
@@ -67,6 +78,40 @@ const consultationApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["consultation"],
     }),
+
+
+    // Join Zoom consultation
+    joinConsultation: builder.query<
+      JoinConsultationResponse,
+      string
+    >({
+      query: (consultationId) => ({
+        url: `/consultation/join/${consultationId}`,
+        method: "GET",
+        credentials: "include",
+      }),
+      transformResponse: (response: any) => {
+        return response?.data?.data ?? response?.data ?? response;
+      },
+      providesTags: (_result, _error, consultationId) => [
+        {
+          type: "consultation",
+          id: consultationId,
+        },
+      ],
+    }),
+
+    // Start consultation - Astrologer
+    startConsultation: builder.mutation({
+      query: (consultationId: string) => ({
+        url: `/consultation/start/${consultationId}`,
+        method: "PATCH",
+        credentials: "include",
+      }),
+      invalidatesTags: ["consultation"],
+    }),
+
+
     endConsultationSession: builder.mutation({
       query: (id) => ({
         url: `/consultation/end-session/${id}`,
@@ -102,6 +147,8 @@ export const {
   useGetSingleConsultationBookingsQuery,
   useGetSingleConsultationBookingByIdQuery,
   useChangeBookingStatusMutation,
+  useLazyJoinConsultationQuery,
+  useStartConsultationMutation,
   useEndConsultationSessionMutation,
   useScheduleMeetingMutation,
   useProvideNotesMutation,

@@ -4,6 +4,7 @@ import SessionsScreen from "../screens/tabs/session/SessionScreen";
 import SessionHistoryDetailsScreen from "../screens/tabs/session/SessionHistoryDetailsScreen";
 import AstrologerChatScreen from "../screens/tabs/session/(chat)/AstrologerChatScreen";
 import ProvideNotes from "../screens/tabs/session/ProvideNotes";
+import ConsultationCallScreen from "../screens/tabs/session/ConsultationCallScreen";
 const Stack = createNativeStackNavigator();
 
 export default function SessionNavigator() {
@@ -34,6 +35,10 @@ export default function SessionNavigator() {
       <Stack.Screen
         name="ProvideNotes"
         component={ProvideNotes}
+      />
+      <Stack.Screen
+        name="ConsultationCallScreen"
+        component={ConsultationCallScreen}
       />
 
     </Stack.Navigator>
