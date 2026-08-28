@@ -1,73 +1,94 @@
-import React, { useState } from "react";
+import React from 'react';
 import {
-  Alert,
   Image,
   StyleSheet,
   TouchableOpacity,
   View,
-} from "react-native";
-import { launchImageLibrary } from "react-native-image-picker";
-import { SansText } from "../reusable/Text/SansText";
+} from 'react-native';
+import {launchImageLibrary} from 'react-native-image-picker';
 
-const ProfilePhotoQuestion = ({ value, setValue }: any) => {
-  const [image, setImage] = useState(value || null);
+import UserIcon from '@/assets/icons/visual/user-circle.svg';
+import {SansText} from '../reusable/Text/SansText';
 
+type ProfilePhotoQuestionProps = {
+  value: any;
+  setValue: (value: any) => void;
+};
+
+const ProfilePhotoQuestion = ({
+  value,
+  setValue,
+}: ProfilePhotoQuestionProps) => {
   const pickImage = async () => {
     try {
       const result = await launchImageLibrary({
-        mediaType: "photo",
+        mediaType: 'photo',
         quality: 0.7,
         selectionLimit: 1,
       });
 
-      if (result.didCancel) {
-        return;
-      }
+      if (
+        result.assets &&
+        result.assets.length > 0
+      ) {
+        const selectedImage = result.assets[0];
 
-      if (result.errorCode) {
-        Alert.alert(
-          "Error",
-          result.errorMessage || "Failed to pick image"
-        );
-        return;
-      }
-
-      const uri = result.assets?.[0]?.uri;
-
-      if (uri) {
-        setImage(uri);
-        setValue(uri);
+        // Keep the COMPLETE asset object.
+        // Do not store only selectedImage.uri.
+        setValue(selectedImage);
       }
     } catch (error) {
-      console.log("IMAGE PICK ERROR:", error);
+      console.log(
+        'PROFILE IMAGE PICK ERROR:',
+        error,
+      );
     }
   };
 
   return (
     <View style={styles.container}>
+      {/* PROFILE IMAGE */}
+
       <TouchableOpacity
-        style={styles.imageContainer}
+        activeOpacity={0.8}
         onPress={pickImage}
+        style={styles.imageWrapper}
       >
-        {image ? (
-          <Image
-            source={{ uri: image }}
-            style={styles.image}
+        <Image
+          source={
+            value?.uri
+              ? {
+                  uri: value.uri,
+                }
+              : require(
+                  '@/assets/images/dummy/experts/expert1.png',
+                )
+          }
+          style={styles.image}
+        />
+
+        {/* SMALL ACTION ICON */}
+
+        <View style={styles.cameraButton}>
+          <UserIcon
+            width={18}
+            height={18}
           />
-        ) : (
-          <SansText style={styles.placeholder}>
-            Tap to add photo
-          </SansText>
-        )}
+        </View>
       </TouchableOpacity>
 
-      {image && (
-        <TouchableOpacity onPress={pickImage}>
-          <SansText style={styles.changeText}>
-            Change photo
-          </SansText>
-        </TouchableOpacity>
-      )}
+      {/* UPLOAD */}
+
+      <TouchableOpacity
+        activeOpacity={0.7}
+        onPress={pickImage}
+      >
+        <SansText style={styles.uploadText}>
+          {value?.uri
+            ? 'Change photo'
+            : 'Upload photo'}
+        </SansText>
+      </TouchableOpacity>
     </View>
   );
 };
@@ -76,31 +97,38 @@ export default ProfilePhotoQuestion;
 
 const styles = StyleSheet.create({
   container: {
-    marginTop: 32,
-    alignItems: "center",
-    gap: 20,
+    alignItems: 'center',
+    gap: 14,
+    marginTop: 24,
   },
 
-  imageContainer: {
-    width: 180,
-    height: 180,
-    borderRadius: 90,
-    backgroundColor: "#EEE",
-    alignItems: "center",
-    justifyContent: "center",
-    overflow: "hidden",
+  imageWrapper: {
+    width: 120,
+    height: 120,
+    borderRadius: 999,
+    overflow: 'hidden',
+    backgroundColor: '#E9E9E9',
+    justifyContent: 'center',
+    alignItems: 'center',
+    position: 'relative',
   },
 
   image: {
-    width: "100%",
-    height: "100%",
+    width: '100%',
+    height: '100%',
   },
 
-  placeholder: {
-    color: "#777",
+  cameraButton: {
+    position: 'absolute',
+    bottom: 8,
+    right: 8,
+    backgroundColor: '#FBF7EB',
+    padding: 8,
+    borderRadius: 999,
   },
 
-  changeText: {
-    textDecorationLine: "underline",
+  uploadText: {
+    fontSize: 13,
+    textDecorationLine: 'underline',
   },
 });
