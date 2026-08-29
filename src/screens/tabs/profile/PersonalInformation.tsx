@@ -365,7 +365,7 @@ const PersonalInformation = () => {
 
     setValue(
       'about',
-      profile?.about || '',
+      profile?.bio || '',
     );
 
     /* --------------------------------------------------------

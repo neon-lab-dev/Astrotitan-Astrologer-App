@@ -267,7 +267,6 @@ const styles = StyleSheet.create({
   },
   userName: {
     fontSize: 18,
-    fontWeight: '700',
     color: '#1a1a2e',
     fontFamily: 'Satoshi-Bold',
   },
