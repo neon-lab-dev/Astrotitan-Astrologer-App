@@ -5,7 +5,7 @@ import {
   SafeAreaProvider,
 } from 'react-native-safe-area-context';
 import RootNavigator from './navigation/RootNavigator';
-import { Provider} from 'react-redux';
+import { Provider } from 'react-redux';
 import { store } from './redux/store';
 import ScreenWrapper from './components/layout/ScreenWrapper';
 // import GlobalBottomSheet from './components/reusable/GlobalBottomSheet/GlobalBottomSheet';
@@ -16,6 +16,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { DevResetPanel } from './components/dev/DevResetPanel';
 import { useEffect } from 'react';
 import { loadAuth } from './utils/loadAuth';
+import ZoomProvider from "./hooks/ZoomProvider";
 
 function App() {
   const isDarkMode = useColorScheme() === 'dark';
@@ -48,7 +49,7 @@ function AppContent() {
   return (
     <Provider store={store}>
       <GestureHandlerRootView style={{ flex: 1 }}>
-      
+        <ZoomProvider >
           <NavigationContainer>
             <ScreenWrapper>
               <RootNavigator />
@@ -58,7 +59,7 @@ function AppContent() {
             <GlobalModal />
             {/* <DevResetPanel /> */}
           </NavigationContainer>
-   
+        </ZoomProvider>
       </GestureHandlerRootView>
     </Provider>
   );

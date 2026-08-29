@@ -22,6 +22,7 @@ import {
 } from '../../../redux/features/consultation/consultationApi';
 import WaitingForParticipant from '../../../components/SessionScreenPage/WaitingForParticipant/WaitingForParticipant';
 import CallControls from '../../../components/SessionScreenPage/CallControls/CallControls';
+import useCallPermissions from '../../../hooks/useCallPermissions';
 
 interface ConsultationCallRouteParams {
   consultationId: string;
@@ -73,7 +74,9 @@ const ConsultationCallScreen = ({ navigation }: any) => {
 
     return users.find(user => user.userId !== mySelf.userId);
   }, [mySelf, users]);
-
+  const {
+    requestPermissions,
+  } = useCallPermissions();
   useEffect(() => {
     let mounted = true;
 
@@ -84,7 +87,13 @@ const ConsultationCallScreen = ({ navigation }: any) => {
 
       try {
         setJoinError(null);
+        const permissionsGranted = await requestPermissions();
 
+        console.log('[Consultation] Permissions granted:', permissionsGranted);
+
+        if (!permissionsGranted) {
+          throw new Error('Camera and microphone permissions are required.');
+        }
         console.log('[Consultation] Requesting Zoom credentials...');
 
         const result = await getJoinConsultation(consultationId).unwrap();

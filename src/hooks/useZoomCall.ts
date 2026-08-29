@@ -5,7 +5,11 @@ import {
     ZoomVideoSdkUser,
     useZoom,
 } from "@zoom/react-native-videosdk";
-import { EmitterSubscription } from "react-native";
+
+import {
+    EmitterSubscription,
+} from "react-native";
+
 import {
     useCallback,
     useEffect,
@@ -50,26 +54,12 @@ const useZoomCall = () => {
     const refreshUsers =
         useCallback(async () => {
             try {
-                console.log(
-                    "[Zoom] Refreshing users...",
-                );
-
                 const currentUser =
                     await zoom.session.getMySelf();
 
-                console.log(
-                    "[Zoom] Current user:",
-                    currentUser,
-                );
-
                 if (!currentUser) {
-                    console.log(
-                        "[Zoom] Current user not found",
-                    );
-
                     setMySelf(null);
                     setUsers([]);
-
                     return;
                 }
 
@@ -81,14 +71,9 @@ const useZoomCall = () => {
                 const remoteUsers =
                     await zoom.session.getRemoteUsers();
 
-                console.log(
-                    "[Zoom] Remote users:",
-                    remoteUsers,
-                );
-
                 const remoteUserObjects =
                     remoteUsers.map(
-                        (user) =>
+                        user =>
                             new ZoomVideoSdkUser(
                                 user,
                             ),
@@ -104,13 +89,16 @@ const useZoomCall = () => {
                 ]);
 
                 console.log(
-                    "[Zoom] Users updated:",
-                    {
-                        myUserId:
-                            currentUserObject.userId,
-                        remoteCount:
-                            remoteUserObjects.length,
-                    },
+                    "[Zoom] Current user:",
+                    currentUserObject.userId,
+                );
+
+                console.log(
+                    "[Zoom] Remote users:",
+                    remoteUserObjects.map(
+                        user =>
+                            user.userId,
+                    ),
                 );
             } catch (error) {
                 console.error(
@@ -122,12 +110,8 @@ const useZoomCall = () => {
 
     const setupListeners =
         useCallback(() => {
-            console.log(
-                "[Zoom] Setting up listeners...",
-            );
-
             listeners.current.forEach(
-                (listener) =>
+                listener =>
                     listener.remove(),
             );
 
@@ -138,22 +122,60 @@ const useZoomCall = () => {
                     EventType.onSessionJoin,
                     async () => {
                         console.log(
-                            "[Zoom] ✅ onSessionJoin fired",
+                            "[Zoom] ✅ Session joined",
                         );
 
                         setIsInSession(true);
                         setError(null);
 
                         await refreshUsers();
+
+                        try {
+                            console.log(
+                                "[Zoom] Starting audio...",
+                            );
+
+                            await zoom.audioHelper
+                                .startAudio();
+
+                            console.log(
+                                "[Zoom] ✅ Audio started",
+                            );
+                        } catch (error) {
+                            console.error(
+                                "[Zoom] ❌ Audio start error:",
+                                error,
+                            );
+                        }
+
+                        try {
+                            console.log(
+                                "[Zoom] Starting video...",
+                            );
+
+                            await zoom.videoHelper
+                                .startVideo();
+
+                            setIsVideoOn(true);
+
+                            console.log(
+                                "[Zoom] ✅ Video started",
+                            );
+                        } catch (error) {
+                            console.error(
+                                "[Zoom] ❌ Video start error:",
+                                error,
+                            );
+                        }
                     },
                 );
 
             const sessionLeave =
                 zoom.addListener(
                     EventType.onSessionLeave,
-                    (event) => {
+                    event => {
                         console.log(
-                            "[Zoom] ❌ onSessionLeave:",
+                            "[Zoom] ❌ Session left:",
                             event,
                         );
 
@@ -166,9 +188,9 @@ const useZoomCall = () => {
             const userJoin =
                 zoom.addListener(
                     EventType.onUserJoin,
-                    async (event) => {
+                    async event => {
                         console.log(
-                            "[Zoom] 👤 onUserJoin:",
+                            "[Zoom] 👤 User joined:",
                             event,
                         );
 
@@ -179,9 +201,9 @@ const useZoomCall = () => {
             const userLeave =
                 zoom.addListener(
                     EventType.onUserLeave,
-                    async (event) => {
+                    async event => {
                         console.log(
-                            "[Zoom] 👋 onUserLeave:",
+                            "[Zoom] 👋 User left:",
                             event,
                         );
 
@@ -192,14 +214,14 @@ const useZoomCall = () => {
             const errorListener =
                 zoom.addListener(
                     EventType.onError,
-                    (event) => {
+                    event => {
                         console.error(
-                            "[Zoom] 🚨 onError:",
+                            "[Zoom] 🚨 SDK Error:",
                             event,
                         );
 
                         console.error(
-                            "[Zoom] 🚨 Error JSON:",
+                            "[Zoom] 🚨 SDK Error JSON:",
                             JSON.stringify(
                                 event,
                                 null,
@@ -207,13 +229,10 @@ const useZoomCall = () => {
                             ),
                         );
 
-                        const errorMessage =
-                            JSON.stringify(
-                                event,
-                            );
-
                         setError(
-                            `Zoom error: ${errorMessage}`,
+                            `Zoom error: ${JSON.stringify(
+                                event,
+                            )}`,
                         );
                     },
                 );
@@ -225,143 +244,98 @@ const useZoomCall = () => {
                 userLeave,
                 errorListener,
             ];
-
-            console.log(
-                "[Zoom] Listeners registered:",
-                listeners.current.length,
-            );
         }, [refreshUsers, zoom]);
 
     const cleanupListeners =
         useCallback(() => {
-            console.log(
-                "[Zoom] Cleaning up listeners...",
-            );
-
             listeners.current.forEach(
-                (listener) =>
+                listener =>
                     listener.remove(),
             );
 
             listeners.current = [];
         }, []);
 
-    const joinSession =
-        useCallback(
-            async ({
-                sessionName,
-                token,
-                userName,
-                sessionPassword,
-            }: JoinSessionData) => {
-                try {
-                    setError(null);
+    const isJoiningRef = useRef(false);
+    const hasJoinedRef = useRef(false);
 
-                    console.log(
-                        "[Zoom] ============================"
-                    );
+    const joinSession = useCallback(
+        async ({
+            sessionName,
+            token,
+            userName,
+            sessionPassword,
+        }: JoinSessionData) => {
+            if (isJoiningRef.current) {
+                console.log(
+                    "[Zoom] Join already in progress. Ignoring duplicate join."
+                );
 
-                    console.log(
-                        "[Zoom] JOIN SESSION START"
-                    );
+                return;
+            }
 
-                    console.log(
-                        "[Zoom] sessionName:",
-                        sessionName
-                    );
+            if (hasJoinedRef.current) {
+                console.log(
+                    "[Zoom] Already joined a session. Ignoring duplicate join."
+                );
 
-                    console.log(
-                        "[Zoom] userName:",
-                        userName
-                    );
+                return;
+            }
 
-                    console.log(
-                        "[Zoom] token exists:",
-                        Boolean(token)
-                    );
+            try {
+                isJoiningRef.current = true;
 
-                    console.log(
-                        "[Zoom] password exists:",
-                        Boolean(sessionPassword)
-                    );
+                setError(null);
 
-                    if (!sessionName) {
-                        throw new Error(
-                            "Zoom session name is missing."
-                        );
-                    }
+                console.log(
+                    "[Zoom] Starting join..."
+                );
 
-                    if (!token) {
-                        throw new Error(
-                            "Zoom token is missing."
-                        );
-                    }
+                setupListeners();
 
-                    if (!userName) {
-                        throw new Error(
-                            "Zoom userName is missing."
-                        );
-                    }
+                await zoom.joinSession({
+                    sessionName,
+                    token,
+                    userName,
+                    sessionPassword,
 
-                    setupListeners();
+                    sessionIdleTimeoutMins: 15,
 
-                    console.log(
-                        "[Zoom] Calling zoom.joinSession()..."
-                    );
+                    audioOptions: {
+                        connect: true,
+                        mute: false,
+                        autoAdjustSpeakerVolume: false,
+                    },
 
-                    const result =
-                        await zoom.joinSession({
-                            sessionName,
-                            token,
-                            userName,
-                            sessionPassword,
+                    videoOptions: {
+                        localVideoOn: false,
+                    },
+                });
 
-                            sessionIdleTimeoutMins: 15,
+                hasJoinedRef.current = true;
 
-                            audioOptions: {
-                                connect: true,
-                                mute: false,
-                                autoAdjustSpeakerVolume:
-                                    false,
-                            },
+                console.log(
+                    "[Zoom] joinSession() request completed"
+                );
+            } catch (error) {
+                console.error(
+                    "[Zoom] Join error:",
+                    error
+                );
 
-                            videoOptions: {
-                                localVideoOn: false,
-                            },
-                        });
+                setError(
+                    error instanceof Error
+                        ? error.message
+                        : String(error)
+                );
 
-                    console.log(
-                        "[Zoom] joinSession() returned:",
-                        result
-                    );
-
-                    console.log(
-                        "[Zoom] Waiting for onSessionJoin..."
-                    );
-                } catch (error) {
-                    console.error(
-                        "[Zoom] ❌ JOIN SESSION ERROR:",
-                        error
-                    );
-
-                    console.error(
-                        "[Zoom] Error message:",
-                        error instanceof Error
-                            ? error.message
-                            : String(error)
-                    );
-
-                    setError(
-                        error instanceof Error
-                            ? error.message
-                            : String(error)
-                    );
-
-                    throw error;
-                }
-            },
-            [setupListeners, zoom]
-        );
+                throw error;
+            } finally {
+                isJoiningRef.current = false;
+            }
+        },
+        [setupListeners, zoom]
+    );
 
     const toggleMute =
         useCallback(async () => {
@@ -370,41 +344,26 @@ const useZoomCall = () => {
                     await zoom.session.getMySelf();
 
                 if (!currentUser) {
-                    console.log(
-                        "[Zoom] Cannot toggle mute: no current user",
-                    );
-
                     return;
                 }
 
                 const muted =
                     currentUser.audioStatus.isMuted();
 
-                console.log(
-                    "[Zoom] Current mute state:",
-                    muted,
-                );
-
                 if (muted) {
-                    await zoom.audioHelper.unmuteAudio(
-                        currentUser.userId,
-                    );
+                    await zoom.audioHelper
+                        .unmuteAudio(
+                            currentUser.userId,
+                        );
 
                     setIsMuted(false);
-
-                    console.log(
-                        "[Zoom] Microphone unmuted",
-                    );
                 } else {
-                    await zoom.audioHelper.muteAudio(
-                        currentUser.userId,
-                    );
+                    await zoom.audioHelper
+                        .muteAudio(
+                            currentUser.userId,
+                        );
 
                     setIsMuted(true);
-
-                    console.log(
-                        "[Zoom] Microphone muted",
-                    );
                 }
             } catch (error) {
                 console.error(
@@ -417,13 +376,9 @@ const useZoomCall = () => {
     const toggleVideo =
         useCallback(async () => {
             try {
-                console.log(
-                    "[Zoom] Toggling video. Current:",
-                    isVideoOn,
-                );
-
                 if (isVideoOn) {
-                    await zoom.videoHelper.stopVideo();
+                    await zoom.videoHelper
+                        .stopVideo();
 
                     setIsVideoOn(false);
 
@@ -431,7 +386,8 @@ const useZoomCall = () => {
                         "[Zoom] Video stopped",
                     );
                 } else {
-                    await zoom.videoHelper.startVideo();
+                    await zoom.videoHelper
+                        .startVideo();
 
                     setIsVideoOn(true);
 
@@ -450,7 +406,8 @@ const useZoomCall = () => {
     const switchCamera =
         useCallback(async () => {
             try {
-                await zoom.videoHelper.switchCamera();
+                await zoom.videoHelper
+                    .switchCamera();
 
                 console.log(
                     "[Zoom] Camera switched",
@@ -466,10 +423,6 @@ const useZoomCall = () => {
     const leaveSession =
         useCallback(async () => {
             try {
-                console.log(
-                    "[Zoom] Leaving session...",
-                );
-
                 await zoom.leaveSession(
                     false,
                 );
@@ -482,6 +435,7 @@ const useZoomCall = () => {
                 setIsInSession(false);
                 setUsers([]);
                 setMySelf(null);
+
                 cleanupListeners();
             }
         }, [cleanupListeners, zoom]);
@@ -489,10 +443,6 @@ const useZoomCall = () => {
     const endSession =
         useCallback(async () => {
             try {
-                console.log(
-                    "[Zoom] Ending session...",
-                );
-
                 await zoom.leaveSession(
                     true,
                 );
@@ -505,6 +455,7 @@ const useZoomCall = () => {
                 setIsInSession(false);
                 setUsers([]);
                 setMySelf(null);
+
                 cleanupListeners();
             }
         }, [cleanupListeners, zoom]);

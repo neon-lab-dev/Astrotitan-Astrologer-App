@@ -196,7 +196,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'flex-end',
     gap: 4,
-    paddingTop: 10,
+  paddingTop: 10,
     borderTopWidth: 1,
     borderTopColor: 'rgba(212, 175, 55, 0.10)',
   },
