@@ -1,13 +1,13 @@
 import React from 'react';
 import {
   View,
-  Text,
   TouchableOpacity,
   ActivityIndicator,
   StyleSheet,
 } from 'react-native';
 
 import { useGoogleCalendar } from '../hooks/useGoogleCalendar';
+import { SansText } from './reusable/Text/SansText';
 
 const ConnectGoogleCalendar = () => {
   const {
@@ -22,13 +22,13 @@ const ConnectGoogleCalendar = () => {
     <View style={styles.container}>
       {isConnected ? (
         <>
-          <Text style={styles.email}>
+          <SansText style={styles.email}>
             Connected:
-          </Text>
+          </SansText>
 
-          <Text style={styles.email}>
+          <SansText style={styles.email}>
             {user?.user?.email || user?.email}
-          </Text>
+          </SansText>
 
           <TouchableOpacity
             style={[styles.button, styles.disconnect]}
@@ -38,9 +38,9 @@ const ConnectGoogleCalendar = () => {
             {isLoading ? (
               <ActivityIndicator color="#fff" />
             ) : (
-              <Text style={styles.text}>
+              <SansText style={styles.text}>
                 Disconnect Google
-              </Text>
+              </SansText>
             )}
           </TouchableOpacity>
         </>
@@ -53,9 +53,9 @@ const ConnectGoogleCalendar = () => {
           {isLoading ? (
             <ActivityIndicator color="#fff" />
           ) : (
-            <Text style={styles.text}>
+            <SansText style={styles.text}>
               Connect Google Calendar
-            </Text>
+            </SansText>
           )}
         </TouchableOpacity>
       )}

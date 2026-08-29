@@ -8,6 +8,8 @@ import {
 } from 'react-native';
 import { ICONS } from '../../../assets/svg';
 import { useNavigation } from '@react-navigation/native';
+import { SatoshiText } from '../../reusable/Text/SatoshiText';
+import { SansText } from '../../reusable/Text/SansText';
 
 const { width } = Dimensions.get('window');
 const cardWidth = (width - 48) / 2;
@@ -59,8 +61,8 @@ const QuickActionItem: React.FC<QuickActionItemProps> = ({
             </>
           ) : (
             <>
-              <Text style={styles.valueText}>{formatValue(value)}</Text>
-              <Text style={styles.labelText}>{label}</Text>
+              <SatoshiText style={styles.valueText}>{formatValue(value)}</SatoshiText>
+              <SansText style={styles.labelText}>{label}</SansText>
             </>
           )}
         </View>
@@ -70,7 +72,7 @@ const QuickActionItem: React.FC<QuickActionItemProps> = ({
           <View style={styles.skeletonAction} />
         ) : (
           <>
-            <Text style={styles.actionText}>{buttonText}</Text>
+            <SansText style={styles.actionText}>{buttonText}</SansText>
             <RightIcon width={20} height={20} />
           </>
         )}
@@ -85,7 +87,7 @@ const QuickActions = ({ stats, isLoading }: any) => {
   return (
     <View style={styles.container}>
       <View style={styles.headerContainer}>
-        <Text style={styles.headerTitle}>Quick Actions</Text>
+        <SatoshiText style={styles.headerTitle}>Quick Actions</SatoshiText>
       </View>
 
       <View style={styles.gridContainer}>
@@ -179,7 +181,7 @@ const styles = StyleSheet.create({
   },
   valueText: {
     fontSize: 22,
-    fontWeight: '700',
+    fontFamily:"Satoshi-Bold",
     color: '#1a1a2e',
     letterSpacing: -0.3,
   },
