@@ -28,6 +28,7 @@ const hiddenRoutes = [
   'SelectContentType',
   'CreateArticleScreen',
   'PersonalInformation',
+  'ConsultationCallScreen',
 ];
 
 function shouldHideTabBar(route: any) {

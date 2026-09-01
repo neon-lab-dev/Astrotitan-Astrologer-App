@@ -9,8 +9,6 @@ interface CallControlsProps {
   onToggleVideo: () => void;
   onSwitchCamera: () => void;
   onLeave: () => void;
-  onEnd: () => void;
-  isAstrologer: boolean;
 }
 
 const CallControls = ({
@@ -20,8 +18,6 @@ const CallControls = ({
   onToggleVideo,
   onSwitchCamera,
   onLeave,
-  onEnd,
-  isAstrologer,
 }: CallControlsProps) => {
   const PhoneDownIcon = ICONS.PhoneDown;
   const MuteWhite = ICONS.MuteWhite;
@@ -45,7 +41,7 @@ const CallControls = ({
       {/* End/Leave Button */}
       <TouchableOpacity
         style={[styles.control, styles.endButton]}
-        onPress={isAstrologer ? onEnd : onLeave}
+        onPress={onLeave}
       >
         <PhoneDownIcon width={30} height={30} />
       </TouchableOpacity>

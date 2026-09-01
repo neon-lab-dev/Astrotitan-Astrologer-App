@@ -17,7 +17,7 @@ import useZoomCall from '../../../hooks/useZoomCall';
 
 import { useRoute } from '@react-navigation/native';
 import {
-  useEndConsultationSessionMutation,
+  // useEndConsultationSessionMutation,
   useLazyJoinConsultationQuery,
   useStartConsultationMutation,
 } from '../../../redux/features/consultation/consultationApi';
@@ -50,9 +50,6 @@ const ConsultationCallScreen = ({ navigation }: any) => {
   const [startConsultation, { isLoading: isStarting }] =
     useStartConsultationMutation();
 
-  const [endConsultation, { isLoading: isEnding }] =
-    useEndConsultationSessionMutation();
-
   const [hasStarted, setHasStarted] = useState(false);
 
   const [joinError, setJoinError] = useState<string | null>(null);
@@ -68,7 +65,7 @@ const ConsultationCallScreen = ({ navigation }: any) => {
     remoteVideoStates,
     error,
     joinSession,
-    leaveSession,
+    // leaveSession,
     endSession,
     toggleMute,
     toggleVideo,
@@ -204,49 +201,14 @@ const ConsultationCallScreen = ({ navigation }: any) => {
 
   const handleLeave = async () => {
     try {
-      await leaveSession();
+      await endSession();
       navigation.goBack();
     } catch (err) {
       console.error('Leave call error:', err);
     }
   };
 
-  const handleEnd = () => {
-    Alert.alert(
-      'End Consultation',
-      'Are you sure you want to end this consultation?',
-      [
-        {
-          text: 'Cancel',
-          style: 'cancel',
-        },
-        {
-          text: 'End',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await endConsultation(consultationId).unwrap();
-
-              await endSession();
-
-              navigation.goBack();
-            } catch (err) {
-              console.error('End consultation error:', err);
-
-              Alert.alert(
-                'Error',
-                err instanceof Error
-                  ? err.message
-                  : 'Unable to end consultation.',
-              );
-            }
-          },
-        },
-      ],
-    );
-  };
-
-  const isLoading = isJoinLoading || isStarting || isEnding;
+  const isLoading = isJoinLoading || isStarting;
 
   if (isLoading) {
     return (
@@ -255,11 +217,7 @@ const ConsultationCallScreen = ({ navigation }: any) => {
 
         <ActivityIndicator size="large" />
 
-        <Text style={styles.loadingText}>
-          {isEnding
-            ? 'Ending consultation...'
-            : 'Connecting to consultation...'}
-        </Text>
+        <Text style={styles.loadingText}>Connecting to consultation...</Text>
       </SafeAreaView>
     );
   }
@@ -365,8 +323,6 @@ const ConsultationCallScreen = ({ navigation }: any) => {
         onToggleVideo={toggleVideo}
         onSwitchCamera={switchCamera}
         onLeave={handleLeave}
-        onEnd={handleEnd}
-        isAstrologer={userRole === 'astrologer'}
       />
     </SafeAreaView>
   );

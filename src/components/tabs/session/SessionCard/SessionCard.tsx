@@ -3,8 +3,6 @@ import { Image, StyleSheet, TouchableOpacity, View } from 'react-native';
 import ReusableButton from '../../../reusable/ReusableButton/ReusableButton';
 import { SansText } from '../../../reusable/Text/SansText';
 import { SatoshiText } from '../../../reusable/Text/SatoshiText';
-import BottomSheetService from '../../../../redux/features/ui/GlobalSheet/BottomSheetService';
-import ConnectGoogleSection from '../../../reusable/BottomSheet/ConnectGoogleSection';
 import { formatDate } from '../../../../utils/formatDate';
 import { ICONS } from '../../../../assets/svg';
 
@@ -16,23 +14,6 @@ type Props = {
 
 const SessionCard = ({ item, onPress, onChat }: Props) => {
   const [imageError, setImageError] = useState(false);
-
-  const onScheduleCallPress = () => {
-    BottomSheetService.open(
-      React.createElement(ConnectGoogleSection as React.ComponentType<any>, {
-        consultationId: item?._id,
-        userName: item?.user?.fullName,
-        userImage: item?.user?.profilePicture,
-        date: item?.slotId?.date,
-        time: `${item?.bookedSlot?.startTime} - ${item?.bookedSlot?.endTime}`,
-        onCancel: BottomSheetService.close,
-      }),
-      {
-        height: 400,
-        hasGradient: true,
-      },
-    );
-  };
 
   const handleJoinCall = () => {
     if (item?.meeting?.link) {
@@ -58,15 +39,17 @@ const SessionCard = ({ item, onPress, onChat }: Props) => {
   // Determine status color
   const getStatusColor = () => {
     if (item?.status === 'ended') return '#10b404';
-    if (item?.status === 'scheduled') return '#D4AF37';
-    if (item?.status === 'pending') return '#FFB74D';
+    if (item?.status === 'accepted') return '#2196F3';
+    if (item?.status === 'rejected') return '#FF0000';
+    if (item?.status === 'pending') return '#D4AF37';
     return '#E0E0E0';
   };
 
   const getStatusText = () => {
-    if (item?.status === 'ended') return 'Ended';
-    if (item?.status === 'scheduled') return 'Scheduled';
+    if (item?.status === 'ended') return 'Completed';
+    if (item?.status === 'accepted') return 'Accepted';
     if (item?.status === 'pending') return 'Pending';
+    if (item?.status === 'rejected') return 'Rejected';
     return 'Unknown';
   };
 
@@ -134,10 +117,7 @@ const SessionCard = ({ item, onPress, onChat }: Props) => {
             <View style={styles.detailsGrid}>
               {item?.slotId?.date && (
                 <View style={styles.detailItem}>
-                  <ICONS.CalendarIcon
-                    width={18}
-                    height={18}
-                  />
+                  <ICONS.CalendarIcon width={18} height={18} />
                   <SansText style={styles.detailText}>
                     {formatBookingDate(item?.slotId?.date)}
                   </SansText>
@@ -186,7 +166,7 @@ const SessionCard = ({ item, onPress, onChat }: Props) => {
                   height={32}
                   textSize={12}
                   style={styles.button}
-                  onPress={onScheduleCallPress}
+                  onPress={() => {}}
                 />
               ) : null}
             </View>

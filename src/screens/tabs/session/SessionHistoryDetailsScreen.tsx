@@ -1,12 +1,12 @@
 /* eslint-disable react-native/no-inline-styles */
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import {
   Image,
   ScrollView,
   StyleSheet,
   View,
-  TouchableOpacity,
   RefreshControl,
+  Alert,
 } from 'react-native';
 import ScreenWrapper from '../../../components/layout/ScreenWrapper';
 import { SatoshiText } from '../../../components/reusable/Text/SatoshiText';
@@ -17,6 +17,7 @@ import { formatDate } from '../../../utils/formatDate';
 import { useDispatch } from 'react-redux';
 import { setSelectedConsultation } from '../../../redux/features/consultation/consultationChatSlice';
 import {
+  useEndConsultationSessionMutation,
   useGetSingleConsultationBookingByIdQuery,
   useRejectConsultationMutation,
   useScheduleConsultationMutation,
@@ -32,7 +33,36 @@ const SessionHistoryDetailsScreen = () => {
   const route = useRoute<any>();
   const params = route.params as any;
 
+  const [endConsultationSession, { isLoading: isEnding }] =
+    useEndConsultationSessionMutation();
+
   const consultationId = params?.consultationId || params?.id || '';
+
+  const handleEndConsultation = async () => {
+    Alert.alert(
+      'Mark as Completed',
+      'Are you sure you want to mark this consultation as completed?',
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+        {
+          text: 'Confirm',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await endConsultationSession(consultationId).unwrap();
+              Alert.alert('Success', 'Consultation marked as completed.');
+            } catch (error) {
+              console.log(error);
+              Alert.alert('Error', 'Failed to mark consultation as completed.');
+            }
+          },
+        },
+      ],
+    );
+  };
 
   const [refreshing, setRefreshing] = useState<boolean>(false);
 
@@ -53,13 +83,11 @@ const SessionHistoryDetailsScreen = () => {
     createdAt,
   } = data?.data || {};
 
-  // const startTime = bookedSlot?.startTime || null;
-  // const endTime = bookedSlot?.endTime || null;
-  const meetingDate = slotId?.meetingDate || null;
+  const meetingDate = slotId?.date || null;
   const userName = `${user?.firstName} ${user?.lastName}` || 'N/A';
   const image = user?.profilePicture || 'https://via.placeholder.com/84';
   const time =
-    `${formatDate(slotId?.date)} at ${bookedSlot?.startTime} - ${
+    `${formatDate(meetingDate)} at ${bookedSlot?.startTime} - ${
       bookedSlot?.endTime
     }` || 'N/A';
   const bookedDate = formatDate(createdAt);
@@ -74,35 +102,26 @@ const SessionHistoryDetailsScreen = () => {
   const isCall = method === 'call';
   const isChat = method === 'chat';
 
-  /*
-    STATUS COLOR
-  */
-  const statusColor = useMemo(() => {
-    if (isCompleted) return '#1B7726';
-    if (isRejected) return '#882715';
-    if (isPending) return '#FFB74D';
-    if (isAccepted) return '#D4AF37';
-    return '#4A4A4A';
-  }, [isCompleted, isRejected, isPending, isAccepted]);
-
-  const statusBgColor = useMemo(() => {
-    if (isCompleted) return '#E8F5E9';
-    if (isRejected) return '#FDE8E5';
-    if (isPending) return '#FFF8E7';
-    if (isAccepted) return '#FFF8E7';
-    return '#F0F0F0';
-  }, [isCompleted, isRejected, isPending, isAccepted]);
-
-  const getStatusText = () => {
-    if (isCompleted) return 'Completed';
-    if (isRejected) return 'Rejected';
-    if (isPending) return 'Pending';
-    if (isAccepted) return 'Scheduled';
-    return status;
+  const getStatusColor = () => {
+    if (status === 'ended') return '#10b404';
+    if (status === 'accepted') return '#2196F3';
+    if (status === 'rejected') return '#FF0000';
+    if (status === 'pending') return '#D4AF37';
+    return '#E0E0E0';
   };
 
-  const [scheduleConsultation] = useScheduleConsultationMutation();
-  const [rejectConsultation] = useRejectConsultationMutation();
+  const getStatusText = () => {
+    if (status === 'ended') return 'Completed';
+    if (status === 'accepted') return 'Accepted';
+    if (status === 'pending') return 'Pending';
+    if (status === 'rejected') return 'Rejected';
+    return 'Unknown';
+  };
+
+  const [scheduleConsultation, { isLoading: isScheduling }] =
+    useScheduleConsultationMutation();
+  const [rejectConsultation, { isLoading: isRejecting }] =
+    useRejectConsultationMutation();
 
   const handleScheduleConsultation = async () => {
     try {
@@ -217,11 +236,12 @@ const SessionHistoryDetailsScreen = () => {
 
             {/* Status Badge */}
             <View
-              style={[styles.statusBadge, { backgroundColor: statusBgColor }]}
+              style={[
+                styles.statusBadge,
+                { backgroundColor: getStatusColor() },
+              ]}
             >
-              <SansText
-                style={[styles.statusBadgeText, { color: statusColor }]}
-              >
+              <SansText style={[styles.statusBadgeText, { color: '#ffff' }]}>
                 {getStatusText()}
               </SansText>
             </View>
@@ -234,59 +254,70 @@ const SessionHistoryDetailsScreen = () => {
             )}
 
             {/* Action Buttons */}
-            <View style={styles.actionRow}>
-              {isPending && (
-                <View style={{ flexDirection: 'row', gap: 6 }}>
-                  <ReusableButton
-                    title="Reject"
-                    onPress={handleRejectConsultation}
-                    variant="outline"
-                    style={{ flex: 1 }}
-                  />
-                  <ReusableButton
-                    title="Accept Consultation"
-                    onPress={handleScheduleConsultation}
-                    variant="solid"
-                    style={{ flex: 1 }}
-                  />
-                </View>
-              )}
-
-              {isCall && isAccepted && (
+            {isPending && (
+              <View style={{ flexDirection: 'row', gap: 6 }}>
                 <ReusableButton
-                  title="Join Session"
-                  onPress={handleJoinConsultation}
-                  variant="solid"
+                  title="Reject"
+                  onPress={handleRejectConsultation}
+                  variant="outline"
+                  style={{ flex: 1 }}
+                  borderColor="#C2371E"
+                  loading={isRejecting}
                 />
-              )}
-
-              {isChat && isAccepted && (
                 <ReusableButton
-                  title="Chat Now"
-                  onPress={() => handleChatNow(data?.data)}
+                  title="Accept"
+                  onPress={handleScheduleConsultation}
                   variant="solid"
+                  style={{ flex: 1 }}
+                  backgroundColor="#28A745"
+                  borderColor="#28A745"
+                  textColor="#fff"
+                  loading={isScheduling}
                 />
-              )}
+              </View>
+            )}
 
-              {(isCompleted || isAccepted || isRejected) && (
-                <TouchableOpacity
-                  style={[
-                    styles.actionButton,
-                    styles.primaryButton,
-                    styles.disabledButton,
-                  ]}
-                  disabled
-                >
-                  <SansText style={styles.primaryButtonText}>
-                    {isCompleted
-                      ? 'Completed'
-                      : isRejected
-                      ? 'Rejected'
-                      : 'N/A'}
-                  </SansText>
-                </TouchableOpacity>
-              )}
-            </View>
+            {isRejected && (
+              <ReusableButton
+                title="Accept Consultation"
+                onPress={handleScheduleConsultation}
+                variant="solid"
+                style={{ flex: 1 }}
+                backgroundColor="#28A745"
+                borderColor="#28A745"
+                textColor="#fff"
+                loading={isScheduling}
+              />
+            )}
+
+            {isCall && isAccepted && (
+              <ReusableButton
+                title="Join Session"
+                onPress={handleJoinConsultation}
+                variant="solid"
+                width="100%"
+              />
+            )}
+
+            {isChat && isAccepted && (
+              <ReusableButton
+                title="Chat Now"
+                onPress={() => handleChatNow(data?.data)}
+                variant="solid"
+                width="100%"
+              />
+            )}
+
+            {!isCompleted && !isRejected && !isPending && (
+              <ReusableButton
+                title="Mark as Completed"
+                onPress={handleEndConsultation}
+                variant="outline"
+                width="100%"
+                loading={isEnding}
+                style={{ marginTop: 10 }}
+              />
+            )}
           </View>
 
           {/* Session Summary */}
@@ -295,7 +326,7 @@ const SessionHistoryDetailsScreen = () => {
             meetingDate={meetingDate}
             bookedDate={bookedDate}
             method={method}
-            statusColor={statusColor}
+            statusColor={getStatusColor}
             getStatusText={getStatusText}
           />
           {/* Session Notes */}
@@ -401,6 +432,7 @@ const styles = StyleSheet.create({
 
   actionRow: {
     flexDirection: 'row',
+    width: '100%',
   },
 
   actionButton: {

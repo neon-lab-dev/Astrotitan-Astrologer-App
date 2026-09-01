@@ -1,11 +1,8 @@
-
-import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { StatusBar, useColorScheme } from 'react-native';
-import {
-  SafeAreaProvider,
-} from 'react-native-safe-area-context';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import RootNavigator from './navigation/RootNavigator';
-import { Provider} from 'react-redux';
+import { Provider } from 'react-redux';
 import { store } from './redux/store';
 import ScreenWrapper from './components/layout/ScreenWrapper';
 // import GlobalBottomSheet from './components/reusable/GlobalBottomSheet/GlobalBottomSheet';
@@ -16,6 +13,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { DevResetPanel } from './components/dev/DevResetPanel';
 import { useEffect } from 'react';
 import { loadAuth } from './utils/loadAuth';
+import ZoomProvider from './providers/ZoomProvider';
 
 function App() {
   const isDarkMode = useColorScheme() === 'dark';
@@ -25,9 +23,8 @@ function App() {
       try {
         /* LOAD AUTH */
         await loadAuth();
-
       } catch (error) {
-        console.log("APP INIT ERROR:", error);
+        console.log('APP INIT ERROR:', error);
       } finally {
         // setAppReady(true);
       }
@@ -37,18 +34,20 @@ function App() {
   }, []);
   return (
     <SafeAreaProvider>
-      <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} backgroundColor={"#EDDEAD"} />
+      <StatusBar
+        barStyle={isDarkMode ? 'light-content' : 'dark-content'}
+        backgroundColor={'#EDDEAD'}
+      />
       <AppContent />
     </SafeAreaProvider>
   );
 }
 
 function AppContent() {
-
   return (
     <Provider store={store}>
       <GestureHandlerRootView style={{ flex: 1 }}>
-      
+        <ZoomProvider>
           <NavigationContainer>
             <ScreenWrapper>
               <RootNavigator />
@@ -58,11 +57,10 @@ function AppContent() {
             <GlobalModal />
             {/* <DevResetPanel /> */}
           </NavigationContainer>
-   
+        </ZoomProvider>
       </GestureHandlerRootView>
     </Provider>
   );
 }
-
 
 export default App;
