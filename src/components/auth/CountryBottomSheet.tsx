@@ -283,7 +283,7 @@ const CountryBottomSheet = ({
       activeOpacity={0.7}
     >
       <View style={styles.countryContent}>
-        <Text style={styles.flag}>{item.flag}</Text>
+        <SansText style={styles.flag}>{item.flag}</SansText>
         <View style={styles.countryInfo}>
           <SatoshiText style={styles.countryName}>{item.name}</SatoshiText>
           <SansText style={styles.countryCode}>+{item.callingCode}</SansText>
