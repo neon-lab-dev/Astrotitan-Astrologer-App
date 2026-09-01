@@ -1,7 +1,4 @@
 /* eslint-disable react-native/no-inline-styles */
-import StarInactive from '@/assets/icons/navigation/star-inactive.svg';
-import ClockIcon from '@/assets/icons/visual/clock.svg';
-import StatusIcon from '@/assets/icons/visual/user-status.svg';
 import React, { useCallback, useMemo, useState } from 'react';
 import {
   Image,
@@ -9,28 +6,25 @@ import {
   StyleSheet,
   View,
   TouchableOpacity,
-  useWindowDimensions,
   RefreshControl,
 } from 'react-native';
 import ScreenWrapper from '../../../components/layout/ScreenWrapper';
 import { SatoshiText } from '../../../components/reusable/Text/SatoshiText';
 import { SansText } from '../../../components/reusable/Text/SansText';
-import ContentSection from '../../../components/reusable/ContentSectoin/ContentSection';
-import { useRoute } from '@react-navigation/native';
-import ReusableButton from '../../../components/reusable/ReusableButton/ReusableButton';
-import BottomSheetService from '../../../redux/features/ui/GlobalSheet/BottomSheetService';
-import ConnectGoogleSection from '../../../components/reusable/BottomSheet/ConnectGoogleSection';
 import AppBar from '../../../components/reusable/AppBar/AppBar';
-import { useNavigation } from '@react-navigation/native';
-import RenderHTML, {
-  defaultSystemFonts,
-  MixedStyleDeclaration,
-} from 'react-native-render-html';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import { formatDate } from '../../../utils/formatDate';
 import { useDispatch } from 'react-redux';
 import { setSelectedConsultation } from '../../../redux/features/consultation/consultationChatSlice';
-import { useGetSingleConsultationBookingByIdQuery } from '../../../redux/features/consultation/consultationApi';
+import {
+  useGetSingleConsultationBookingByIdQuery,
+  useRejectConsultationMutation,
+  useScheduleConsultationMutation,
+} from '../../../redux/features/consultation/consultationApi';
 import AnimatedScreen from '../../../components/layout/AnimatedScreen';
+import SessionNotes from '../../../components/SessionDetailsPage/SessionNotes/SessionNotes';
+import SessionSummary from '../../../components/SessionDetailsPage/SessionSummary/SessionSummary';
+import ReusableButton from '../../../components/reusable/ReusableButton/ReusableButton';
 
 const SessionHistoryDetailsScreen = () => {
   const navigation = useNavigation<any>();
@@ -52,7 +46,6 @@ const SessionHistoryDetailsScreen = () => {
     method,
     bookedSlot,
     slotId,
-    meetingLink,
     recommendations,
     consultationFor,
     status,
@@ -60,8 +53,8 @@ const SessionHistoryDetailsScreen = () => {
     createdAt,
   } = data?.data || {};
 
-  const startTime = bookedSlot?.startTime || null;
-  const endTime = bookedSlot?.endTime || null;
+  // const startTime = bookedSlot?.startTime || null;
+  // const endTime = bookedSlot?.endTime || null;
   const meetingDate = slotId?.meetingDate || null;
   const userName = `${user?.firstName} ${user?.lastName}` || 'N/A';
   const image = user?.profilePicture || 'https://via.placeholder.com/84';
@@ -74,66 +67,56 @@ const SessionHistoryDetailsScreen = () => {
   /*
     CONDITIONS
   */
-  const isCompleted = status === 'Completed' || status === 'ended';
-  const isCancelled = status === 'Cancelled';
-  const isMissed = status === 'Missed';
+  const isCompleted = status === 'ended';
+  const isRejected = status === 'rejected';
   const isPending = status === 'pending';
-  const isScheduled = status === 'scheduled';
+  const isAccepted = status === 'accepted';
+  const isCall = method === 'call';
+  const isChat = method === 'chat';
 
   /*
     STATUS COLOR
   */
   const statusColor = useMemo(() => {
     if (isCompleted) return '#1B7726';
-    if (isCancelled) return '#882715';
-    if (isMissed) return '#4A4A4A';
+    if (isRejected) return '#882715';
     if (isPending) return '#FFB74D';
-    if (isScheduled) return '#D4AF37';
+    if (isAccepted) return '#D4AF37';
     return '#4A4A4A';
-  }, [isCompleted, isCancelled, isMissed, isPending, isScheduled]);
+  }, [isCompleted, isRejected, isPending, isAccepted]);
 
   const statusBgColor = useMemo(() => {
     if (isCompleted) return '#E8F5E9';
-    if (isCancelled) return '#FDE8E5';
-    if (isMissed) return '#F0F0F0';
+    if (isRejected) return '#FDE8E5';
     if (isPending) return '#FFF8E7';
-    if (isScheduled) return '#FFF8E7';
+    if (isAccepted) return '#FFF8E7';
     return '#F0F0F0';
-  }, [isCompleted, isCancelled, isMissed, isPending, isScheduled]);
+  }, [isCompleted, isRejected, isPending, isAccepted]);
 
   const getStatusText = () => {
     if (isCompleted) return 'Completed';
-    if (isCancelled) return 'Cancelled';
-    if (isMissed) return 'Missed';
+    if (isRejected) return 'Rejected';
     if (isPending) return 'Pending';
-    if (isScheduled) return 'Scheduled';
+    if (isAccepted) return 'Scheduled';
     return status;
   };
 
-  // Handle Schedule Call
-  const onScheduleCallPress = () => {
-    BottomSheetService.open(
-      React.createElement(ConnectGoogleSection as React.ComponentType<any>, {
-        consultationId: consultationId,
-        userName: userName,
-        userImage: image,
-        date: slotId?.date,
-        time: `${bookedSlot?.startTime || startTime} - ${
-          bookedSlot?.endTime || endTime
-        }`,
-        onCancel: BottomSheetService.close,
-      }),
-      {
-        height: 400,
-        hasGradient: true,
-      },
-    );
+  const [scheduleConsultation] = useScheduleConsultationMutation();
+  const [rejectConsultation] = useRejectConsultationMutation();
+
+  const handleScheduleConsultation = async () => {
+    try {
+      await scheduleConsultation(consultationId).unwrap();
+    } catch (error) {
+      console.log(error);
+    }
   };
 
-  // Handle Join Call
-  const handleJoinCall = () => {
-    if (meetingLink) {
-      console.log('Joining call:', meetingLink);
+  const handleRejectConsultation = async () => {
+    try {
+      await rejectConsultation(consultationId).unwrap();
+    } catch (error) {
+      console.log(error);
     }
   };
 
@@ -172,74 +155,6 @@ const SessionHistoryDetailsScreen = () => {
       consultationId: consultationId,
       otherParticipantName: userName,
     });
-  };
-
-  const { width } = useWindowDimensions();
-  const systemFonts = [
-    ...defaultSystemFonts,
-    'Satoshi-Regular',
-    'Satoshi-Medium',
-    'Satoshi-Bold',
-  ];
-  const htmlStyles: Record<string, MixedStyleDeclaration> = {
-    body: {
-      color: '#4A4A4A',
-      fontSize: 16,
-      lineHeight: 28,
-      fontFamily: 'Satoshi-Regular',
-    },
-
-    div: {
-      color: '#4A4A4A',
-      fontSize: 16,
-      lineHeight: 28,
-      fontFamily: 'Satoshi-Regular',
-      marginBottom: 12,
-    },
-
-    p: {
-      color: '#4A4A4A',
-      fontSize: 16,
-      lineHeight: 28,
-      fontFamily: 'Satoshi-Regular',
-      marginBottom: 12,
-    },
-
-    b: {
-      fontFamily: 'Satoshi-Bold',
-      color: '#1A1A1A',
-    },
-
-    strong: {
-      fontFamily: 'Satoshi-Bold',
-      color: '#1A1A1A',
-    },
-
-    i: {
-      fontStyle: 'italic',
-    },
-
-    em: {
-      fontStyle: 'italic',
-    },
-
-    ul: {
-      marginVertical: 10,
-      fontFamily: 'Satoshi-Regular',
-    },
-
-    ol: {
-      marginVertical: 10,
-      fontFamily: 'Satoshi-Regular',
-    },
-
-    li: {
-      color: '#4A4A4A',
-      fontSize: 16,
-      lineHeight: 28,
-      fontFamily: 'Satoshi-Regular',
-      marginBottom: 6,
-    },
   };
 
   const onRefresh = useCallback(async () => {
@@ -318,193 +233,76 @@ const SessionHistoryDetailsScreen = () => {
               </View>
             )}
 
-            {/* Action Buttons - Based on Status */}
+            {/* Action Buttons */}
             <View style={styles.actionRow}>
-              {method === 'call' ? (
-                <>
-                  {isPending && (
-                    <TouchableOpacity
-                      style={[styles.actionButton, styles.primaryButton]}
-                      onPress={onScheduleCallPress}
-                    >
-                      <SansText style={styles.primaryButtonText}>
-                        Schedule Call
-                      </SansText>
-                    </TouchableOpacity>
-                  )}
+              {isPending && (
+                <View style={{ flexDirection: 'row', gap: 6 }}>
+                  <ReusableButton
+                    title="Reject"
+                    onPress={handleRejectConsultation}
+                    variant="outline"
+                    style={{ flex: 1 }}
+                  />
+                  <ReusableButton
+                    title="Accept Consultation"
+                    onPress={handleScheduleConsultation}
+                    variant="solid"
+                    style={{ flex: 1 }}
+                  />
+                </View>
+              )}
 
-                  {isScheduled && (
-                    <TouchableOpacity
-                      style={[styles.actionButton, styles.primaryButton]}
-                      onPress={handleJoinCall}
-                    >
-                      <SansText style={styles.primaryButtonText}>
-                        Join Call
-                      </SansText>
-                    </TouchableOpacity>
-                  )}
+              {isCall && isAccepted && (
+                <ReusableButton
+                  title="Join Session"
+                  onPress={handleJoinConsultation}
+                  variant="solid"
+                />
+              )}
 
-                  {(isCompleted || isCancelled || isMissed) && (
-                    <TouchableOpacity
-                      style={[
-                        styles.actionButton,
-                        styles.primaryButton,
-                        styles.disabledButton,
-                      ]}
-                      disabled
-                    >
-                      <SansText style={styles.primaryButtonText}>
-                        {isCompleted
-                          ? 'Completed'
-                          : isCancelled
-                          ? 'Cancelled'
-                          : 'Missed'}
-                      </SansText>
-                    </TouchableOpacity>
-                  )}
-                </>
-              ) : (
-                // Chat Session
-                <>
-                  {(isPending || isScheduled) && (
-                    <TouchableOpacity
-                      style={[styles.actionButton, styles.primaryButton]}
-                      onPress={() => handleChatNow(data?.data)}
-                    >
-                      <SansText style={styles.primaryButtonText}>
-                        Chat Now
-                      </SansText>
-                    </TouchableOpacity>
-                  )}
+              {isChat && isAccepted && (
+                <ReusableButton
+                  title="Chat Now"
+                  onPress={() => handleChatNow(data?.data)}
+                  variant="solid"
+                />
+              )}
 
-                  {(isCompleted || isCancelled || isMissed) && (
-                    <TouchableOpacity
-                      style={[
-                        styles.actionButton,
-                        styles.primaryButton,
-                        styles.disabledButton,
-                      ]}
-                      disabled
-                    >
-                      <SansText style={styles.primaryButtonText}>
-                        {isCompleted
-                          ? 'Completed'
-                          : isCancelled
-                          ? 'Cancelled'
-                          : 'Missed'}
-                      </SansText>
-                    </TouchableOpacity>
-                  )}
-                </>
+              {(isCompleted || isAccepted || isRejected) && (
+                <TouchableOpacity
+                  style={[
+                    styles.actionButton,
+                    styles.primaryButton,
+                    styles.disabledButton,
+                  ]}
+                  disabled
+                >
+                  <SansText style={styles.primaryButtonText}>
+                    {isCompleted
+                      ? 'Completed'
+                      : isRejected
+                      ? 'Rejected'
+                      : 'N/A'}
+                  </SansText>
+                </TouchableOpacity>
               )}
             </View>
           </View>
 
-          <TouchableOpacity
-            onPress={handleJoinConsultation}
-            style={styles.chatButton}
-          >
-            <SansText>join</SansText>
-          </TouchableOpacity>
-
           {/* Session Summary */}
-          <View style={styles.section}>
-            <ContentSection
-              title="Session Summary"
-              sectionStyle={styles.sectionHeader}
-              titleFontSize={20}
-            />
-
-            <View style={styles.summaryCard}>
-              {/* Stats Grid */}
-              <View style={styles.statsGrid}>
-                {/* Duration */}
-                <View style={styles.statItem}>
-                  <View style={styles.statIconWrapper}>
-                    <ClockIcon width={20} height={20} />
-                  </View>
-                  <SansText style={styles.statLabel}>
-                    {method === 'call' ? 'Meeting' : 'Booked At'}
-                  </SansText>
-                  <SatoshiText style={styles.statValue}>
-                    {method === 'call' ? formatDate(meetingDate) : bookedDate}
-                  </SatoshiText>
-                </View>
-
-                {/* Status */}
-                <View style={styles.statItem}>
-                  <View style={styles.statIconWrapper}>
-                    <StatusIcon width={20} height={20} />
-                  </View>
-                  <SansText style={styles.statLabel}>Status</SansText>
-                  <SatoshiText
-                    style={[styles.statValue, { color: statusColor }]}
-                  >
-                    {getStatusText()}
-                  </SatoshiText>
-                </View>
-
-                {/* Rating */}
-                <View style={styles.statItem}>
-                  <View style={styles.statIconWrapper}>
-                    <StarInactive width={20} height={20} />
-                  </View>
-                  <SansText style={styles.statLabel}>Ratings</SansText>
-                  <SatoshiText style={styles.statValue}>
-                    {rating || 'Not Rated'}
-                  </SatoshiText>
-                </View>
-              </View>
-            </View>
-          </View>
-
+          <SessionSummary
+            rating={rating}
+            meetingDate={meetingDate}
+            bookedDate={bookedDate}
+            method={method}
+            statusColor={statusColor}
+            getStatusText={getStatusText}
+          />
           {/* Session Notes */}
-          <View style={styles.section}>
-            <ContentSection
-              title="Session Notes"
-              sectionStyle={styles.sectionHeader}
-              titleFontSize={20}
-            />
-
-            {recommendations ? (
-              <View style={styles.notesContainer}>
-                <RenderHTML
-                  contentWidth={width - 40}
-                  source={{
-                    html: recommendations || '',
-                  }}
-                  systemFonts={systemFonts}
-                  tagsStyles={htmlStyles}
-                  baseStyle={{
-                    fontFamily: 'Satoshi',
-                    color: '#4A4A4A',
-                    fontSize: 16,
-                    lineHeight: 28,
-                  }}
-                />
-              </View>
-            ) : (
-              <View style={styles.emptyNotesContainer}>
-                <SansText style={styles.emptyNotesText}>
-                  No session notes available
-                </SansText>
-                <ReusableButton
-                  title="Provide Note"
-                  onPress={() => {
-                    navigation.navigate('ProvideNotes', {
-                      consultationId: consultationId,
-                    });
-                  }}
-                  variant="outline"
-                  borderColor="#D4AF37"
-                  textColor="#D4AF37"
-                  width={160}
-                  height={40}
-                  style={styles.provideNoteButton}
-                />
-              </View>
-            )}
-          </View>
+          <SessionNotes
+            recommendations={recommendations}
+            consultationId={consultationId}
+          />
         </ScrollView>
       </View>
     </ScreenWrapper>
@@ -627,132 +425,6 @@ const styles = StyleSheet.create({
     opacity: 0.7,
   },
 
-  // Section
-  section: {
-    marginTop: 24,
-  },
-
-  sectionHeader: {
-    marginBottom: 12,
-  },
-
-  // Summary Card
-  summaryCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: '#F0F0F0',
-    padding: 16,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 1,
-    },
-    shadowOpacity: 0.04,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  statsGrid: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-
-  statItem: {
-    flex: 1,
-    alignItems: 'center',
-  },
-
-  statIconWrapper: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#F8F9FA',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 6,
-  },
-
-  statLabel: {
-    fontSize: 12,
-    color: '#999999',
-    fontFamily: 'GeneralSans-Regular',
-    marginBottom: 2,
-  },
-
-  statValue: {
-    fontSize: 13,
-    color: '#0D0D0D',
-    fontFamily: 'Satoshi-Bold',
-    textAlign: 'center',
-  },
-
-  // Notes
-  notesContainer: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: '#F0F0F0',
-    padding: 16,
-    gap: 12,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 1,
-    },
-    shadowOpacity: 0.04,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-
-  noteRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: 10,
-  },
-
-  bulletDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: '#D4AF37',
-    marginTop: 8,
-  },
-
-  noteText: {
-    flex: 1,
-    fontSize: 14,
-    color: '#4A4A4A',
-    fontFamily: 'GeneralSans-Regular',
-    lineHeight: 22,
-  },
-
-  emptyNotesContainer: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: '#F0F0F0',
-    padding: 24,
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 1,
-    },
-    shadowOpacity: 0.04,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-
-  emptyNotesText: {
-    fontSize: 14,
-    color: '#999999',
-    fontFamily: 'GeneralSans-Regular',
-    marginBottom: 16,
-  },
-
-  provideNoteButton: {
-    borderRadius: 10,
-  },
   loaderContainer: {
     flex: 1,
     justifyContent: 'center',
@@ -761,15 +433,5 @@ const styles = StyleSheet.create({
   loadingText: {
     fontSize: 16,
     color: '#8E8E93',
-  },
-
-    chatButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#D4AF37',
-    paddingVertical: 14,
-    borderRadius: 12,
-    gap: 10,
   },
 });

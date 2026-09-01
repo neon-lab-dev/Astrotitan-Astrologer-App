@@ -69,16 +69,6 @@ const consultationApi = baseApi.injectEndpoints({
       providesTags: ["consultation"],
     }),
 
-    changeBookingStatus: builder.mutation({
-      query: ({ id, data }) => ({
-        url: `/consultation/change-status/${id}`,
-        method: "PATCH",
-        body: data,
-        credentials: "include",
-      }),
-      invalidatesTags: ["consultation"],
-    }),
-
 
     // Join Zoom consultation
     joinConsultation: builder.query<
@@ -121,9 +111,18 @@ const consultationApi = baseApi.injectEndpoints({
       invalidatesTags: ["consultation"],
     }),
 
-    scheduleMeeting: builder.mutation({
+    scheduleConsultation: builder.mutation({
       query: (id) => ({
-        url: `/consultation/schedule-meeting/${id}`,
+        url: `/consultation/schedule/${id}`,
+        method: "POST",
+        credentials: "include",
+      }),
+      invalidatesTags: ["consultation"],
+    }),
+
+    rejectConsultation: builder.mutation({
+      query: (id) => ({
+        url: `/consultation/reject/${id}`,
         method: "POST",
         credentials: "include",
       }),
@@ -146,10 +145,10 @@ export const {
   useGetMyConsultationBookingsQuery,
   useGetSingleConsultationBookingsQuery,
   useGetSingleConsultationBookingByIdQuery,
-  useChangeBookingStatusMutation,
   useLazyJoinConsultationQuery,
   useStartConsultationMutation,
   useEndConsultationSessionMutation,
-  useScheduleMeetingMutation,
+  useScheduleConsultationMutation,
+  useRejectConsultationMutation,
   useProvideNotesMutation,
 } = consultationApi;
