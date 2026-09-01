@@ -1,10 +1,6 @@
-import React from "react";
-import {
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import React from 'react';
+import { StyleSheet, TouchableOpacity, View } from 'react-native';
+import { ICONS } from '../../../assets/svg';
 
 interface CallControlsProps {
   isMuted: boolean;
@@ -27,117 +23,71 @@ const CallControls = ({
   onEnd,
   isAstrologer,
 }: CallControlsProps) => {
+  const PhoneDownIcon = ICONS.PhoneDown;
+  const MuteWhite = ICONS.MuteWhite;
+  const MuteRed = ICONS.MuteRed;
+  const VideoCallRed = ICONS.VideoCallRed;
+  const VideoCallWhite = ICONS.VideoCallWhite;
+
   return (
     <View style={styles.container}>
+      {/* Mute Button - White bg + red icon when muted */}
       <TouchableOpacity
-        style={styles.control}
+        style={[styles.control, isMuted && styles.activeButton]}
         onPress={onToggleMute}
       >
-        <Text style={styles.icon}>
-          {isMuted ? "🔇" : "🎤"}
-        </Text>
-
-        <Text style={styles.label}>
-          {isMuted ? "Unmute" : "Mute"}
-        </Text>
+        {isMuted ? (
+          <MuteRed width={24} height={24} />
+        ) : (
+          <MuteWhite width={24} height={24} />
+        )}
       </TouchableOpacity>
-
+      {/* End/Leave Button */}
       <TouchableOpacity
-        style={styles.control}
+        style={[styles.control, styles.endButton]}
+        onPress={isAstrologer ? onEnd : onLeave}
+      >
+        <PhoneDownIcon width={30} height={30} />
+      </TouchableOpacity>
+      {/* Video Button - White bg + red icon when video is off */}
+      <TouchableOpacity
+        style={[styles.control, !isVideoOn && styles.activeButton]}
         onPress={onToggleVideo}
       >
-        <Text style={styles.icon}>
-          {isVideoOn ? "📹" : "🚫"}
-        </Text>
-
-        <Text style={styles.label}>
-          {isVideoOn ? "Camera" : "Video Off"}
-        </Text>
+        {isVideoOn ? (
+          <VideoCallWhite width={24} height={24} />
+        ) : (
+          <VideoCallRed width={24} height={24} />
+        )}
       </TouchableOpacity>
-
-      <TouchableOpacity
-        style={styles.control}
-        onPress={onSwitchCamera}
-      >
-        <Text style={styles.icon}>
-          🔄
-        </Text>
-
-        <Text style={styles.label}>
-          Flip
-        </Text>
-      </TouchableOpacity>
-
-      {isAstrologer ? (
-        <TouchableOpacity
-          style={[
-            styles.control,
-            styles.endButton,
-          ]}
-          onPress={onEnd}
-        >
-          <Text style={styles.icon}>
-            📞
-          </Text>
-
-          <Text style={styles.label}>
-            End
-          </Text>
-        </TouchableOpacity>
-      ) : (
-        <TouchableOpacity
-          style={[
-            styles.control,
-            styles.endButton,
-          ]}
-          onPress={onLeave}
-        >
-          <Text style={styles.icon}>
-            📞
-          </Text>
-
-          <Text style={styles.label}>
-            Leave
-          </Text>
-        </TouchableOpacity>
-      )}
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    position: "absolute",
-    bottom: 24,
+    position: 'absolute',
+    bottom: 40,
     left: 0,
     right: 0,
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-    gap: 14,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 20,
   },
-
   control: {
     width: 64,
     height: 64,
     borderRadius: 32,
-    backgroundColor: "rgba(0,0,0,0.55)",
-    justifyContent: "center",
-    alignItems: "center",
+    backgroundColor: 'rgba(30, 30, 40, 0.8)',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-
+  activeButton: {
+    backgroundColor: '#FFFFFF',
+  },
   endButton: {
-    backgroundColor: "#D92D20",
-  },
-
-  icon: {
-    fontSize: 21,
-  },
-
-  label: {
-    color: "#FFFFFF",
-    fontSize: 9,
-    marginTop: 2,
+    backgroundColor: '#D92D20',
   },
 });
 

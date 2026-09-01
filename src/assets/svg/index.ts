@@ -65,6 +65,11 @@ import RightArrow from "@/assets/icons/visual/right-arrow.svg";
 import UploadFile from "@/assets/icons/visual/upload-file.svg";
 import Kundli from "@/assets/icons/visual/kundli.svg";
 import KundliActive from "@/assets/icons/visual/kundli-active.svg";
+import MuteWhite from "@/assets/icons/actions/mute-white.svg";
+import MuteRed from "@/assets/icons/actions/mute-red.svg";
+import VideoCallRed from "@/assets/icons/actions/video-call-red.svg";
+import VideoCallWhite from "@/assets/icons/actions/video-call-white.svg";
+import PhoneDown from "@/assets/icons/actions/phone-down.svg";
 
 export const ICONS = {
   homeActive: HomeActive,
@@ -125,7 +130,12 @@ export const ICONS = {
   GenerateKundli: GenerateKundli,
   UploadFile: UploadFile,
   Kundli: Kundli,
-  KundliActive: KundliActive
+  KundliActive: KundliActive,
+  PhoneDown: PhoneDown,
+  MuteWhite: MuteWhite,
+  MuteRed: MuteRed,
+  VideoCallRed: VideoCallRed,
+  VideoCallWhite: VideoCallWhite
 };
 
 export type IconName = keyof typeof ICONS;
