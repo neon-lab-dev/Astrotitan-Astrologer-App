@@ -1,6 +1,13 @@
 /* eslint-disable react-native/no-inline-styles */
 import React, { useRef, useState } from 'react';
-import { Alert, StyleSheet, View } from 'react-native';
+import {
+  Alert,
+  StyleSheet,
+  View,
+  ScrollView,
+  KeyboardAvoidingView,
+  Platform,
+} from 'react-native';
 import { SansText } from '../../../components/reusable/Text/SansText';
 import {
   RichEditor,
@@ -53,58 +60,73 @@ const ProvideNotes = () => {
   return (
     <ScreenWrapper>
       <AppBar title="Provide Notes" />
-      <View style={styles.container}>
-        <View>
-          <SansText style={styles.label}>Notes</SansText>
-          <RichToolbar
-            editor={richText}
-            selectedIconTint="#111"
-            iconTint="#575757"
-            actions={[
-              actions.setBold,
-              actions.setItalic,
-              actions.insertBulletsList,
-              actions.insertOrderedList,
-              actions.heading1,
-              actions.heading2,
-              actions.heading3,
-              actions.undo,
-              actions.redo,
-            ]}
-            style={styles.toolbar}
-          />
-          <RichEditor
-            ref={richText}
-            placeholder="Add your recommendations ..."
-            initialHeight={320}
-            editorStyle={{
-              backgroundColor: '#E9D8A6',
-              color: '#0D0D0D',
-              placeholderColor: '#575757',
-              contentCSSText: `
-                              font-size: 16px;
-                              line-height: 26px;
-                              padding: 16px;
-                              color: #0D0D0D;
-                            `,
-            }}
-            style={styles.editor}
-            onChange={html => {
-              setContent(html);
-            }}
-          />
-
-          {/* Submit Button */}
-          <View style={styles.bottomContainer}>
-            <ReusableButton
-              title={isLoading ? 'Please wait...' : 'Submit'}
-              width="100%"
-              disabled={isLoading}
-              onPress={handleSubmit}
+      <KeyboardAvoidingView
+        style={styles.keyboardAvoiding}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      >
+        <View style={styles.container}>
+          {/* Static Header Section (Label + Toolbar) */}
+          <View style={styles.headerSection}>
+            <SansText style={styles.label}>Notes</SansText>
+            <RichToolbar
+              editor={richText}
+              selectedIconTint="#111"
+              iconTint="#575757"
+              actions={[
+                actions.setBold,
+                actions.setItalic,
+                actions.insertBulletsList,
+                actions.insertOrderedList,
+                actions.heading1,
+                actions.heading2,
+                actions.heading3,
+                actions.undo,
+                actions.redo,
+              ]}
+              style={styles.toolbar}
             />
           </View>
+
+          {/* Scrollable Editor Area */}
+          <ScrollView
+            style={styles.editorScroll}
+            contentContainerStyle={styles.editorScrollContent}
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={true}
+          >
+            <RichEditor
+              ref={richText}
+              placeholder="Add your recommendations ..."
+              initialContentSize={320}
+              editorStyle={{
+                backgroundColor: '#E9D8A6',
+                color: '#0D0D0D',
+                placeholderColor: '#575757',
+                contentCSSText: `
+                                font-size: 16px;
+                                line-height: 26px;
+                                padding: 16px;
+                                color: #0D0D0D;
+                              `,
+              }}
+              style={styles.editor}
+              onChange={html => {
+                setContent(html);
+              }}
+            />
+
+            {/* Submit Button (Scrolls with content) */}
+            <View style={styles.buttonContainer}>
+              <ReusableButton
+                title={isLoading ? 'Please wait...' : 'Submit'}
+                width="100%"
+                disabled={isLoading}
+                onPress={handleSubmit}
+              />
+            </View>
+          </ScrollView>
         </View>
-      </View>
+      </KeyboardAvoidingView>
     </ScreenWrapper>
   );
 };
@@ -112,17 +134,28 @@ const ProvideNotes = () => {
 export default ProvideNotes;
 
 const styles = StyleSheet.create({
+  keyboardAvoiding: {
+    flex: 1,
+  },
+
   container: {
     flex: 1,
-    backgroundColor: '#F8F1D7',
     paddingHorizontal: 16,
   },
+
+  // Static Header Section (Label + Toolbar stay fixed)
+  headerSection: {
+    zIndex: 10,
+    paddingBottom: 0,
+  },
+
   label: {
     fontSize: 16,
     color: '#0D0D0D',
     marginBottom: 10,
     marginTop: 18,
   },
+
   toolbar: {
     backgroundColor: '#FBF7EB',
     borderTopLeftRadius: 16,
@@ -132,6 +165,16 @@ const styles = StyleSheet.create({
     borderColor: '#D4AF37',
     minHeight: 54,
   },
+
+  // Scrollable Editor Area
+  editorScroll: {
+    flex: 1,
+  },
+
+  editorScrollContent: {
+    paddingBottom: 40,
+  },
+
   editor: {
     minHeight: 320,
     borderWidth: 1.2,
@@ -141,14 +184,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#E9D8A6',
     overflow: 'hidden',
   },
-  bottomContainer: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    paddingHorizontal: 16,
-    paddingTop: 12,
-    paddingBottom: 24,
-    backgroundColor: '#F8F1D7',
+
+  buttonContainer: {
+    marginTop: 20,
   },
 });

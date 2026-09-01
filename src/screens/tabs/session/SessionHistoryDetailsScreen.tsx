@@ -54,6 +54,9 @@ const SessionHistoryDetailsScreen = () => {
             try {
               await endConsultationSession(consultationId).unwrap();
               Alert.alert('Success', 'Consultation marked as completed.');
+              navigation.navigate('ProvideNotes', {
+                consultationId: consultationId,
+              });
             } catch (error) {
               console.log(error);
               Alert.alert('Error', 'Failed to mark consultation as completed.');
