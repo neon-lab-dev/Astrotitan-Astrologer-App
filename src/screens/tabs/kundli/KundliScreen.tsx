@@ -75,7 +75,7 @@ const KundliScreen = () => {
                 </SatoshiText>
 
                 <SansText style={styles.emptySubtext}>
-                  You haven't been assigned any kundli task yet. to get started.
+                  You haven't been assigned any kundli task yet.
                 </SansText>
               </View>
             ) : (

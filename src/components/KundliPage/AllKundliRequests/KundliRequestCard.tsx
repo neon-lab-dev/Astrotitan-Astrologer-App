@@ -18,6 +18,8 @@ const getStatusColor = (status: string) => {
       return '#2196F3';
     case 'completed':
       return '#4CAF50';
+    case 'rejected':
+      return '#FF3B30';
     case 'cancelled':
       return '#FF3B30';
     default:
@@ -31,6 +33,8 @@ const getStatusLabel = (status: string) => {
       return 'Pending';
     case 'accepted':
       return 'Accepted';
+    case 'rejected':
+      return 'Rejected';
     case 'completed':
       return 'Completed';
     case 'cancelled':
@@ -119,7 +123,7 @@ const KundliRequestCard = ({ item, onPress }: Props) => {
         </View>
         <View style={styles.bottomRow}>
           <SansText style={styles.typeText}>
-            kundli Type: {getKundliTypeLabel(item.kundliType) || "N/A"}
+            kundli Type: {getKundliTypeLabel(item.kundliType) || 'N/A'}
           </SansText>
           <View style={styles.nextBtn}>
             <IconComponent width={16} height={16} />
@@ -180,6 +184,7 @@ const styles = StyleSheet.create({
   statusText: {
     fontSize: 10,
     fontFamily: 'Satoshi-Medium',
+    textTransform: 'capitalize',
   },
   bottomRow: {
     flexDirection: 'row',

@@ -42,6 +42,24 @@ const kundliRequestApi = baseApi.injectEndpoints({
             }),
             invalidatesTags: ["kundliRequest"],
         }),
+
+        acceptRequest: builder.mutation({
+            query: (id) => ({
+                url: `/kundli-request/accept/${id}`,
+                method: "PUT",
+                credentials: "include",
+            }),
+            invalidatesTags: ["kundliRequest"],
+        }),
+
+        rejectRequest: builder.mutation({
+            query: (id) => ({
+                url: `/kundli-request/reject/${id}`,
+                method: "PUT",
+                credentials: "include",
+            }),
+            invalidatesTags: ["kundliRequest"],
+        }),
     }),
 });
 
@@ -49,4 +67,6 @@ export const {
     useGetMyKundliRequestsQuery,
     useGetSingleKundliRequestQuery,
     useSubmitKundliReportMutation,
+    useAcceptRequestMutation,
+    useRejectRequestMutation,
 } = kundliRequestApi;

@@ -54,6 +54,8 @@ const AppBar = ({
   const unreadCount = myNotifications?.data?.filter(
     (notification: any) => !notification.isRead,
   ).length;
+
+  
   const handleBack = useCallback(() => {
     if (onPressBack) {
       onPressBack();

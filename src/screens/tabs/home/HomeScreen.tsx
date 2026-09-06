@@ -52,9 +52,8 @@ const HomeScreen = () => {
   } = useGetMyConsultationBookingsQuery({});
   const bookings = consultationBookings?.data?.data || [];
   const { data: myNotifications } = useGetMyNotificationsQuery({});
-  const [notifications, setNotifications] = useState<any[]>([]);
-  const unreadCount = notifications.filter(
-    notification => !notification.isRead,
+  const unreadCount = myNotifications?.data?.filter(
+    (notification: any) => !notification.isRead,
   ).length;
   const fetchLatestUser = useCallback(async () => {
     try {
@@ -130,13 +129,9 @@ const HomeScreen = () => {
             </View>
 
             <View style={styles.headerRight}>
-              <TouchableOpacity
-                style={styles.notificationButton}
-                onPress={() => navigation.navigate('NotificationScreen')}
-              >
                 <IconButton
+                  size={35}
                   Icon={NotificationIcon}
-                  size={20}
                   iconColor="#0D0D0D"
                   onPress={() => {
                     navigation.navigate('NotificationScreen');
@@ -144,14 +139,6 @@ const HomeScreen = () => {
                   update={unreadCount > 0}
                   updateCount={unreadCount}
                 />
-                {unreadCount > 0 && (
-                  <View style={styles.notificationBadge}>
-                    <SansText style={styles.notificationCount}>
-                      {unreadCount > 9 ? '9+' : unreadCount}
-                    </SansText>
-                  </View>
-                )}
-              </TouchableOpacity>
               <TouchableOpacity
                 style={styles.profileButton}
                 onPress={() =>

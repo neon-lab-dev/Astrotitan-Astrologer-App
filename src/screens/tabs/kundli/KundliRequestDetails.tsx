@@ -14,14 +14,21 @@ import {
 import { useRoute, useNavigation } from '@react-navigation/native';
 import { SansText } from '../../../components/reusable/Text/SansText';
 import { SatoshiText } from '../../../components/reusable/Text/SatoshiText';
-import { useGetSingleKundliRequestQuery } from '../../../redux/features/kundliRequest/kundliRequestApi';
+import {
+  useAcceptRequestMutation,
+  useGetSingleKundliRequestQuery,
+  useRejectRequestMutation,
+} from '../../../redux/features/kundliRequest/kundliRequestApi';
 import ReusableButton from '../../../components/reusable/ReusableButton/ReusableButton';
 import { getKundliTypeLabel } from './../../../components/KundliPage/AllKundliRequests/KundliRequestCard';
+import AnimatedScreen from '../../../components/layout/AnimatedScreen';
+import ScreenWrapper from '../../../components/layout/ScreenWrapper';
 
 const STATUS_COLORS: any = {
   completed: { bg: '#E8F5E9', text: '#2E7D32', dot: '#4CAF50' },
   accepted: { bg: '#E3F2FD', text: '#1565C0', dot: '#2196F3' },
   pending: { bg: '#FFF8E1', text: '#827717', dot: '#FFC107' },
+  rejected: { bg: '#FFEBEE', text: '#C62828', dot: '#F44336' },
   cancelled: { bg: '#FFEBEE', text: '#C62828', dot: '#F44336' },
 };
 
@@ -31,8 +38,28 @@ const KundliRequestDetails = () => {
   const id = route.params?.id;
   const [refreshing, setRefreshing] = useState(false);
 
+  const [acceptRequest, {isLoading:isAccepting}] = useAcceptRequestMutation();
+  const [rejectRequest, {isLoading:isRejecting}] = useRejectRequestMutation();
+
   const { data, refetch, isLoading } = useGetSingleKundliRequestQuery(id);
   const request = data?.data || data;
+  const isPending = request?.status === 'pending';
+
+  const handleAcceptRequest = async () => {
+    try {
+      await acceptRequest(id).unwrap();
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const handleRejectRequest = async () => {
+    try {
+      await rejectRequest(id).unwrap();
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -47,7 +74,10 @@ const KundliRequestDetails = () => {
       if (supported) {
         await Linking.openURL(url);
       } else {
-        Alert.alert('Error', 'Unable to open the report. Please try again later.');
+        Alert.alert(
+          'Error',
+          'Unable to open the report. Please try again later.',
+        );
       }
     } catch (error) {
       Alert.alert('Error', 'Failed to open the report.');
@@ -79,177 +109,220 @@ const KundliRequestDetails = () => {
       : 'N/A';
 
   return (
-    <SafeAreaView style={styles.mainContainer}>
-      <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
+    <AnimatedScreen>
+      <ScreenWrapper>
+        <SafeAreaView style={styles.mainContainer}>
+          <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
 
-      {/* --- SLIM PROFESSIONAL HEADER --- */}
-      <View style={styles.header}>
-        <View style={styles.navBar}>
-          <TouchableOpacity
-            onPress={() => navigation.goBack()}
-            style={styles.backButton}
-          >
-            <SansText style={styles.backIcon}>←</SansText>
-            <SansText style={styles.backLabel}>Back</SansText>
-          </TouchableOpacity>
-          <View
-            style={[styles.statusPill, { backgroundColor: statusStyle.bg }]}
-          >
-            <View
-              style={[styles.statusDot, { backgroundColor: statusStyle.dot }]}
-            />
-            <SansText style={[styles.statusText, { color: statusStyle.text }]}>
-              {request.status?.toUpperCase()}
-            </SansText>
-          </View>
-        </View>
-
-        <View style={styles.headerTitleArea}>
-          <SatoshiText style={styles.headerId}>
-            Request #{request._id?.slice(-8).toUpperCase()}
-          </SatoshiText>
-          <SansText style={styles.headerSub}>
-            {request.requestType === 'generateKundli'
-              ? 'Detailed Kundli Generation'
-              : 'Expert Kundli Analysis'}
-          </SansText>
-        </View>
-      </View>
-
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={onRefresh}
-            tintColor="#816B22"
-            colors={['#816B22']}
-            progressBackgroundColor="#FBF7EB"
-          />
-        }
-        contentContainerStyle={styles.scrollContent}
-      >
-        {/* --- SECTION: SUMMARY METRICS --- */}
-        <View style={styles.metaRow}>
-          <MetaItem
-            label="Requested On"
-            value={formatDate(request.createdAt)}
-          />
-          <MetaItem
-            label="Kundli Type"
-            value={getKundliTypeLabel(request.kundliType)}
-          />
-        </View>
-
-        <View style={styles.lineDivider} />
-
-        {/* --- SECTION: SUBJECT DETAILS --- */}
-        <SatoshiText style={styles.sectionHeading}>
-          Personal Details
-        </SatoshiText>
-        <View style={styles.grid}>
-          <GridItem label="Full Name" value={request.userName} />
-          <GridItem label="Gender" value={request.userGender} />
-          <GridItem
-            label="Date of Birth"
-            value={formatDate(request.dateOfBirth)}
-          />
-          <GridItem label="Time of Birth" value={request.timeOfBirth} />
-          <GridItem label="Birth Place" value={request.placeOfBirth} span={2} />
-        </View>
-
-        <View style={styles.lineDivider} />
-
-        {/* --- SECTION: CONTACT --- */}
-        <SatoshiText style={styles.sectionHeading}>Contact Details</SatoshiText>
-        <View style={styles.grid}>
-          <GridItem label="Phone Number" value={request.userPhoneNumber} />
-        </View>
-
-        {/* --- SECTION: NOTES --- */}
-        {request.userNotes && (
-          <View style={styles.notesContainer}>
-            <SatoshiText style={styles.notesLabel}>Concern</SatoshiText>
-            <SansText style={styles.notesText}>{request.userNotes}</SansText>
-          </View>
-        )}
-
-        {/* --- SECTION: ATTACHMENTS --- */}
-        {request.existingKundliFiles?.length > 0 && (
-          <View style={styles.attachmentSection}>
-            <SatoshiText style={styles.sectionHeading}>
-              Reference Documents
-            </SatoshiText>
-            {request.existingKundliFiles.map((url: string, i: number) => (
+          {/* --- SLIM PROFESSIONAL HEADER --- */}
+          <View style={styles.header}>
+            <View style={styles.navBar}>
               <TouchableOpacity
-                key={i}
-                style={styles.fileLink}
-                onPress={() => Linking.openURL(url)}
+                onPress={() => navigation.goBack()}
+                style={styles.backButton}
               >
-                <SansText style={styles.fileLinkText}>
-                  View Document {i + 1} ↗
-                </SansText>
+                <SansText style={styles.backIcon}>←</SansText>
+                <SansText style={styles.backLabel}>Back</SansText>
               </TouchableOpacity>
-            ))}
-          </View>
-        )}
-
-        {/* --- SECTION: REPORT (if available) --- */}
-        {request.reportUrl && (
-          <View style={styles.reportSection}>
-            <SatoshiText style={styles.sectionHeading}>
-              Generated Report
-            </SatoshiText>
-            <TouchableOpacity
-              style={styles.reportButton}
-              onPress={() => openReport(request.reportUrl)}
-              activeOpacity={0.7}
-            >
-              <View style={styles.reportButtonContent}>
-                <SansText style={styles.reportButtonIcon}>📄</SansText>
-                <View style={styles.reportButtonTextContainer}>
-                  <SatoshiText style={styles.reportButtonTitle}>
-                    View Report
-                  </SatoshiText>
-                  <SansText style={styles.reportButtonSubtext}>
-                    Click to open the generated report
-                  </SansText>
-                </View>
-                <SansText style={styles.reportButtonArrow}>→</SansText>
+              <View
+                style={[styles.statusPill, { backgroundColor: statusStyle.bg }]}
+              >
+                <View
+                  style={[
+                    styles.statusDot,
+                    { backgroundColor: statusStyle.dot },
+                  ]}
+                />
+                <SansText
+                  style={[styles.statusText, { color: statusStyle.text }]}
+                >
+                  {request.status?.toUpperCase()}
+                </SansText>
               </View>
-            </TouchableOpacity>
-          </View>
-        )}
+            </View>
 
-        {/* --- ACTION BUTTON --- */}
-        {request.status !== 'completed' && !request.reportUrl && (
-          <View style={{ marginTop: 20 }}>
-            <ReusableButton
-              title="Upload Report"
-              variant="solid"
-              onPress={() => navigation.navigate('UploadReport', { id: request?._id })}
-            />
-          </View>
-        )}
-
-        {/* If report is already uploaded, show a "Report Submitted" status */}
-        {request.reportUrl && (
-          <View style={styles.reportSubmittedContainer}>
-            <View style={styles.reportSubmittedBadge}>
-              <SansText style={styles.reportSubmittedIcon}>✅</SansText>
-              <SansText style={styles.reportSubmittedText}>
-                Report Submitted
+            <View style={styles.headerTitleArea}>
+              <SatoshiText style={styles.headerId}>
+                Request #{request._id?.slice(-8).toUpperCase()}
+              </SatoshiText>
+              <SansText style={styles.headerSub}>
+                {request.requestType === 'generateKundli'
+                  ? 'Detailed Kundli Generation'
+                  : 'Expert Kundli Analysis'}
               </SansText>
             </View>
-            <SansText style={styles.reportSubmittedDate}>
-              Submitted on {formatDate(request.completedAt || request.updatedAt)}
-            </SansText>
           </View>
-        )}
 
-        <View style={{ height: 40 }} />
-      </ScrollView>
-    </SafeAreaView>
+          <ScrollView
+            showsVerticalScrollIndicator={false}
+            refreshControl={
+              <RefreshControl
+                refreshing={refreshing}
+                onRefresh={onRefresh}
+                tintColor="#816B22"
+                colors={['#816B22']}
+                progressBackgroundColor="#FBF7EB"
+              />
+            }
+            contentContainerStyle={styles.scrollContent}
+          >
+            {/* --- SECTION: SUMMARY METRICS --- */}
+            <View style={styles.metaRow}>
+              <MetaItem
+                label="Requested On"
+                value={formatDate(request.createdAt)}
+              />
+              <MetaItem
+                label="Kundli Type"
+                value={getKundliTypeLabel(request.kundliType)}
+              />
+            </View>
+
+            <View style={styles.lineDivider} />
+
+            {/* --- SECTION: SUBJECT DETAILS --- */}
+            <SatoshiText style={styles.sectionHeading}>
+              Personal Details
+            </SatoshiText>
+            <View style={styles.grid}>
+              <GridItem label="Full Name" value={request.userName} />
+              <GridItem label="Gender" value={request.userGender} />
+              <GridItem
+                label="Date of Birth"
+                value={formatDate(request.dateOfBirth)}
+              />
+              <GridItem label="Time of Birth" value={request.timeOfBirth} />
+              <GridItem
+                label="Birth Place"
+                value={request.placeOfBirth}
+                span={2}
+              />
+            </View>
+
+            <View style={styles.lineDivider} />
+
+            {/* --- SECTION: CONTACT --- */}
+            <SatoshiText style={styles.sectionHeading}>
+              Contact Details
+            </SatoshiText>
+            <View style={styles.grid}>
+              <GridItem label="Phone Number" value={request.userPhoneNumber} />
+            </View>
+
+            {/* --- SECTION: NOTES --- */}
+            {request.userNotes && (
+              <View style={styles.notesContainer}>
+                <SatoshiText style={styles.notesLabel}>Concern</SatoshiText>
+                <SansText style={styles.notesText}>
+                  {request.userNotes}
+                </SansText>
+              </View>
+            )}
+
+            {isPending && (
+              <View style={{ flexDirection: 'row', gap: 6, marginTop:16 }}>
+                <ReusableButton
+                  title="Reject"
+                  onPress={handleRejectRequest}
+                  variant="outline"
+                  style={{ flex: 1 }}
+                  borderColor="#C2371E"
+                  loading={isRejecting}
+                />
+                <ReusableButton
+                  title="Accept"
+                  onPress={handleAcceptRequest}
+                  variant="solid"
+                  style={{ flex: 1 }}
+                  backgroundColor="#28A745"
+                  borderColor="#28A745"
+                  textColor="#fff"
+                  loading={isAccepting}
+                />
+              </View>
+            )}
+
+            {/* --- SECTION: ATTACHMENTS --- */}
+            {request.existingKundliFiles?.length > 0 && (
+              <View style={styles.attachmentSection}>
+                <SatoshiText style={styles.sectionHeading}>
+                  Reference Documents
+                </SatoshiText>
+                {request.existingKundliFiles.map((url: string, i: number) => (
+                  <TouchableOpacity
+                    key={i}
+                    style={styles.fileLink}
+                    onPress={() => Linking.openURL(url)}
+                  >
+                    <SansText style={styles.fileLinkText}>
+                      View Document {i + 1} ↗
+                    </SansText>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            )}
+
+            {/* --- SECTION: REPORT (if available) --- */}
+            {request.reportUrl && (
+              <View style={styles.reportSection}>
+                <SatoshiText style={styles.sectionHeading}>
+                  Generated Report
+                </SatoshiText>
+                <TouchableOpacity
+                  style={styles.reportButton}
+                  onPress={() => openReport(request.reportUrl)}
+                  activeOpacity={0.7}
+                >
+                  <View style={styles.reportButtonContent}>
+                    <SansText style={styles.reportButtonIcon}>📄</SansText>
+                    <View style={styles.reportButtonTextContainer}>
+                      <SatoshiText style={styles.reportButtonTitle}>
+                        View Report
+                      </SatoshiText>
+                      <SansText style={styles.reportButtonSubtext}>
+                        Click to open the generated report
+                      </SansText>
+                    </View>
+                    <SansText style={styles.reportButtonArrow}>→</SansText>
+                  </View>
+                </TouchableOpacity>
+              </View>
+            )}
+
+            {/* --- ACTION BUTTON --- */}
+            {!isPending && request.status !== 'rejected' && request.status !== 'completed' && !request.reportUrl && (
+              <View style={{ marginTop: 20 }}>
+                <ReusableButton
+                  title="Upload Report"
+                  variant="solid"
+                  onPress={() =>
+                    navigation.navigate('UploadReport', { id: request?._id })
+                  }
+                />
+              </View>
+            )}
+
+            {/* If report is already uploaded, show a "Report Submitted" status */}
+            {request.reportUrl && (
+              <View style={styles.reportSubmittedContainer}>
+                <View style={styles.reportSubmittedBadge}>
+                  <SansText style={styles.reportSubmittedIcon}>✅</SansText>
+                  <SansText style={styles.reportSubmittedText}>
+                    Report Submitted
+                  </SansText>
+                </View>
+                <SansText style={styles.reportSubmittedDate}>
+                  Submitted on{' '}
+                  {formatDate(request.completedAt || request.updatedAt)}
+                </SansText>
+              </View>
+            )}
+
+            <View style={{ height: 40 }} />
+          </ScrollView>
+        </SafeAreaView>
+      </ScreenWrapper>
+    </AnimatedScreen>
   );
 };
 
@@ -284,16 +357,16 @@ const GridItem = ({
 );
 
 const styles = StyleSheet.create({
-  mainContainer: { flex: 1, backgroundColor: '#FFFFFF' },
+  mainContainer: { flex: 1 },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
 
   // Clean Header
   header: {
-    backgroundColor: '#EDDEAD',
+    backgroundColor: '#715700',
     paddingHorizontal: 20,
     paddingBottom: 20,
     borderBottomWidth: 1,
-    borderBottomColor: '#F2F2F2',
+    borderBottomColor: '#E6D18B',
   },
   navBar: {
     flexDirection: 'row',
@@ -308,15 +381,15 @@ const styles = StyleSheet.create({
   },
   backIcon: {
     fontSize: 22,
-    color: '#1A1A1A',
+    color: '#ffff',
     marginRight: 5,
     marginBottom: 10,
   },
-  backLabel: { fontSize: 16, color: '#1A1A1A' },
+  backLabel: { fontSize: 16, color: '#ffff' },
 
   headerTitleArea: { marginTop: 15 },
-  headerId: { fontSize: 18, color: '#1A1A1A', fontWeight: '800' },
-  headerSub: { fontSize: 14, color: '#616162', marginTop: 4 },
+  headerId: { fontSize: 18, color: '#ffff', fontWeight: '800' },
+  headerSub: { fontSize: 14, color: '#c3c3c3', marginTop: 4 },
 
   statusPill: {
     flexDirection: 'row',

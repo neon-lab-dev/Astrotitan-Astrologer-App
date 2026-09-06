@@ -4,6 +4,8 @@ import { Image, ScrollView, View, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import ScreenWrapper from '../../components/layout/ScreenWrapper';
 import { SansText } from '../../components/reusable/Text/SansText';
+import { useNavigation } from '@react-navigation/native';
+import ReusableButton from '../../components/reusable/ReusableButton/ReusableButton';
 import { SatoshiText } from '../../components/reusable/Text/SatoshiText';
 import { selectUser } from './../../redux/features/auth/authSlice';
 import { useSelector } from 'react-redux';
@@ -11,17 +13,19 @@ import {
   useGetMyNotificationsQuery,
   useMarkAsReadMutation,
 } from '../../redux/features/notification/notificationApi';
-import { formatMessageDate } from '../../utils/validators/dateValidators';
 import { connectSocket, disconnectSocket } from '../../socket/socket';
+import { formatMessageDate } from '../../utils/validators/dateValidators';
 import AppBar from '../../components/reusable/AppBar/AppBar';
 
 const NotificationScreen = () => {
+  const navigation = useNavigation<any>();
   const user = useSelector(selectUser) as any;
-  const notificationRef = useRef<View | null>(null);
+  const notificationRef = useRef<HTMLDivElement | null>(null);
   const { data: myNotifications } = useGetMyNotificationsQuery({});
   const [notifications, setNotifications] = useState<any[]>([]);
   const hasNotifications = notifications.length > 0;
-  console.log(myNotifications, 'norification');
+  const [filter, setFilter] = useState<'all' | 'unread'>('all');
+  const [markAsRead] = useMarkAsReadMutation();
 
   useEffect(() => {
     if (myNotifications?.data) {
@@ -40,11 +44,11 @@ const NotificationScreen = () => {
       return;
     }
 
-    console.log('🔌 Connecting socket for user:', user?.account?._id);
+    // console.log("🔌 Connecting socket for user:", user?.account?._id);
 
     const socket = connectSocket(user?.account?._id);
-    console.log('📡 Socket instance:', socket);
-    console.log('📡 Socket connected:', socket?.connected);
+    // console.log("📡 Socket instance:", socket);
+    // console.log("📡 Socket connected:", socket?.connected);
 
     if (!socket) {
       console.error('❌ Failed to create socket');
@@ -56,7 +60,7 @@ const NotificationScreen = () => {
     };
 
     const onNotification = (data: any) => {
-      console.log('🔔 New notification:', data);
+      // console.log("🔔 New notification:", data);
       setNotifications(prev => [data, ...prev]);
     };
 
@@ -73,13 +77,46 @@ const NotificationScreen = () => {
     }
 
     return () => {
-      console.log('🧹 Cleaning up socket listeners');
+      // console.log("🧹 Cleaning up socket listeners");
       socket.off('connect', onConnect);
       socket.off('new-notification', onNotification);
       socket.off('onlineUsers', onOnlineUsers);
       disconnectSocket();
     };
   }, [user?.account?._id]);
+
+  const filteredNotifications =
+  filter === 'unread'
+    ? notifications.filter(notification => !notification.isRead)
+    : notifications;
+
+  const handleMarkAllAsRead = async () => {
+    const unreadNotifications = notifications.filter(
+      notification => !notification.isRead,
+    );
+
+    if (unreadNotifications.length === 0) {
+      return;
+    }
+
+    try {
+      await Promise.all(
+        unreadNotifications.map(notification =>
+          markAsRead(notification._id).unwrap(),
+        ),
+      );
+
+      // Immediately update UI
+      setNotifications(prev =>
+        prev.map(notification => ({
+          ...notification,
+          isRead: true,
+        })),
+      );
+    } catch (error) {
+      console.log('Failed to mark all notifications as read:', error);
+    }
+  };
 
   const unreadCount = notifications.filter(
     notification => !notification.isRead,
@@ -89,10 +126,50 @@ const NotificationScreen = () => {
     <SafeAreaView style={{ flex: 1 }}>
       <ScreenWrapper>
         <AppBar title="Notifications" />
+        <View
+          style={{
+            flexDirection: 'row',
+            gap: 8,
+            padding:16,
+            justifyContent:"space-between"
+          }}
+        ><View style={{ flexDirection: 'row',
+            gap: 8 }}>
+          <ReusableButton
+            title="All"
+            onPress={() => setFilter('all')}
+            variant={filter === 'all' ? 'solid' : 'outline'}
+            width="auto"
+            height={38}
+            textSize={13}
+            paddingHorizontal={16}
+          />
 
+          <ReusableButton
+            title={`Unread${unreadCount > 0 ? ` (${unreadCount})` : ''}`}
+            onPress={() => setFilter('unread')}
+            variant={filter === 'unread' ? 'solid' : 'outline'}
+            width="auto"
+            height={38}
+            textSize={13}
+            paddingHorizontal={16}
+          /></View>
+
+            <ReusableButton
+              title="Mark all read"
+              onPress={handleMarkAllAsRead}
+              variant="solid"
+              disabled={unreadCount === 0}
+              width="100%"
+              height={32}
+              textSize={13}
+              paddingHorizontal={16}
+            />
+        </View>
         <View ref={notificationRef} style={{ flex: 1 }}>
           {!hasNotifications ? (
             // EMPTY STATE
+            <View style={{ flex: 1 }}>
               <View
                 style={{
                   flex: 1,
@@ -113,9 +190,18 @@ const NotificationScreen = () => {
                     textAlign: 'center',
                   }}
                 >
-                  No notifications yet.
+                  No notifications yet
                 </SansText>
               </View>
+
+              <View style={{ paddingHorizontal: 16, paddingBottom: 32 }}>
+                <ReusableButton
+                  title="Go To Home"
+                  onPress={() => navigation.replace('HomeScreen')}
+                  width="100%"
+                />
+              </View>
+            </View>
           ) : (
             // LIST STATE
             <ScrollView
@@ -145,7 +231,7 @@ const NotificationScreen = () => {
                   </View>
                 )}
 
-                {notifications.map((item, index) => (
+                {filteredNotifications.map((item, index) => (
                   <NotificationItem key={item?._id || index} item={item} />
                 ))}
               </View>

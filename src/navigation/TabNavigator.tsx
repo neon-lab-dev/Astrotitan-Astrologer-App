@@ -29,6 +29,7 @@ const hiddenRoutes = [
   'CreateArticleScreen',
   'PersonalInformation',
   'ConsultationCallScreen',
+  'KundliRequestDetails',
 ];
 
 function shouldHideTabBar(route: any) {

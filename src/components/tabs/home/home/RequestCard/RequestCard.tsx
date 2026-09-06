@@ -29,22 +29,20 @@ const RequestCard = ({ item }: Props) => {
   type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
   const navigation = useNavigation<NavigationProp>();
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "pending": return "#D4AF37";
-      case "accepted": return "#4CAF50";
-      case "ended": return "#8E8E93";
-      default: return "#8E8E93";
-    }
+  const getStatusColor = () => {
+    if (item?.status === 'ended') return '#10b404';
+    if (item?.status === 'accepted') return '#2196F3';
+    if (item?.status === 'rejected') return '#FF0000';
+    if (item?.status === 'pending') return '#D4AF37';
+    return '#E0E0E0';
   };
 
-  const getStatusLabel = (status: string) => {
-    switch (status) {
-      case "pending": return "Pending";
-      case "accepted": return "Accepted";
-      case "ended": return "Ended";
-      default: return status || "Unknown";
-    }
+  const getStatusText = () => {
+    if (item?.status === 'ended') return 'Completed';
+    if (item?.status === 'accepted') return 'Accepted';
+    if (item?.status === 'pending') return 'Pending';
+    if (item?.status === 'rejected') return 'Rejected';
+    return 'Unknown';
   };
 
   const getMethodLabel = (method: string) => {
@@ -77,10 +75,10 @@ const RequestCard = ({ item }: Props) => {
           <SatoshiText style={styles.name} numberOfLines={1}>
             {item?.user?.fullName}
           </SatoshiText>
-          <View style={[styles.statusBadge, { backgroundColor: getStatusColor(item.status) + '15' }]}>
-            <View style={[styles.statusDot, { backgroundColor: getStatusColor(item.status) }]} />
-            <SansText style={[styles.statusText, { color: getStatusColor(item.status) }]}>
-              {getStatusLabel(item.status)}
+          <View style={[styles.statusBadge, { backgroundColor: getStatusColor() + '15' }]}>
+            <View style={[styles.statusDot, { backgroundColor: getStatusColor() }]} />
+            <SansText style={[styles.statusText, { color: getStatusColor() }]}>
+              {getStatusText()}
             </SansText>
           </View>
         </View>
