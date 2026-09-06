@@ -57,15 +57,7 @@ const RequestCard = ({ item }: Props) => {
 
   const handlePress = () => {
     navigation.navigate('SessionHistoryDetailsScreen', {
-      sessionType: item.method,
-      userName: item?.user?.fullName,
-      date: formatDate(item.createdAt),
-      time: '10:30 AM',
-      duration: item?.duration,
-      status: item?.status,
-      rating: item?.rating,
-      subscriptionType: item?.type,
-      image: item?.user?.profilePicture,
+      consultationId: item._id,
     });
   };
 
@@ -100,7 +92,6 @@ const RequestCard = ({ item }: Props) => {
           </View>
           <View style={styles.detailDivider} />
           <View style={styles.detailItem}>
-            <SansText style={styles.detailLabel}>Type</SansText>
             <SansText style={styles.detailValue}>{getMethodLabel(item.method)}</SansText>
           </View>
         </View>
@@ -220,6 +211,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: "#6B6B70",
     flex: 1,
+    textTransform: "capitalize",
   },
   arrow: {
     fontSize: 22,

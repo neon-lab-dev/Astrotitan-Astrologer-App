@@ -72,15 +72,17 @@ const ConsultationCallScreen = ({ navigation }: any) => {
     switchCamera,
   } = useZoomCall();
 
-  const { formattedTime } = useCallTimer(isInSession);
-
-  const remoteUser = useMemo(() => {
+   const remoteUser = useMemo(() => {
     if (!mySelf) {
       return users[0];
     }
 
     return users.find(user => user.userId !== mySelf.userId);
   }, [mySelf, users]);
+
+  const isCallActive = isInSession && Boolean(remoteUser);
+
+  const { formattedTime } = useCallTimer(isCallActive);
 
   const isRemoteVideoOn = remoteUser
     ? Boolean(remoteVideoStates[remoteUser.userId])

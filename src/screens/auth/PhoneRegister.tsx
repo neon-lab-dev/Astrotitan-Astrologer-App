@@ -22,11 +22,7 @@ type RegisterForm = {
 };
 
 export default function PhoneRegister() {
-  const {
-    control,
-    handleSubmit,
-    watch,
-  } = useForm<RegisterForm>({
+  const { control, handleSubmit, watch } = useForm<RegisterForm>({
     defaultValues: {
       phone: '',
     },
@@ -43,13 +39,13 @@ export default function PhoneRegister() {
 
   const navigation = useNavigation<any>();
   const route = useRoute<any>();
-  const params = route.params || {};
   const phone = watch('phone');
   const isFormFilled = phone.length >= 4;
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    const params = route.params || {};
     if (params.countryName) {
       setCountry({
         name: params.countryName as string,
@@ -58,7 +54,7 @@ export default function PhoneRegister() {
         flag: params.flag as string,
       });
     }
-  }, [params]);
+  }, [route.params]);
 
   const [signup] = useSignupMutation();
 
@@ -68,14 +64,14 @@ export default function PhoneRegister() {
       // Show dummy loader for 2 seconds
       setIsLoading(true);
       setError(null);
-      
+
       setTimeout(() => {
         setIsLoading(false);
         setError(
-          'There is an error sending OTP to your mobile number. Please try with your email address.'
+          'There is an error sending OTP to your mobile number. Please try with your email address.',
         );
       }, 2000);
-      
+
       return;
     }
 
@@ -83,7 +79,7 @@ export default function PhoneRegister() {
     try {
       setIsLoading(true);
       setError(null);
-      
+
       const payload = {
         phoneNumber: data.phone,
         email: '',
@@ -118,6 +114,9 @@ export default function PhoneRegister() {
             callingCode: selected.callingCode,
             flag: selected.flag,
           });
+          if (selected.code !== 'IN') {
+            navigation.navigate('RegisterWithEmail');
+          }
           // Clear error when country changes
           setError(null);
           BottomSheetService.close();
@@ -204,7 +203,7 @@ export default function PhoneRegister() {
           <View style={{ gap: 24 }}>
             <AuthSecondaryNavigation
               question="Old User?"
-              option=" SignIn"
+              option=" Login"
               action={() => navigation.replace('LoginWithPhone')}
             />
             <TermsAndConditions />

@@ -1,6 +1,6 @@
+/* eslint-disable react-native/no-inline-styles */
 import React, { useState } from 'react';
 import { Image, StyleSheet, TouchableOpacity, View } from 'react-native';
-import ReusableButton from '../../../reusable/ReusableButton/ReusableButton';
 import { SansText } from '../../../reusable/Text/SansText';
 import { SatoshiText } from '../../../reusable/Text/SatoshiText';
 import { formatDate } from '../../../../utils/formatDate';
@@ -9,23 +9,11 @@ import { ICONS } from '../../../../assets/svg';
 type Props = {
   item: any;
   onPress: () => void;
-  onChat: (item: any) => void;
+  // onChat: (item: any) => void;
 };
 
-const SessionCard = ({ item, onPress, onChat }: Props) => {
+const SessionCard = ({ item, onPress }: Props) => {
   const [imageError, setImageError] = useState(false);
-
-  const handleJoinCall = () => {
-    if (item?.meeting?.link) {
-      console.log('Joining call:', item?.meeting?.link);
-    }
-  };
-
-  const handleReschedule = () => {
-    console.log('Reschedule requested:', item?.meeting?.rescheduleRequest);
-  };
-
-  const hasRescheduleRequest = item?.meeting?.rescheduleRequest?.reason;
 
   const formatBookingDate = (date: string) => {
     if (!date) return '';
@@ -137,63 +125,12 @@ const SessionCard = ({ item, onPress, onChat }: Props) => {
 
           {/* Show createdAt for both call and chat */}
           {item?.createdAt && (
-            <View style={styles.detailItem}>
+            <View style={[styles.detailItem, { marginTop: 4}]}>
               <SansText style={styles.detailIcon}>📆</SansText>
               <SansText style={styles.detailText}>
                 Booked: {formatBookingDate(item?.createdAt)}
               </SansText>
             </View>
-          )}
-        </View>
-
-        {/* Right: Action Buttons */}
-        <View style={styles.actionSection}>
-          {item?.method === 'call' ? (
-            <View style={styles.buttonWrapper}>
-              {item?.status === 'scheduled' ? (
-                <ReusableButton
-                  variant="solid"
-                  title="Join Call"
-                  height={32}
-                  textSize={12}
-                  style={styles.button}
-                  onPress={handleJoinCall}
-                />
-              ) : item?.status === 'pending' ? (
-                <ReusableButton
-                  variant="solid"
-                  title="Schedule"
-                  height={32}
-                  textSize={12}
-                  style={styles.button}
-                  onPress={() => {}}
-                />
-              ) : null}
-            </View>
-          ) : item?.method === 'chat' ? (
-            <View style={styles.buttonWrapper}>
-              {item?.status === 'scheduled' || item?.status === 'pending' ? (
-                <ReusableButton
-                  variant="solid"
-                  title="Chat Now"
-                  height={32}
-                  textSize={12}
-                  style={styles.button}
-                  onPress={() => onChat(item)}
-                />
-              ) : null}
-            </View>
-          ) : null}
-
-          {/* Reschedule Button */}
-          {hasRescheduleRequest && (
-            <TouchableOpacity
-              style={styles.rescheduleButton}
-              onPress={handleReschedule}
-              activeOpacity={0.7}
-            >
-              <SansText style={styles.rescheduleText}>↻ Reschedule</SansText>
-            </TouchableOpacity>
           )}
         </View>
       </View>

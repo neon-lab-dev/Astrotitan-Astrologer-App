@@ -22,11 +22,7 @@ type LoginForm = {
 };
 
 export default function PhoneLogin() {
-  const {
-    control,
-    handleSubmit,
-    watch,
-  } = useForm<LoginForm>({
+  const { control, handleSubmit, watch } = useForm<LoginForm>({
     defaultValues: {
       phone: '',
     },
@@ -42,13 +38,13 @@ export default function PhoneLogin() {
 
   const navigation = useNavigation<any>();
   const route = useRoute<any>();
-  const params = route.params || {};
   const phone = watch('phone');
   const isFormFilled = phone.length >= 4;
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
+  
   useEffect(() => {
+    const params = route.params || {};
     if (params.countryName) {
       setCountry({
         name: params.countryName as string,
@@ -57,32 +53,15 @@ export default function PhoneLogin() {
         flag: params.flag as string,
       });
     }
-  }, [params]);
+  }, [route.params]);
 
   const [login] = useLoginMutation();
 
   const onSubmit = async (data: LoginForm) => {
-    // Check if country is India
-    if (country.code !== 'IN') {
-      // Show dummy loader for 2 seconds
-      setIsLoading(true);
-      setError(null);
-      
-      setTimeout(() => {
-        setIsLoading(false);
-        setError(
-          'There is an error sending OTP to your mobile number. Please try with your email address.'
-        );
-      }, 2000);
-      
-      return;
-    }
-
-    // For India - proceed with actual API call
     try {
       setIsLoading(true);
       setError(null);
-      
+
       const payload = {
         email: '',
         phoneNumber: data.phone,
@@ -117,6 +96,9 @@ export default function PhoneLogin() {
             callingCode: selected.callingCode,
             flag: selected.flag,
           });
+          if (selected.code !== 'IN') {
+            navigation.navigate('LoginWithEmail');
+          }
           // Clear error when country changes
           setError(null);
           BottomSheetService.close();
@@ -199,11 +181,11 @@ export default function PhoneLogin() {
               </Text>
             </TouchableOpacity>
           </View>
-          
+
           <View style={{ gap: 24 }}>
             <AuthSecondaryNavigation
               question="New User?"
-              option=" Signup"
+              option=" Sign up"
               action={() => navigation.replace('RegisterWithPhone')}
             />
 

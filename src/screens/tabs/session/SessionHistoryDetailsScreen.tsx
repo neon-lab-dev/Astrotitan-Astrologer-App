@@ -53,7 +53,6 @@ const SessionHistoryDetailsScreen = () => {
           onPress: async () => {
             try {
               await endConsultationSession(consultationId).unwrap();
-              Alert.alert('Success', 'Consultation marked as completed.');
               navigation.navigate('ProvideNotes', {
                 consultationId: consultationId,
               });

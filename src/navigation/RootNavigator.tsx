@@ -20,6 +20,7 @@ import ProfileScreen from "../screens/tabs/profile/ProfileScreen";
 import PersonalInformation from "../screens/tabs/profile/PersonalInformation";
 import Queries from "../screens/tabs/profile/query/Queries";
 import RaiseQuery from "../screens/tabs/profile/query/RaiseQuery";
+import SessionHistoryDetailsScreen from "../screens/tabs/session/SessionHistoryDetailsScreen";
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -103,6 +104,10 @@ export default function RootNavigator() {
       <Stack.Screen
         name="RaiseQuery"
         component={RaiseQuery}
+      />
+      <Stack.Screen
+        name="SessionHistoryDetailsScreen"
+        component={SessionHistoryDetailsScreen}
       />
     </Stack.Navigator>
   );

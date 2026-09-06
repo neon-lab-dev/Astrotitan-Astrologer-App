@@ -443,6 +443,8 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#555',
     marginTop: 2,
+    marginLeft : 4,
+    textTransform: 'capitalize',
   },
 
   endButton: {

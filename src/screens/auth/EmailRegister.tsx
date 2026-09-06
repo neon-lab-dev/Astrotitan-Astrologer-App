@@ -124,7 +124,7 @@ export default function EmailRegister() {
           <View style={{ gap: 24 }}>
             <AuthSecondaryNavigation
               question="Old User?"
-              option=" SignIn"
+              option=" Login"
               action={() => navigation.replace('LoginWithPhone')}
             />
             <TermsAndConditions />
